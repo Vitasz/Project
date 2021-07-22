@@ -38,6 +38,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: NewHouse
+    uniqueID: 2574096817
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
