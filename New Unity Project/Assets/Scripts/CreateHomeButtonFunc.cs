@@ -13,7 +13,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
     public GameObject PointHome, HouseLine, House, HouseController, DeletePointsButton;
     public EventSystem EvSys;
     private int Mode = -1; // 0 - Add, 1 - Connect, 2 - Delete;
-    private readonly float PointRadius = 0.2775f;
+    private readonly float PointRadius = 0.135f;
     private readonly List<Vector3> ClickedOnHousePoints = new List<Vector3>();
     private readonly List<Vector3> HousePoints = new List<Vector3>();
     private readonly Dictionary<Vector3, int> CountLinesOnPoint = new Dictionary<Vector3, int>();
@@ -186,15 +186,17 @@ public class CreateHomeButtonFunc : MonoBehaviour
             {
                 if (LinesGameobjects.ContainsKey((a, Lines[a])))
                 {
-                    Debug.Log("HERE");
                     Destroy(LinesGameobjects[(a, Lines[a])].gameObject);
                     LinesGameobjects.Remove((a, Lines[a]));
+                    CountLinesOnPoint[Lines[a]]--;
+                    CountLinesOnPoint[a]--;
                 }
                 else if (LinesGameobjects.ContainsKey((Lines[a], a)))
                 {
-                    Debug.Log("HERE 2");
                     Destroy(LinesGameobjects[(Lines[a], a)].gameObject);
                     LinesGameobjects.Remove((Lines[a], a));
+                    CountLinesOnPoint[Lines[a]]--;
+                    CountLinesOnPoint[a]--;
                 }
                 ToDelete.Add(a);
             }
