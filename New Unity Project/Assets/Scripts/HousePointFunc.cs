@@ -8,7 +8,6 @@ public class NewHousePointFunc : MonoBehaviour
     public Vector3 PositionPoint;
     public void OnMouseDown()
     {
-        GetComponent<SpriteRenderer>().color = Color.green;
         NewHomeButton.ClickOnPoint(PositionPoint);
     }
 }
