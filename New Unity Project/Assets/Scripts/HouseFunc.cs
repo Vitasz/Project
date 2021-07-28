@@ -5,6 +5,7 @@ using System.Linq;
 
 public class HouseFunc : MonoBehaviour
 {
+    public Material MaterialForHouseLines;
     public void CreateHouse(params Vector2[] points)
     {
         GetComponent<PolygonCollider2D>().SetPath(0, points.ToArray());
@@ -21,5 +22,21 @@ public class HouseFunc : MonoBehaviour
         if (f.sharedMesh != null)
             DestroyImmediate(f.sharedMesh);
         f.sharedMesh = mesh;
+        for (int i = 0; i < points.Length; i++)
+        {
+            CreateLineForHouse(points[i], points[(i + 1) % points.Length]);
+        }
+    }
+    private void CreateLineForHouse(Vector3 from, Vector3 to)
+    {
+        GameObject NewLine = new GameObject("HouseLine");
+        NewLine.transform.parent = transform;
+        NewLine.AddComponent<LineRenderer>();
+        NewLine.GetComponent<LineRenderer>().startWidth = 0.1f;
+        NewLine.GetComponent<LineRenderer>().endWidth = 0.1f;
+        NewLine.GetComponent<LineRenderer>().startColor = Color.black;
+        NewLine.GetComponent<LineRenderer>().endColor = Color.black;
+        NewLine.GetComponent<LineRenderer>().material = MaterialForHouseLines;
+        NewLine.GetComponent<LineRenderer>().SetPositions(new List<Vector3> { from, to }.ToArray());
     }
 }

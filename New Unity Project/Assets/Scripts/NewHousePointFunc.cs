@@ -2,17 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HousePointFunc : MonoBehaviour
+public class NewHousePointFunc : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public CreateHomeButtonFunc NewHomeButton;
+    public Vector3 PositionPoint;
+    public void OnMouseDown()
     {
-        
+        NewHomeButton.ClickOnPoint(PositionPoint);
     }
-
-    // Update is called once per frame
-    void Update()
+    public void OnMouseDrag()
     {
-        
+        Vector3 newPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        newPosition.z = 0;
+        if (NewHomeButton.Mode == 3 && newPosition != PositionPoint)
+        {
+            NewHomeButton.MovePoint(PositionPoint, newPosition);
+        }
     }
 }

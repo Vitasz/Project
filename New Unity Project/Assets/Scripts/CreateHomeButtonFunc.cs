@@ -12,7 +12,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
     public GameObject AddPointButton, ConnectPointsButton, EndButton, NewHome;
     public GameObject PointHome, HouseLine, House, HouseController, DeletePointsButton, MovePointsButton;
     public EventSystem EvSys;
-    private int Mode = -1; // 0 - Add, 1 - Connect, 2 - Delete, 3 - Move
+    public int Mode = -1; // 0 - Add, 1 - Connect, 2 - Delete, 3 - Move
     private readonly float PointRadius = 0.135f;
     private Vector3 NowPoint;
     private readonly List<Vector3> ClickedOnHousePoints = new List<Vector3>();
@@ -21,6 +21,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
     private readonly List<(Vector3, Vector3)> Lines = new List<(Vector3, Vector3)>();
     private readonly Dictionary<(Vector3, Vector3), GameObject> LinesGameobjects = new Dictionary<(Vector3, Vector3), GameObject>();
     private readonly Dictionary<Vector3, SpriteRenderer> PointsSprites = new Dictionary<Vector3, SpriteRenderer>();
+    private readonly List<NewHouseLines> CrossedLines = new List<NewHouseLines>();
     private void Start()
     {
         transform.GetComponent<Button>().onClick.AddListener(OnClickCreateHomeButton);
@@ -50,7 +51,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
                 break;
             }
         }
-        if (flag && HousePoints.Count>=3) CreateHouse();
+        if (flag && HousePoints.Count>=3 && CrossedLines.Count == 0) CreateHouse();
         Restart();
     }
     public void OnClickDeletePointsButton() => Mode = 2;
@@ -63,33 +64,14 @@ public class CreateHomeButtonFunc : MonoBehaviour
     public void OnClickMovePointButton() => Mode = 3;
     private void Update()
     {
-       if (Input.GetMouseButtonDown(0)  && !EvSys.IsPointerOverGameObject())
+       if (Input.GetMouseButtonDown(0)  && !EvSys.IsPointerOverGameObject() && Mode==0)
        {
             Vector3 NewPointPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             NewPointPosition.z = 0;
-            bool ok = true;
-            foreach (Vector3 a in HousePoints)
-            {
-                if (Math.Sqrt(Math.Pow(a.x - NewPointPosition.x, 2) + Math.Pow(a.y - NewPointPosition.y, 2)) < 2 * PointRadius)
-                {
-                    ok = false;
-                    break;
-                }
-            }
-            if (ok)
-            {
-                if (Mode == 0)
-                {
-                    HousePoints.Add(NewPointPosition);
-                    CreateNewPointforHome(NewPointPosition);
-                }
-                else if (NowPoint!=null && Mode==3 && PointsSprites.ContainsKey(NowPoint))
-                {
-                    MovePoint(NowPoint, NewPointPosition);
-                    NowPoint = NewPointPosition;
-                }
-            }
-       }
+            if (CountLinesOnPoint.ContainsKey(NewPointPosition)) return;
+            HousePoints.Add(NewPointPosition);
+            CreateNewPointforHome(NewPointPosition);
+        }
     }
     /// <summary>
     /// Создание новой точки для дома
@@ -142,7 +124,8 @@ public class CreateHomeButtonFunc : MonoBehaviour
         GameObject NewLine = Instantiate(HouseLine, NewHome.transform);
         Lines.Add((Positions[0], Positions[1]));
         LinesGameobjects.Add((Positions[0], Positions[1]), NewLine);
-        NewLine.GetComponent<LineRenderer>().SetPositions(Positions.ToArray());
+        NewLine.GetComponent<NewHouseLines>().HomeButton = this;
+        NewLine.GetComponent<NewHouseLines>().ChangePoints(Positions[0], Positions[1], PointRadius);
         CountLinesOnPoint[Positions[0]]++;
         CountLinesOnPoint[Positions[1]]++;
         PointsSprites[ClickedOnHousePoints[0]].color = Color.white;
@@ -199,10 +182,12 @@ public class CreateHomeButtonFunc : MonoBehaviour
         Destroy(PointsSprites[Position].transform.gameObject);
         PointsSprites.Remove(Position);
     }
-    private void MovePoint(Vector3 PositionPrev, Vector3 PositionNew)
+    public void MovePoint(Vector3 PositionPrev, Vector3 PositionNew)
     {
+        if (CountLinesOnPoint.ContainsKey(PositionNew)) return;
         HousePoints[HousePoints.FindIndex(x => x == PositionPrev)] = PositionNew;
-        CountLinesOnPoint[PositionNew] = CountLinesOnPoint[PositionPrev]; CountLinesOnPoint.Remove(PositionPrev);
+        CountLinesOnPoint.Add(PositionNew, CountLinesOnPoint[PositionPrev]); 
+        CountLinesOnPoint.Remove(PositionPrev);
         List<(Vector3, Vector3)> ToChange = new List<(Vector3, Vector3)>();
         foreach((Vector3, Vector3) a in Lines)
         {
@@ -217,7 +202,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
                 Lines.Add(newA); Lines.Remove(a);
                 LinesGameobjects[newA] = LinesGameobjects[a];    
                 LinesGameobjects.Remove(a);
-                LinesGameobjects[newA].GetComponent<LineRenderer>().SetPositions(new List<Vector3>() { newA.Item1, newA.Item2 }.ToArray());
+                LinesGameobjects[newA].GetComponent<NewHouseLines>().ChangePoints(newA.Item1, newA.Item2, PointRadius);
             }
             else
             {
@@ -225,13 +210,14 @@ public class CreateHomeButtonFunc : MonoBehaviour
                 Lines.Add(newA); Lines.Remove(a);
                 LinesGameobjects[newA] = LinesGameobjects[a];
                 LinesGameobjects.Remove(a);
-                LinesGameobjects[newA].GetComponent<LineRenderer>().SetPositions(new List<Vector3>() { newA.Item1, newA.Item2 }.ToArray());
+                LinesGameobjects[newA].GetComponent<NewHouseLines>().ChangePoints(newA.Item1, newA.Item2, PointRadius);
             }
         }
         PointsSprites[PositionNew] = PointsSprites[PositionPrev];
-        PointsSprites[PositionNew].gameObject.GetComponent<NewHousePointFunc>().PositionPoint = PositionNew;
-        PointsSprites[PositionNew].transform.position = PositionNew;
         PointsSprites.Remove(PositionPrev);
+        if (PositionPrev==NowPoint) NowPoint = PositionNew;
+        PointsSprites[PositionNew].GetComponent<NewHousePointFunc>().PositionPoint = PositionNew;
+        PointsSprites[PositionNew].transform.localPosition = PositionNew;
     }
     /// <summary>
     /// Обнуление всех массивов и переменных
@@ -250,6 +236,13 @@ public class CreateHomeButtonFunc : MonoBehaviour
         Mode = -1;
         for (int i = 0; i < NewHome.transform.childCount; i++)
             Destroy(NewHome.transform.GetChild(i).gameObject);
+    }
+    public void OnLineCroosed(NewHouseLines Linecrossed) {
+        if (!CrossedLines.Contains(Linecrossed)) CrossedLines.Add(Linecrossed);
+    }
+    public void OnLineExist(NewHouseLines Linecrossed)
+    {
+        CrossedLines.Remove(Linecrossed);
     }
 }
 

@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2267688221581248370}
   m_Layer: 0
   m_Name: House
-  m_TagString: Untagged
+  m_TagString: House
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -95,6 +95,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffafa4a3ceb88ba41b2756f05244bdac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  MaterialForHouseLines: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!60 &2267688221581248370
 PolygonCollider2D:
   m_ObjectHideFlags: 0
@@ -119,12 +120,4 @@ PolygonCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   m_Points:
-    m_Paths:
-    - - {x: 1.1669523, y: 0.6132067}
-      - {x: 0, y: 1}
-      - {x: -0.7085772, y: 1.040015}
-      - {x: -0.95105654, y: 0.30901697}
-      - {x: -0.5877852, y: -0.80901706}
-      - {x: 0.58778536, y: -0.80901694}
-      - {x: 1.7685277, y: -0.2914583}
-      - {x: 0.9510565, y: 0.30901712}
+    m_Paths: []

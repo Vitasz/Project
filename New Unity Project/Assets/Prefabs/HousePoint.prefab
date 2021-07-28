@@ -11,10 +11,10 @@ GameObject:
   - component: {fileID: 1378148028425376363}
   - component: {fileID: 1490066488255113131}
   - component: {fileID: 2182010445646460696}
-  - component: {fileID: 7780952012524453032}
+  - component: {fileID: 5301196286522915207}
   m_Layer: 0
   m_Name: HousePoint
-  m_TagString: Untagged
+  m_TagString: Point
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -100,7 +100,7 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 2.7
---- !u!114 &7780952012524453032
+--- !u!114 &5301196286522915207
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,7 +109,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 910665504574779282}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 974d35bc5a6695d4f92a2ae24b0af0db, type: 3}
+  m_Script: {fileID: 11500000, guid: 0cea7d227a7f8e2428fa5fbd762eddf5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   NewHomeButton: {fileID: 0}
