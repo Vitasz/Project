@@ -5,7 +5,7 @@ using UnityEngine;
 public class NewHouseLines : MonoBehaviour
 {
     public CreateHomeButtonFunc HomeButton;
-    private List<Collider2D> CollisionsInLine = new List<Collider2D>();
+    private readonly List<Collider2D> CollisionsInLine = new List<Collider2D>();
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.tag == "House" || collision.gameObject.tag == "HouseLine")
