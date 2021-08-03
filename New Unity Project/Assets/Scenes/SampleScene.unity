@@ -612,21 +612,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 854858114}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9f67766b857de2346be75ae38d794368, type: 3}
+  m_Script: {fileID: 11500000, guid: 7500a0589c51a904ca18fba73569c003, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  AddPointButton: {fileID: 829975611}
-  ConnectPointsButton: {fileID: 1673404236}
-  EndButton: {fileID: 1953410292}
-  NewHome: {fileID: 1426763913}
-  PointHome: {fileID: 910665504574779282, guid: 6ee9f6ff34df7f8418fc0f402779e2fb, type: 3}
-  HouseLine: {fileID: 5124407381406808055, guid: 2f37af003258efe448197e4daea96c4d, type: 3}
-  House: {fileID: 8897157034627083772, guid: 3f0ade09faaa3f0428278a9e50779c4d, type: 3}
-  HouseController: {fileID: 1537960909}
-  DeletePointsButton: {fileID: 1611688254}
-  MovePointsButton: {fileID: 1675038332}
-  EvSys: {fileID: 1199689694}
-  Mode: -1
+  RoadsController: {fileID: 1909376619}
 --- !u!114 &854858117
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1615,6 +1604,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1886416962}
   m_CullTransparentMesh: 0
+--- !u!1 &1909376617
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1909376618}
+  - component: {fileID: 1909376619}
+  m_Layer: 0
+  m_Name: RoadsController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1909376618
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1909376617}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1909376619
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1909376617}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21ffa0f45ff477f439bd5b423d695fa5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  RoadPrefab: {fileID: 407815693116837194, guid: 0f6fb929aca9252459f4355592b71aea, type: 3}
 --- !u!1 &1953410292
 GameObject:
   m_ObjectHideFlags: 0
@@ -1878,5 +1911,6 @@ MonoBehaviour:
   HouseController: {fileID: 1537960909}
   DeletePointsButton: {fileID: 1611688254}
   MovePointsButton: {fileID: 1675038332}
+  RoadButtonFunc: {fileID: 854858116}
   EvSys: {fileID: 1199689694}
   Mode: -1

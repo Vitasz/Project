@@ -5,6 +5,8 @@ using System.Linq;
 
 public class HouseFunc : MonoBehaviour
 {
+    public GameObject RoadPoint;
+    public CreateRoadButtonFunc CreateRoadButton;
     public Material MaterialForHouseLines;
     public void CreateHouse(params Vector2[] points)
     {
@@ -23,9 +25,8 @@ public class HouseFunc : MonoBehaviour
             DestroyImmediate(f.sharedMesh);
         f.sharedMesh = mesh;
         for (int i = 0; i < points.Length; i++)
-        {
             CreateLineForHouse(points[i], points[(i + 1) % points.Length]);
-        }
+        CreateRoadPointForHouse(points);
     }
     private void CreateLineForHouse(Vector3 from, Vector3 to)
     {
@@ -38,5 +39,17 @@ public class HouseFunc : MonoBehaviour
         NewLine.GetComponent<LineRenderer>().endColor = Color.black;
         NewLine.GetComponent<LineRenderer>().material = MaterialForHouseLines;
         NewLine.GetComponent<LineRenderer>().SetPositions(new List<Vector3> { from, to }.ToArray());
+    }
+    private void CreateRoadPointForHouse(params Vector2[] points)
+    {
+        GameObject NewPoint = Instantiate(RoadPoint, transform);
+        NewPoint.GetComponent<RoadPointFunc>().Type = 2;
+        NewPoint.GetComponent<RoadPointFunc>().RoadButton = CreateRoadButton;
+        CreateRoadButton.RoadsController.AddRoadPoint(NewPoint.GetComponent<RoadPointFunc>());
+        NewPoint.transform.GetComponent<SpriteRenderer>().color = Color.green;
+        Vector2 now = new Vector2();
+        foreach (Vector2 a in points) now += a;
+        now /= points.Length;
+        NewPoint.transform.localPosition = now;
     }
 }

@@ -95,6 +95,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ffafa4a3ceb88ba41b2756f05244bdac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  RoadPoint: {fileID: 910665504574779282, guid: ec6f5b36f00a10641b2e2f85d0e00967, type: 3}
   MaterialForHouseLines: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!60 &2267688221581248370
 PolygonCollider2D:

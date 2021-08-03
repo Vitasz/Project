@@ -11,6 +11,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
 {
     public GameObject AddPointButton, ConnectPointsButton, EndButton, NewHome;
     public GameObject PointHome, HouseLine, House, HouseController, DeletePointsButton, MovePointsButton;
+    public CreateRoadButtonFunc RoadButtonFunc;
     public EventSystem EvSys;
     public int Mode = -1; // 0 - Add, 1 - Connect, 2 - Delete, 3 - Move
     private readonly float PointRadius = 0.135f;
@@ -155,6 +156,7 @@ public class CreateHomeButtonFunc : MonoBehaviour
             }
             HousePoints.Remove(now);
         }
+        NewHouse.GetComponent<HouseFunc>().CreateRoadButton = RoadButtonFunc;
         NewHouse.GetComponent<HouseFunc>().CreateHouse(HousePointsToCreate.Select(v => new Vector2(v.x, v.y)).ToArray());
     }
     /// <summary>
