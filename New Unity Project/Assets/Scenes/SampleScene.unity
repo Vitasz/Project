@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9de80397bc3bd4aab8b6d2da665752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SizeX: 2
+  SizeX: 3
   SizeY: 2
   SizeCell: 10
   GameController: {fileID: 1053592891}
@@ -325,6 +325,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0a147e989e2de441a4b6ef8b16296bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  Mode: 1
+  HouseController: {fileID: 1414301251}
 --- !u!1 &1199689692
 GameObject:
   m_ObjectHideFlags: 0
@@ -498,6 +500,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1414301249}
+  - component: {fileID: 1414301251}
   m_Layer: 0
   m_Name: HouseController
   m_TagString: Untagged
@@ -513,12 +516,26 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1414301248}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -6.02919, y: -1.6059219, z: -0.044762764}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1414301251
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1414301248}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d893570a737bcf5439ef74a855a7297d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Grid: {fileID: 205427569}
+  HousePrefab: {fileID: 7545872404278961229, guid: 3f0ade09faaa3f0428278a9e50779c4d, type: 3}
 --- !u!1 &1921036908
 GameObject:
   m_ObjectHideFlags: 0
