@@ -15,13 +15,11 @@ public class GameControlls : MonoBehaviour
     }
     public void StopClickOnGrid(int X, int Y)
     {
-        if (!ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
+        if (X!=-1&&Y!=-1 && ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
        // Debug.Log("Stop Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
         if (Mode == 1)
-        {
             HouseController.CreateHouse(ClickedPositions);
-            ClickedPositions.Clear();
-        }
+        ClickedPositions.Clear();
     }
 
 }
