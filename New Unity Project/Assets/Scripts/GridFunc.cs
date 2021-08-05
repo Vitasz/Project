@@ -9,7 +9,7 @@ public class GridFunc : MonoBehaviour
     public GameControlls GameController;
     public Material MaterialForLines;
     public BoxCollider2D Collider;
-    private readonly float _linesWidth = 0.3f;
+    public readonly float _linesWidth = 0.3f;
     private List<Vector2> HighlightedSquares = new List<Vector2>();
     private List<List<int>> Map;
     private void Start()
@@ -29,7 +29,6 @@ public class GridFunc : MonoBehaviour
         Map = Enumerable.Repeat(new List<int>(), SizeX).ToList();
         for (int i = 0; i <= SizeX; i++)
         {
-            Debug.Log(i);
             if (SizeX!=i)Map[i] = Enumerable.Repeat(0, SizeX).ToList();
             Vector3[] Positions = new Vector3[] { new Vector3((float)i * SizeCell - (float)SizeX / 2 * SizeCell, (float)SizeY / 2 * SizeCell),
                new Vector3((float)i * SizeCell - (float)SizeX / 2 * SizeCell, -(float)SizeY / 2 * SizeCell)
@@ -56,7 +55,10 @@ public class GridFunc : MonoBehaviour
     {
         if (GameController.Mode == 1)
         {
-
+            Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
+            if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
+            GameController.ClickOnGrid(Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2);
         }
     }
     private void OnMouseUp()
@@ -66,17 +68,15 @@ public class GridFunc : MonoBehaviour
         if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
         GameController.StopClickOnGrid(Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2);
     }
-    public void SetSquare((int,int) from, (int, int) to, int what)
+    public void SetSquare(List<(int,int)> Positions, int what)
     {
-        for (int i = from.Item1; i <= to.Item1; i++)
-            for (int j = from.Item2; j <= to.Item2; j++)
-                Map[i][j] = what;
+        foreach((int, int) a in Positions)
+                Map[a.Item1][a.Item2] = what;
     }
-    public bool TestSquare((int, int) from, (int, int) to)
+    public bool TestSquare(List<(int, int)> Positions)
     {
-        for (int i = Math.Min(from.Item1, to.Item1); i <= Math.Max(from.Item1, to.Item1); i++)
-            for (int j = Math.Min(from.Item2, to.Item2); j <= Math.Max(from.Item2, to.Item2); j++)
-                if (Map[i][j] != 0) return false;
+        foreach ((int, int) a in Positions)
+            if (Map[a.Item1][a.Item2] != 0) return false;
         return true;
     }
     public Vector2 PositionCell(int x, int y)
@@ -85,5 +85,30 @@ public class GridFunc : MonoBehaviour
         toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + x * SizeCell;
         toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + y * SizeCell;
         return toret;
+    }
+    public string CountSameTiles(int X, int Y)
+    {
+        string total = "";
+        if (X > 0 && Y + 1 < SizeY) total += Convert.ToString(Map[X - 1][Y + 1] == Map[X][Y] ||
+            Map[X-1][Y]==Map[X][Y]&&Map[X][Y+1]== Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (Y + 1 < SizeY) total += Convert.ToString(Map[X][Y + 1] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (X + 1 < SizeX && Y + 1 < SizeY) total += Convert.ToString(Map[X + 1][Y + 1] == Map[X][Y]||
+            Map[X + 1][Y] == Map[X][Y] && Map[X][Y + 1] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (X + 1 < SizeX) total += Convert.ToString(Map[X + 1][Y] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (X + 1 < SizeX && Y > 0) total += Convert.ToString(Map[X + 1][Y - 1] == Map[X][Y] ||
+            Map[X + 1][Y] == Map[X][Y] && Map[X][Y - 1] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (Y > 0) total += Convert.ToString(Map[X][Y - 1] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (X > 0 && Y > 0) total += Convert.ToString(Map[X - 1][Y - 1] == Map[X][Y] ||
+            Map[X - 1][Y] == Map[X][Y] && Map[X][Y - 1] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        if (X > 0) total += Convert.ToString(Map[X - 1][Y] == Map[X][Y] ? 1 : 0);
+        else total += '0';
+        return total;
     }
 }
