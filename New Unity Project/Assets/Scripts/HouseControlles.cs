@@ -39,15 +39,15 @@ public class HouseControlles : MonoBehaviour
             spriteRenderer.color = Color.red;
         }
         string s = Grid.CountSameTiles(X, Y);
-        string FilePath = Application.dataPath + "/Resources/Sprites/Tiles";
+        string FilePath = Application.dataPath + "/Resources/Sprites/Tiles/House";
         if (File.Exists(FilePath + "/base" + s + ".png"))
-            Create("Sprites/Tiles/base" + s,0);
+            Create("Sprites/Tiles/House/base" + s,0);
         else if (File.Exists(FilePath + "/base" + swap(s, 2) + ".png"))
-            Create("Sprites/Tiles/base" + swap(s, 2), 90);
+            Create("Sprites/Tiles/House/base" + swap(s, 2), 90);
         else if (File.Exists(FilePath + "/base" + swap(s, 4) + ".png"))
-            Create("Sprites/Tiles/base" + swap(s, 4), 180);
+            Create("Sprites/Tiles/House/base" + swap(s, 4), 180);
         else if (File.Exists(FilePath + "/base" + swap(s, 6) + ".png"))
-            Create("Sprites/Tiles/base" + swap(s, 6), 270);
+            Create("Sprites/Tiles/House/base" + swap(s, 6), 270);
         else Debug.LogError("File " + s + " not found in houses' tiles");
     }
 }
