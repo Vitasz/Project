@@ -41,15 +41,9 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: Roads
-    uniqueID: 3736085805
-    locked: 0
-  - name: NewHouse
-    uniqueID: 2574096817
-    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: RoadsPoint
-    uniqueID: 914853231
+  - name: House
+    uniqueID: 109297073
     locked: 0

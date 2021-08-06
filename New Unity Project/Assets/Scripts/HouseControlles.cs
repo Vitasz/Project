@@ -20,6 +20,16 @@ public class HouseControlles : MonoBehaviour
     }
     private void CreateTile(GameObject House, int X, int Y)
     {
+        string transformInput(string s1){
+            for (int i = 0; i < s1.Length; i+=2)
+            {
+                int nowprev = i - 1 == -1 ? s1.Length - 1 : i - 1;
+                int nownext = i + 1 == s1.Length ? 0 : i + 1;
+                if (s1[i] == '1' && (s1[nowprev] == '0' && s1[nownext] == '0')) s1 = s1.Substring(0, i) + '0' + s1.Substring(i + 1);
+                if (s1[nowprev]=='1' && s1[nownext]=='1') s1 = s1.Substring(0, i) + '1' + s1.Substring(i + 1);
+            }
+            return s1;
+        }
         string swap(string a, int count)
         {
             string ans = a;
@@ -37,8 +47,9 @@ public class HouseControlles : MonoBehaviour
             gameObject.transform.localPosition = Grid.PositionCell(X, Y);
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
             spriteRenderer.color = Color.red;
+            spriteRenderer.sortingLayerName = "House";
         }
-        string s = Grid.CountSameTiles(X, Y);
+        string s = transformInput(Grid.CountSameTiles(X, Y));
         string FilePath = Application.dataPath + "/Resources/Sprites/Tiles/House";
         if (File.Exists(FilePath + "/base" + s + ".png"))
             Create("Sprites/Tiles/House/base" + s,0);
