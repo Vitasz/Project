@@ -21,20 +21,15 @@ public class GameControlls : MonoBehaviour
     public void ClickOnGrid(int X, int Y)
     {
         //Debug.Log(" Start Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
-        if (Mode == 1)
-        {
-            if (!ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
-        }
-        else if (Mode == 2) RoadsController.AddRoad(X, Y);
+        if (!ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
     }
     public void StopClickOnGrid(int X, int Y)
     {
-        if (X!=-1&&Y!=-1 && ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
+        if (X!=-1&&Y!=-1 && !ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
        // Debug.Log("Stop Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
-        if (Mode == 1)
-            HouseController.CreateHouse(ClickedPositions);
-            else RoadsController.AddRoad(X, Y);
-            ClickedPositions.Clear();
+        if (Mode == 1) HouseController.CreateHouse(ClickedPositions);
+        else RoadsController.AddRoad(ClickedPositions);
+        ClickedPositions.Clear();
     }
 
 }

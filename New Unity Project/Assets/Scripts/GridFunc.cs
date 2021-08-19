@@ -11,7 +11,7 @@ public class GridFunc : MonoBehaviour
     public BoxCollider2D Collider;
     public readonly float _linesWidth = 0.3f;
     private List<Vector2> HighlightedSquares = new List<Vector2>();
-    private List<List<int>> Map;
+    private List<List<int>> Map; //-1 - Road, > 0 - House, 0 - nothing
     private void Start()
     {
         void CreateLine(Vector3[] Positions)
@@ -114,5 +114,26 @@ public class GridFunc : MonoBehaviour
         if (X > 0) total += Convert.ToString(Map[X - 1][Y] == Map[X][Y] ? 1 : 0);
         else total += '0';
         return total;
+    }
+    public int[] GetTilesAround(int X, int Y)
+    {
+        int[] toret = new int[8];
+        if (X == 0 || Y + 1 >= SizeY || Map[X - 1][Y + 1] != Map[X][Y]) toret[0] = 0;
+        else toret[0] = 1;
+        if (Y + 1 >= SizeY || Map[X][Y + 1] != Map[X][Y]) toret[1] = 0;
+        else toret[1] = 1;
+        if (X + 1>=SizeX || Y + 1 >= SizeY || Map[X + 1][Y + 1] != Map[X][Y]) toret[2] = 0;
+        else toret[2] = 1;
+        if (X +1 >=SizeX || Map[X + 1][Y] != Map[X][Y]) toret[3] = 0;
+        else toret[3] = 1;
+        if (X + 1 >= SizeX || Y == 0 || Map[X + 1][Y - 1] != Map[X][Y]) toret[4] = 0;
+        else toret[4] = 1;
+        if (Y==0 || Map[X][Y - 1] != Map[X][Y]) toret[5] = 0;
+        else toret[5] = 1;
+        if (X == 0 || Map[X - 1][Y] != Map[X][Y]) toret[6] = 0;
+        else toret[6] = 1;
+        if (X == 0 || Map[X - 1][Y] != Map[X][Y]) toret[7] = 0;
+        else toret[7] = 1;
+        return toret;
     }
 }

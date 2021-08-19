@@ -8,12 +8,15 @@ public class HouseControlles : MonoBehaviour
 {
     public GridFunc Grid;
     public GameObject HousePrefab;
+    public RoadsControlles RoadsController;
+    Dictionary<GameObject, List<(int,int)>> Houses = new Dictionary<GameObject, List<(int, int)>>();
     public void CreateHouse(List<(int,int)> Positions)
     {
         if (Grid.TestSquare(Positions))
         {
             Grid.SetSquare(Positions, transform.childCount + 1);
             GameObject NewHouse = new GameObject("House " + Convert.ToString(transform.childCount + 1));
+            Houses.Add(NewHouse, new List<(int,int)>());
             NewHouse.transform.parent = transform;
             foreach ((int, int) a in Positions) CreateTile(NewHouse, a.Item1, a.Item2);
         }
@@ -50,6 +53,11 @@ public class HouseControlles : MonoBehaviour
             spriteRenderer.sortingLayerName = "House";
         }
         string s = transformInput(Grid.CountSameTiles(X, Y));
+        if (s.Contains("0"))
+        {
+            RoadsController.AddRoad(new List<(int, int)> { (X, Y) });
+            Houses[House].Add((X, Y));
+        }
         string FilePath = Application.dataPath + "/Resources/Sprites/Tiles/House";
         if (File.Exists(FilePath + "/base" + s + ".png"))
             Create("Sprites/Tiles/House/base" + s,0);
