@@ -9,6 +9,7 @@ public class RoadsControlles : MonoBehaviour
     public GridFunc Grid;
     private Dictionary<(int, int), int[]> Roads = new Dictionary<(int, int), int[]>();
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
+    private Dictionary<(int, int), int> TimeOnTile = new Dictionary<(int, int), int>();
     public void AddRoad(List<(int,int)> Positions)
     {
         for (int i = 0; i < Positions.Count; i++)
@@ -23,10 +24,8 @@ public class RoadsControlles : MonoBehaviour
                 }
                 else
                 {
-                    Debug.Log(i);
                     Roads[Positions[i]] = new int[8];
                     if (i - 1 >= 0) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
-                    Debug.Log(Positions.Count);
                     if (i + 1 < Positions.Count) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
                     CreateTile(Positions[i]);
                 }
@@ -45,6 +44,20 @@ public class RoadsControlles : MonoBehaviour
         if (from.Item1 - 1 == to.Item1 && from.Item2 == to.Item2) return 7;
         return -1;
     }
+    private (int, int) IndexToPos((int, int) pos, int index)
+    {
+        if (index == 0) return (pos.Item1 - 1, pos.Item2 + 1);
+        if (index == 1) return (pos.Item1, pos.Item2 + 1);
+        if (index == 2) return (pos.Item1 + 1, pos.Item2 + 1);
+        if (index == 3) return (pos.Item1 + 1, pos.Item2);
+        if (index == 4) return (pos.Item1 + 1, pos.Item2 - 1);
+        if (index == 5) return (pos.Item1, pos.Item2 - 1);
+        if (index == 6) return (pos.Item1 - 1, pos.Item2 - 1);
+        if (index == 7) return (pos.Item1 - 1, pos.Item2);
+        return (-1, -1);
+    }
+    private bool nearTile((int, int) pos, (int, int) Tile)=>
+         Math.Abs(pos.Item1 - Tile.Item1) <= 1 && Math.Abs(pos.Item2 - Tile.Item2) <= 1;
     public void CreateTile((int,int) position)
     {
         string swap(string a, int count)
@@ -58,6 +71,7 @@ public class RoadsControlles : MonoBehaviour
         {
             GameObject gameObject = new GameObject();
             Tiles[position] = gameObject;
+            TimeOnTile[position] = 1;
             gameObject.transform.parent = transform;
             SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = Resources.Load<Sprite>(path);
@@ -116,5 +130,65 @@ public class RoadsControlles : MonoBehaviour
         else if (File.Exists(FilePath + "/basetile" + swap(s, 6) + ".png"))
             Change("Sprites/Tiles/Road/basetile" + swap(s, 6), 270);
         else Debug.LogWarning("File " + s + " not found in roads' tiles");
+    }
+    public List<(int,int)> FindWay((int, int) from, SortedSet<(int, int)> to)
+    {
+        List<((int, int), int)> now = new List<((int, int), int)>() { (from, 0) };
+        List< ((int, int), int)> newnow = new List<((int, int), int)>();
+        //List<List<(int, int)>> savenow = new List<List<(int, int)>>() { new List<(int, int)> { from } };
+        Dictionary<(int, int), int> MinTimeToTile = new Dictionary<(int, int), int>();
+        MinTimeToTile[from] = 0;
+        SortedSet<(int, int)> VisitedTiles = new SortedSet<(int, int)>() { from };
+        (int, int) toposition = (-1, -1);
+        while (now.Count != 0)
+        {
+            foreach(((int, int), int) a in now)
+            {
+                //Debug.Log(a.Item1);
+                if (to.Contains(a.Item1))
+                {
+                    toposition = a.Item1;
+                    newnow.Clear();
+                    break;
+                }
+                if (Roads.ContainsKey(a.Item1))
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        if (Roads[a.Item1][i] == 1 && (!VisitedTiles.Contains(IndexToPos(a.Item1, i))||MinTimeToTile[IndexToPos(a.Item1, i)] >a.Item2+TimeOnTile[a.Item1]))
+                        {
+                            newnow.Add((IndexToPos(a.Item1, i), a.Item2+TimeOnTile[a.Item1]));
+                            VisitedTiles.Add(IndexToPos(a.Item1, i));
+                            MinTimeToTile[IndexToPos(a.Item1, i)] = a.Item2 + TimeOnTile[a.Item1];
+                        }
+                    }
+                }
+            }
+            now.Clear();
+            foreach (((int, int), int) a in newnow) now.Add(a);
+            newnow.Clear();
+        }
+        List<(int, int)> ans = new List<(int, int)>();
+        Debug.Log(toposition);
+        if (toposition!=(-1, -1)) {
+            (int, int) nowposition = toposition;
+            while (nowposition != from)
+            {
+                ans.Add(nowposition);
+                for (int i = 1; i < 8; i += 2)
+                {
+                    (int, int) CheckPosition = IndexToPos(nowposition, i);
+                    if (VisitedTiles.Contains(CheckPosition) && !ans.Contains(CheckPosition) &&Roads[nowposition][i]==1 && MinTimeToTile[CheckPosition] + TimeOnTile[CheckPosition]==MinTimeToTile[nowposition])
+                    {
+                        nowposition = IndexToPos(nowposition, i);
+                        break;
+                    }
+                }
+            }
+            ans.Add(from);
+            ans.Reverse();
+            return ans;
+        }
+        return null;
     }
 }
