@@ -17,21 +17,6 @@ public class GameControlls : MonoBehaviour
         void RoadButtonClick() => Mode = 2;
         HouseButton.onClick.AddListener(HouseButtonClick);
         RoadButton.onClick.AddListener(RoadButtonClick);
-        StartCoroutine("testwayfinder");
-    }
-    public IEnumerator testwayfinder()
-    {
-        while (true)
-        {
-            List<(int, int)> way = RoadsController.FindWay((0, 0),new SortedSet<(int, int)>() { (3, 3), (3, 4), (4, 4), (4, 3) });
-            if (way != null)
-            {
-                Debug.Log("Way: " + Convert.ToString(way.Count));
-                //foreach ((int, int) a in way) Debug.Log(a);
-            }
-            else Debug.Log("NO WAY FOUND");
-            yield return new WaitForSeconds(1);
-        }
     }
     public void ClickOnGrid(int X, int Y)
     {

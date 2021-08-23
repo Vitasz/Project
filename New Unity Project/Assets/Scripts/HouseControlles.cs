@@ -7,9 +7,11 @@ using System.IO;
 public class HouseControlles : MonoBehaviour
 {
     public GridFunc Grid;
-    public GameObject HousePrefab;
+    public GameObject HousePrefab, HumanPrefab;
     public RoadsControlles RoadsController;
     Dictionary<GameObject, List<(int,int)>> Houses = new Dictionary<GameObject, List<(int, int)>>();
+    public Dictionary<int, List<GameObject>> HousesTypes = new Dictionary<int, List<GameObject>>();
+    private int NowType = 1;
     public void CreateHouse(List<(int,int)> Positions)
     {
         if (Grid.TestSquare(Positions))
@@ -18,10 +20,17 @@ public class HouseControlles : MonoBehaviour
             GameObject NewHouse = new GameObject("House " + Convert.ToString(transform.childCount + 1));
             Houses.Add(NewHouse, new List<(int,int)>());
             NewHouse.transform.parent = transform;
-            foreach ((int, int) a in Positions) CreateTile(NewHouse, a.Item1, a.Item2);
+            Dictionary<(int, int), GameObject> HouseTiles = new Dictionary<(int, int), GameObject>();
+            foreach ((int, int) a in Positions) HouseTiles.Add(a, CreateTile(NewHouse, a.Item1, a.Item2));
+            HouseFunctionality NewHouseScript = NewHouse.AddComponent<HouseFunctionality>();
+            NewHouseScript.HumanPrefab = HumanPrefab;
+            NewHouseScript.CreateHouse(NowType, HouseTiles, this, RoadsController);
+            if (HousesTypes.ContainsKey(NowType)) HousesTypes[NowType].Add(NewHouse);
+            else HousesTypes.Add(NowType,new List<GameObject>() { NewHouse });
+            NowType = NowType % 3 + 1;
         }
     }
-    private void CreateTile(GameObject House, int X, int Y)
+    private GameObject CreateTile(GameObject House, int X, int Y)
     {
         string transformInput(string s1){
             for (int i = 0; i < s1.Length; i+=2)
@@ -40,7 +49,7 @@ public class HouseControlles : MonoBehaviour
                 ans = ans.Substring(0, (i + count)%a.Length) + a[i] + ans.Substring((i + count) % a.Length + 1);
             return ans;
         }
-        void Create(string path, int rotation)
+        GameObject Create(string path, int rotation)
         {
             GameObject gameObject = new GameObject();
             gameObject.transform.parent = House.transform;
@@ -49,24 +58,25 @@ public class HouseControlles : MonoBehaviour
             gameObject.transform.localScale = new Vector2(Grid.SizeCell + Grid._linesWidth, Grid.SizeCell + Grid._linesWidth);
             gameObject.transform.localPosition = Grid.PositionCell(X, Y);
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
-            spriteRenderer.color = Color.red;
             spriteRenderer.sortingLayerName = "House";
+            return gameObject;
         }
         string s = transformInput(Grid.CountSameTiles(X, Y));
-        if (s.Contains("0"))
-        {
-            RoadsController.AddRoad(new List<(int, int)> { (X, Y) });
-            Houses[House].Add((X, Y));
-        }
+        //if (s.Contains("0"))
+        //{
+        //    RoadsController.AddRoad(new List<(int, int)> { (X, Y) });
+        //    Houses[House].Add((X, Y));
+        //}
         string FilePath = Application.dataPath + "/Resources/Sprites/Tiles/House";
         if (File.Exists(FilePath + "/base" + s + ".png"))
-            Create("Sprites/Tiles/House/base" + s,0);
+            return Create("Sprites/Tiles/House/base" + s, 0);
         else if (File.Exists(FilePath + "/base" + swap(s, 2) + ".png"))
-            Create("Sprites/Tiles/House/base" + swap(s, 2), 90);
+            return Create("Sprites/Tiles/House/base" + swap(s, 2), 90);
         else if (File.Exists(FilePath + "/base" + swap(s, 4) + ".png"))
-            Create("Sprites/Tiles/House/base" + swap(s, 4), 180);
+            return Create("Sprites/Tiles/House/base" + swap(s, 4), 180);
         else if (File.Exists(FilePath + "/base" + swap(s, 6) + ".png"))
-            Create("Sprites/Tiles/House/base" + swap(s, 6), 270);
+            return Create("Sprites/Tiles/House/base" + swap(s, 6), 270);
         else Debug.LogError("File " + s + " not found in houses' tiles");
+        return null;
     }
 }

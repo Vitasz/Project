@@ -131,14 +131,16 @@ public class RoadsControlles : MonoBehaviour
             Change("Sprites/Tiles/Road/basetile" + swap(s, 6), 270);
         else Debug.LogWarning("File " + s + " not found in roads' tiles");
     }
-    public List<(int,int)> FindWay((int, int) from, SortedSet<(int, int)> to)
+    public List<(int,int)> FindWay(SortedSet<(int, int)> from, SortedSet<(int, int)> to)
     {
-        List<((int, int), int)> now = new List<((int, int), int)>() { (from, 0) };
+        List<((int, int), int)> now = new List<((int, int), int)>();
+        foreach((int,int) a in from) now.Add((a, 0));
         List< ((int, int), int)> newnow = new List<((int, int), int)>();
         //List<List<(int, int)>> savenow = new List<List<(int, int)>>() { new List<(int, int)> { from } };
         Dictionary<(int, int), int> MinTimeToTile = new Dictionary<(int, int), int>();
-        MinTimeToTile[from] = 0;
-        SortedSet<(int, int)> VisitedTiles = new SortedSet<(int, int)>() { from };
+        foreach((int,int) temp in from) MinTimeToTile[temp] = 0;
+        SortedSet<(int, int)> VisitedTiles = new SortedSet<(int, int)>();
+        foreach ((int, int) a in from) VisitedTiles.Add(a);
         (int, int) toposition = (-1, -1);
         while (now.Count != 0)
         {
@@ -169,10 +171,10 @@ public class RoadsControlles : MonoBehaviour
             newnow.Clear();
         }
         List<(int, int)> ans = new List<(int, int)>();
-        Debug.Log(toposition);
+        //Debug.Log(toposition);
         if (toposition!=(-1, -1)) {
             (int, int) nowposition = toposition;
-            while (nowposition != from)
+            while (!from.Contains(nowposition))
             {
                 ans.Add(nowposition);
                 for (int i = 1; i < 8; i += 2)
@@ -185,7 +187,7 @@ public class RoadsControlles : MonoBehaviour
                     }
                 }
             }
-            ans.Add(from);
+            ans.Add(nowposition);
             ans.Reverse();
             return ans;
         }
