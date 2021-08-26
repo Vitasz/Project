@@ -11,7 +11,7 @@ public class GridFunc : MonoBehaviour
     public GameControlls GameController;
     public Material MaterialForLines;
     public BoxCollider2D Collider;
-    private readonly float _linesWidth = 0.3f;
+    public readonly float _linesWidth = 0.3f;
     private List<Vector2> HighlightedSquares = new List<Vector2>();
     private List<List<int>> Map; //-1 - Road, > 0 - House, 0 - nothing
     private void Start()
