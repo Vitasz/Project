@@ -6,7 +6,7 @@ public class HouseFunctionality : MonoBehaviour
 {
     public int Type; // 1 - House, 2 - com, 3 - fac;
     public GameObject HumanPrefab;
-    private int totalHumans, maxHumans;
+    public int totalHumans, maxHumans;
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
     private HouseControlles HouseController;
     private RoadsControlles RoadController;
@@ -18,7 +18,7 @@ public class HouseFunctionality : MonoBehaviour
         Type = type;
         if (type == 1)
         {
-            maxHumans = TilesForHouse.Count * 5;
+            maxHumans = TilesForHouse.Count * 20;
             totalHumans = maxHumans;
             foreach (GameObject a in TilesForHouse.Values) a.GetComponent<SpriteRenderer>().color = Color.green;
         }
@@ -35,14 +35,14 @@ public class HouseFunctionality : MonoBehaviour
                 CreateHuman();
                 totalHumans--;
             }
-            yield return new WaitForSeconds(1);
+            yield return new WaitForSeconds(0.1f);
         }
     }
     public void GetHuman() => totalHumans += 1;
     private void CreateHuman()
     {
         int GoIndex = 1;
-        if (Type == 1) GoIndex = UnityEngine.Random.Range(2, 4);
+        if (Type == 1) GoIndex = UnityEngine.Random.Range(2, HouseController.HousesTypes.Keys.Count + 1);
         if (HouseController.HousesTypes.ContainsKey(GoIndex))
         {
             int IndexHouse = UnityEngine.Random.Range(0, HouseController.HousesTypes[GoIndex].Count);
@@ -55,7 +55,7 @@ public class HouseFunctionality : MonoBehaviour
             {
                 GameObject NewHuman = Instantiate(HumanPrefab);
                 HumanFunctionality Humanf = NewHuman.GetComponent<HumanFunctionality>();
-                Humanf.StartGo(way, End, HouseController.Grid);
+                Humanf.StartGo(way, End, HouseController.Grid, RoadController);
                 return;
             }
         }

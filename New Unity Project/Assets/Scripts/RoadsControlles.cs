@@ -9,6 +9,7 @@ public class RoadsControlles : MonoBehaviour
     public GridFunc Grid;
     private Dictionary<(int, int), int[]> Roads = new Dictionary<(int, int), int[]>();
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
+    Dictionary<(int, int), int> HumanInTiles = new Dictionary<(int, int), int>();
     private Dictionary<(int, int), int> TimeOnTile = new Dictionary<(int, int), int>();
     public void AddRoad(List<(int,int)> Positions)
     {
@@ -24,6 +25,7 @@ public class RoadsControlles : MonoBehaviour
                 }
                 else
                 {
+                    HumanInTiles[Positions[i]] = 0;
                     Roads[Positions[i]] = new int[8];
                     if (i - 1 >= 0) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
                     if (i + 1 < Positions.Count) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
@@ -76,7 +78,7 @@ public class RoadsControlles : MonoBehaviour
             SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = Resources.Load<Sprite>(path);
             gameObject.transform.localScale = new Vector2(Grid.SizeCell + Grid._linesWidth, Grid.SizeCell + Grid._linesWidth);
-            gameObject.transform.localPosition = Grid.PositionCell(position.Item1, position.Item2);
+            gameObject.transform.localPosition = Grid.PositionCell(position);
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
         }
         int[] tiles = Roads[position];
@@ -192,5 +194,34 @@ public class RoadsControlles : MonoBehaviour
             return ans;
         }
         return null;
+    }
+    public void HumanInTile((int, int) position) {
+        HumanInTiles[position]++;
+        SetColorTile(position);
+    }
+    
+    public void HumanOutTile((int, int) position)
+    {
+        HumanInTiles[position]--;
+        SetColorTile(position);
+    } 
+    private void SetColorTile((int, int) position)
+    {
+        if (HumanInTiles[position] < 10)
+        {
+            Tiles[position].GetComponent<SpriteRenderer>().color = Color.green;  
+        }
+        else if (HumanInTiles[position] < 20)
+        {
+            Tiles[position].GetComponent<SpriteRenderer>().color = Color.yellow ;  
+        }
+        else if (HumanInTiles[position]<30)
+        {
+            Tiles[position].GetComponent<SpriteRenderer>().color = Color.red;
+        }
+        else
+        {
+            Tiles[position].GetComponent<SpriteRenderer>().color = new Color(176, 0, 0);
+        }
     }
 }

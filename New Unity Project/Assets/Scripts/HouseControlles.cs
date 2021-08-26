@@ -56,7 +56,7 @@ public class HouseControlles : MonoBehaviour
             SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = Resources.Load<Sprite>(path);
             gameObject.transform.localScale = new Vector2(Grid.SizeCell + Grid._linesWidth, Grid.SizeCell + Grid._linesWidth);
-            gameObject.transform.localPosition = Grid.PositionCell(X, Y);
+            gameObject.transform.localPosition = Grid.PositionCell((X, Y));
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
             spriteRenderer.sortingLayerName = "House";
             return gameObject;

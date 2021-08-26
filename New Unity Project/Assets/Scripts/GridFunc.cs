@@ -87,11 +87,11 @@ public class GridFunc : MonoBehaviour
             if (Map[a.Item1][a.Item2] != 0) return false;
         return true;
     }
-    public Vector2 PositionCell(int x, int y)
+    public Vector2 PositionCell((int,int) cell)
     {
         Vector2 toret = new Vector2();
-        toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + x * SizeCell;
-        toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + y * SizeCell;
+        toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + cell.Item1 * SizeCell;
+        toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + cell.Item2 * SizeCell;
         return toret;
     }
     public string CountSameTiles(int X, int Y)
