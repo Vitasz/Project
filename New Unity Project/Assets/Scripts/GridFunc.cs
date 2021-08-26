@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Linq;
+using UnityEngine.EventSystems ;
 public class GridFunc : MonoBehaviour
 {
+    public EventSystem EventSystemManager;
     public int SizeX, SizeY, SizeCell;
     public GameControlls GameController;
     public Material MaterialForLines;
     public BoxCollider2D Collider;
-    public readonly float _linesWidth = 0.3f;
+    private readonly float _linesWidth = 0.3f;
     private List<Vector2> HighlightedSquares = new List<Vector2>();
     private List<List<int>> Map; //-1 - Road, > 0 - House, 0 - nothing
     private void Start()
@@ -46,12 +48,14 @@ public class GridFunc : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
-        if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
-        int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
-        if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
-            GameController.ClickOnGrid(X, Y);
+        
+        
+            Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
+            if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
+            int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
+            if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
+                GameController.ClickOnGrid(X, Y);
     }
     private void OnMouseDrag()
     {

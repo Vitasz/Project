@@ -15,20 +15,21 @@ public class RoadsControlles : MonoBehaviour
     {
         for (int i = 0; i < Positions.Count; i++)
         {
+            //Debug.Log(i);
            // if (Grid.TestSquare(new List<(int, int)> { Positions[i] }))
           //  {
                 if (Roads.ContainsKey(Positions[i]))
                 {
-                    if (i - 1 >= 0) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
-                    if (i + 1 < Positions.Count) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
+                    if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
+                    if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
                     ChangeRoad(Positions[i]);
                 }
                 else
                 {
                     HumanInTiles[Positions[i]] = 0;
                     Roads[Positions[i]] = new int[8];
-                    if (i - 1 >= 0) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
-                    if (i + 1 < Positions.Count) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
+                    if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
+                    if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
                     CreateTile(Positions[i]);
                 }
          //   }

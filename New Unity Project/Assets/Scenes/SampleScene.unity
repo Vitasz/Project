@@ -287,8 +287,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9de80397bc3bd4aab8b6d2da665752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SizeX: 10
-  SizeY: 5
+  EventSystemManager: {fileID: 0}
+  SizeX: 12
+  SizeY: 8
   SizeCell: 10
   GameController: {fileID: 1053592891}
   MaterialForLines: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
