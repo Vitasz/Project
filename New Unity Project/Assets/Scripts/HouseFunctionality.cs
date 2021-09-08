@@ -10,7 +10,7 @@ public class HouseFunctionality : MonoBehaviour
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
     private HouseControlles HouseController;
     private RoadsControlles RoadController;
-    private int HumansPerTile = 200;
+    private int HumansPerTile = 10;
     public void CreateHouse(int type, Dictionary<(int,int), GameObject> TilesForHouse, HouseControlles housecontroller, RoadsControlles RoadController)
     {
         HouseController = housecontroller;
@@ -55,7 +55,7 @@ public class HouseFunctionality : MonoBehaviour
             if (way != null)
             {
                 GameObject NewHuman = Instantiate(HumanPrefab);
-                NewHuman.transform.localScale = new Vector3((float)HouseController.Grid.SizeCell * 3 / 10, (float)HouseController.Grid.SizeCell * 3 / 10, 0);
+                NewHuman.transform.localScale = new Vector3((float)HouseController.Grid.SizeCell * 2 / 10, (float)HouseController.Grid.SizeCell * 2 / 10, 0);
                 HumanFunctionality Humanf = NewHuman.GetComponent<HumanFunctionality>();
                 Humanf.StartGo(way, End, HouseController.Grid, RoadController);
                 return;

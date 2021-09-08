@@ -7,32 +7,30 @@ using System;
 public class RoadsControlles : MonoBehaviour
 {
     public GridFunc Grid;
-    private Dictionary<(int, int), int[]> Roads = new Dictionary<(int, int), int[]>();
-    private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
-    Dictionary<(int, int), int> HumanInTiles = new Dictionary<(int, int), int>();
-    private Dictionary<(int, int), int> TimeOnTile = new Dictionary<(int, int), int>();
+    public Dictionary<(int, int), RoadTile> Roads = new Dictionary<(int, int), RoadTile>();
     public void AddRoad(List<(int,int)> Positions)
     {
         for (int i = 0; i < Positions.Count; i++)
         {
-            //Debug.Log(i);
-           // if (Grid.TestSquare(new List<(int, int)> { Positions[i] }))
-          //  {
-                if (Roads.ContainsKey(Positions[i]))
-                {
-                    if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
-                    if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
-                    ChangeRoad(Positions[i]);
-                }
-                else
-                {
-                    HumanInTiles[Positions[i]] = 0;
-                    Roads[Positions[i]] = new int[8];
-                    if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i - 1])] = 1;
-                    if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]][GetIndex(Positions[i], Positions[i + 1])] = 1;
-                    CreateTile(Positions[i]);
-                }
-         //   }
+            if (Roads.ContainsKey(Positions[i]))
+            {
+                int totalroads = 0;
+                if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]].NearRoads[GetIndex(Positions[i], Positions[i - 1])] = 1;
+                if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]].NearRoads[GetIndex(Positions[i], Positions[i + 1])] = 1;
+                foreach (int a in Roads[Positions[i]].NearRoads) if (a == 1) totalroads++;
+                Roads[Positions[i]].roads = totalroads;
+                ChangeRoad(Positions[i]);
+            }
+            else
+            {
+                int totalroads = 0;
+                Roads[Positions[i]] = new RoadTile();
+                if (i - 1 >= 0&& GetIndex(Positions[i], Positions[i - 1])!=-1) Roads[Positions[i]].NearRoads[GetIndex(Positions[i], Positions[i - 1])] = 1;
+                if (i + 1 < Positions.Count&& GetIndex(Positions[i], Positions[i + 1])!=-1) Roads[Positions[i]].NearRoads[GetIndex(Positions[i], Positions[i + 1])] = 1;
+                foreach (int a in Roads[Positions[i]].NearRoads) if (a == 1) totalroads++;
+                Roads[Positions[i]].roads = totalroads;
+                CreateTile(Positions[i]);
+            }
         }
     }
     private int GetIndex((int,int) from, (int, int) to)
@@ -73,8 +71,7 @@ public class RoadsControlles : MonoBehaviour
         void Create(string path, int rotation)
         {
             GameObject gameObject = new GameObject();
-            Tiles[position] = gameObject;
-            TimeOnTile[position] = 1;
+            Roads[position].Tile = gameObject;
             gameObject.transform.parent = transform;
             SpriteRenderer spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
             spriteRenderer.sprite = Resources.Load<Sprite>(path);
@@ -82,7 +79,7 @@ public class RoadsControlles : MonoBehaviour
             gameObject.transform.localPosition = Grid.PositionCell(position);
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
         }
-        int[] tiles = Roads[position];
+        int[] tiles = Roads[position].NearRoads;
         string s = "";
         for (int i = 0; i < 8; i++)
         {
@@ -111,12 +108,12 @@ public class RoadsControlles : MonoBehaviour
         }
         void Change(string path, int rotation)
         {
-            GameObject gameObject = Tiles[position];
+            GameObject gameObject = Roads[position].Tile;
             SpriteRenderer spriteRenderer = gameObject.GetComponent<SpriteRenderer>();
             spriteRenderer.sprite = Resources.Load<Sprite>(path);
             gameObject.transform.eulerAngles = new Vector3(0, 0, rotation);
         }
-        int[] tiles = Roads[position];
+        int[] tiles = Roads[position].NearRoads;
         string s = "";
         for (int i = 0; i < 8; i++)
         {
@@ -160,11 +157,11 @@ public class RoadsControlles : MonoBehaviour
                 {
                     for (int i = 0; i < 8; i++)
                     {
-                        if (Roads[a.Item1][i] == 1 && (!VisitedTiles.Contains(IndexToPos(a.Item1, i))||MinTimeToTile[IndexToPos(a.Item1, i)] >a.Item2+TimeOnTile[a.Item1]))
+                        if (Roads[a.Item1].NearRoads[i] == 1 && (!VisitedTiles.Contains(IndexToPos(a.Item1, i))||MinTimeToTile[IndexToPos(a.Item1, i)] >a.Item2+Roads[a.Item1].TimeOnTile))
                         {
-                            newnow.Add((IndexToPos(a.Item1, i), a.Item2+TimeOnTile[a.Item1]));
+                            newnow.Add((IndexToPos(a.Item1, i), a.Item2+Roads[a.Item1].TimeOnTile));
                             VisitedTiles.Add(IndexToPos(a.Item1, i));
-                            MinTimeToTile[IndexToPos(a.Item1, i)] = a.Item2 + TimeOnTile[a.Item1];
+                            MinTimeToTile[IndexToPos(a.Item1, i)] = a.Item2 + Roads[a.Item1].TimeOnTile;
                         }
                     }
                 }
@@ -183,7 +180,7 @@ public class RoadsControlles : MonoBehaviour
                 for (int i = 1; i < 8; i += 2)
                 {
                     (int, int) CheckPosition = IndexToPos(nowposition, i);
-                    if (VisitedTiles.Contains(CheckPosition) && !ans.Contains(CheckPosition) &&Roads[nowposition][i]==1 && MinTimeToTile[CheckPosition] + TimeOnTile[CheckPosition]==MinTimeToTile[nowposition])
+                    if (VisitedTiles.Contains(CheckPosition) && !ans.Contains(CheckPosition) &&Roads[nowposition].NearRoads[i]==1 && MinTimeToTile[CheckPosition] + Roads[CheckPosition].TimeOnTile==MinTimeToTile[nowposition])
                     {
                         nowposition = IndexToPos(nowposition, i);
                         break;
@@ -195,34 +192,5 @@ public class RoadsControlles : MonoBehaviour
             return ans;
         }
         return null;
-    }
-    public void HumanInTile((int, int) position) {
-        HumanInTiles[position]++;
-        SetColorTile(position);
-    }
-    
-    public void HumanOutTile((int, int) position)
-    {
-        HumanInTiles[position]--;
-        SetColorTile(position);
-    } 
-    private void SetColorTile((int, int) position)
-    {
-        if (HumanInTiles[position] < 10)
-        {
-            Tiles[position].GetComponent<SpriteRenderer>().color = Color.green;  
-        }
-        else if (HumanInTiles[position] < 20)
-        {
-            Tiles[position].GetComponent<SpriteRenderer>().color = Color.yellow ;  
-        }
-        else if (HumanInTiles[position]<30)
-        {
-            Tiles[position].GetComponent<SpriteRenderer>().color = Color.red;
-        }
-        else
-        {
-            Tiles[position].GetComponent<SpriteRenderer>().color = new Color(176, 0, 0);
-        }
     }
 }

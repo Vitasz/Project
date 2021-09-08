@@ -5,16 +5,16 @@ using UnityEngine;
 public class HumanFunctionality : MonoBehaviour
 {
     List<(int, int)> way;
-    int nowposition = 1;
+    int nowpositionInWay = 1, nowpositionInCell = 0;
     GameObject end;
     GridFunc Grid;
     RoadsControlles Roads; 
-    float speed = 2;
+    float speed = 4;
     public void StartGo(List<(int, int)> waytogo, GameObject EndHouse, GridFunc Grid, RoadsControlles roads)
     {
         this.Grid = Grid;
         Roads = roads;
-        Roads.HumanInTile(waytogo[0]);
+        //Roads.Roads[waytogo[0]].HumanInTile();
         transform.localPosition = GetEndPosition(GetIndex(waytogo[0], waytogo[1]), GetIndex(waytogo[0], waytogo[1]), Grid.PositionCell(waytogo[0]));
         way = waytogo;
         end = EndHouse;
@@ -68,48 +68,112 @@ public class HumanFunctionality : MonoBehaviour
         if (from.Item1 - 1 == to.Item1 && from.Item2 == to.Item2) return 7;
         return -1;
     }
+    Vector3 PositionInCelltoCoords((int, int) position)
+    {
+        int SizeCell = Grid.SizeCell / 2 - 3;
+        Vector3 ans = new Vector3();
+        if (position.Item1 == 0)
+        {
+            if (position.Item2 < 2)
+                ans.y = SizeCell * 2;
+            else ans.y = SizeCell;
+            if (position.Item2 % 2 == 0) ans.x = -SizeCell;
+            else ans.x = SizeCell;
+        }
+        else if (position.Item1 == 1)
+        {
+            if (position.Item2 < 2)
+                ans.x = SizeCell * 2;
+            else ans.x = SizeCell;
+            if (position.Item2 % 2 == 1) ans.y = -SizeCell;
+            else ans.y = SizeCell;
+        }
+        else if (position.Item1 == 2)
+        {
+            if (position.Item2 < 2)
+                ans.y = -SizeCell * 2;
+            else ans.y = -SizeCell;
+            if (position.Item2 % 2 == 1) ans.x = -SizeCell;
+            else ans.x = SizeCell;
+        }
+        else
+        {
+            if (position.Item2 < 2)
+                ans.x = -SizeCell * 2;
+            else ans.x = -SizeCell;
+            if (position.Item2 % 2 == 0) ans.y = -SizeCell;
+            else ans.y = SizeCell;
+        }
+        return ans;
+    }
+    List<(int, int)> GetWayInCell(int previndex, int nextindex)
+    {
+        List<(int, int)> ans = new List<(int, int)>();
+        ans.Add(((previndex / 2 + 2)%4, 0));
+        ans.Add(((previndex / 2 + 2) % 4, 2));
+        if (!ans.Contains((nextindex/2, 3)))ans.Add((nextindex / 2, 3));
+        ans.Add((nextindex / 2, 1));
+        return ans;
+    }
     IEnumerator Go()
     {
+        int previndex = -1, nowindex = GetIndex(way[0], way[1]), nextindex = -1;
+        (int, int) prevposition = (-1, -1);
+        int prevpositioninway = 0;
+        if (way.Count > 2) nextindex = GetIndex(way[1], way[2]);
+        List<(int, int)> WayInCell = new List<(int, int)>();
+        bool canMove = false;
+        bool allok = false;
+        Vector3 from = transform.localPosition, to = new Vector3();
         float progress = 0;
-        
-        Vector2 frompos = transform.localPosition, topos;
-        int nowindexpos, nextindexpos = -1;
-        nowindexpos = GetIndex(way[0], way[1]);
-        if (way.Count > 2)
-        {
-            nextindexpos = GetIndex(way[1], way[2]);
-            topos = GetEndPosition(nowindexpos, nextindexpos, Grid.PositionCell(way[nowposition]));
-        }
-        else topos = Grid.PositionCell(way[nowposition]);
         while (true)
         {
-            progress += Time.deltaTime * speed;
-            transform.localPosition = Vector3.Lerp(frompos, topos, progress);
-            if (transform.localPosition.x == topos.x && transform.localPosition.y == topos.y)
+            if (!canMove)
             {
-                Roads.HumanOutTile(way[nowposition-1]);
-                nowposition++;   
-                frompos = topos;
-                if (nowposition < way.Count)
+                if (nowpositionInCell == WayInCell.Count)
                 {
-                    Roads.HumanInTile(way[nowposition-1]);
-                    nowindexpos = GetIndex(way[nowposition - 1], way[nowposition]);
-                    if (nowposition < way.Count - 1)
+                    nowpositionInWay++;
+                    nowpositionInCell = 0;
+                    previndex = nowindex;
+                    if (nowpositionInWay != way.Count) nowindex = GetIndex(way[nowpositionInWay - 1], way[nowpositionInWay]);
+                    if (way.Count > nowpositionInWay)
                     {
-                        nextindexpos = GetIndex(way[nowposition], way[nowposition + 1]);
-                        topos = GetEndPosition(nowindexpos, nextindexpos, Grid.PositionCell(way[nowposition]));
+                        foreach ((int, int) a in WayInCell) Roads.Roads[way[nowpositionInWay - 2]].SetHumanInCell(a, false);
+                        WayInCell = GetWayInCell(previndex, nowindex);
                     }
-                    else topos = Grid.PositionCell(way[nowposition]);
                 }
-                progress = 0;
+                if (nowpositionInWay == way.Count)
+                {
+                    if (prevposition != (-1, -1)) Roads.Roads[way[prevpositioninway]].SetHumanInCell(prevposition, false);
+                    end.GetComponent<HouseFunctionality>().GetHuman();
+                    Destroy(gameObject);
+                    yield return null;
+                }
+                prevpositioninway = nowpositionInWay-1;
+                prevposition = WayInCell[nowpositionInCell];
+                to = Grid.PositionCell(way[nowpositionInWay - 1]);
+                if (WayInCell.Count > nowpositionInCell)
+                    to += PositionInCelltoCoords(WayInCell[nowpositionInCell]);
+                canMove = true;
             }
-            if (nowposition == way.Count)
+            else if (!allok)
             {
-                end.GetComponent<HouseFunctionality>().GetHuman();
-                Destroy(gameObject);
-                yield return null;
+                allok = true;
+                foreach ((int, int) a in WayInCell) allok &= Roads.Roads[way[nowpositionInWay - 1]].CanMove(a);
+                if (allok) foreach ((int, int) a in WayInCell) Roads.Roads[way[nowpositionInWay - 1]].SetHumanInCell(a, true);
             }
-            yield return new WaitForFixedUpdate();
+            else{
+                progress += Time.deltaTime * speed;
+                transform.localPosition = Vector3.Lerp(from, to, progress);
+                if (transform.localPosition == to)
+                {
+                    from = to;
+                    nowpositionInCell++;
+                    canMove = false;
+                    progress = 0;
+                }
+            }
+            yield return new WaitForEndOfFrame();
         }
     }
 }
