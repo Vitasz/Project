@@ -3,10 +3,7 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags:
-  - Point
-  - House
-  - HouseLine
+  tags: []
   layers:
   - Default
   - TransparentFX
@@ -41,15 +38,6 @@ TagManager:
   - 
   - 
   m_SortingLayers:
-  - name: NewHouse
-    uniqueID: 2574096817
-    locked: 0
   - name: Default
     uniqueID: 0
-    locked: 0
-  - name: Human
-    uniqueID: 79801107
-    locked: 0
-  - name: House
-    uniqueID: 109297073
     locked: 0
