@@ -7,7 +7,7 @@ public class CameraFunc : MonoBehaviour
 {
     private bool isMouseDragging;
     Vector3 targetPosition=new Vector3(0,0,-100), startPosition;
-    private float cameraSpeed = 10f, progressMove = 0;
+    private float cameraSpeed = 5f, progressMove = 0;
     private float zoomSpeed = 5, zoomMultiplayer = 10, progressZoom;
     [Range(15, 100f)]
     private float nowZoom = 50, startZoom = 50;
@@ -37,7 +37,7 @@ public class CameraFunc : MonoBehaviour
             startZoom = thisCamera.orthographicSize;
             progressZoom = 0;
         }
-        if (nowZoom < 15) nowZoom = 15;
+        nowZoom = Mathf.Max(nowZoom, 15); nowZoom = Mathf.Min(100, nowZoom);
         if (thisCamera.orthographicSize != nowZoom)
         {
             progressZoom += Time.deltaTime * zoomSpeed;
