@@ -10,7 +10,7 @@ public class HouseFunctionality : MonoBehaviour
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
     private HouseControlles HouseController;
     private RoadsControlles RoadController;
-    private int HumansPerTile = 10;
+    private int HumansPerTile = 200;
     public void CreateHouse(int type, Dictionary<(int,int), GameObject> TilesForHouse, HouseControlles housecontroller, RoadsControlles RoadController)
     {
         HouseController = housecontroller;

@@ -6,15 +6,15 @@ using UnityEngine.UI;
 
 public class GameControlls : MonoBehaviour
 {
-    public int Mode = 1;//1 - Create House, 2 - Create Road;
+    public int Mode = 0;//1 - Create House, 2 - Create Road, 0 - Camera move;
     public HouseControlles HouseController;
     public RoadsControlles RoadsController;
     public Button HouseButton, RoadButton;
     List<(int, int)> ClickedPositions = new List<(int, int)>();
     void Start()
     {
-        void HouseButtonClick() => Mode = 1;
-        void RoadButtonClick() => Mode = 2;
+        void HouseButtonClick() => Mode = Mode==1?0:1;
+        void RoadButtonClick() => Mode = Mode == 2 ? 0 : 2;
         HouseButton.onClick.AddListener(HouseButtonClick);
         RoadButton.onClick.AddListener(RoadButtonClick);
     }
@@ -28,7 +28,7 @@ public class GameControlls : MonoBehaviour
         if (X!=-1&&Y!=-1 && !ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
        // Debug.Log("Stop Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
         if (Mode == 1) HouseController.CreateHouse(ClickedPositions);
-        else RoadsController.AddRoad(ClickedPositions);
+        else if (Mode==2) RoadsController.AddRoad(ClickedPositions);
         ClickedPositions.Clear();
     }
 

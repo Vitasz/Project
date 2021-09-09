@@ -123,7 +123,6 @@ public class HumanFunctionality : MonoBehaviour
         if (way.Count > 2) nextindex = GetIndex(way[1], way[2]);
         List<(int, int)> WayInCell = new List<(int, int)>();
         bool canMove = false;
-        bool allok = false;
         Vector3 from = transform.localPosition, to = new Vector3();
         float progress = 0;
         while (true)
@@ -138,7 +137,7 @@ public class HumanFunctionality : MonoBehaviour
                     if (nowpositionInWay != way.Count) nowindex = GetIndex(way[nowpositionInWay - 1], way[nowpositionInWay]);
                     if (way.Count > nowpositionInWay)
                     {
-                        foreach ((int, int) a in WayInCell) Roads.Roads[way[nowpositionInWay - 2]].SetHumanInCell(a, false);
+                        //foreach ((int, int) a in WayInCell) Roads.Roads[way[nowpositionInWay - 2]].SetHumanInCell(a, false);
                         WayInCell = GetWayInCell(previndex, nowindex);
                     }
                 }
@@ -149,18 +148,14 @@ public class HumanFunctionality : MonoBehaviour
                     Destroy(gameObject);
                     yield return null;
                 }
-                prevpositioninway = nowpositionInWay-1;
-                prevposition = WayInCell[nowpositionInCell];
-                to = Grid.PositionCell(way[nowpositionInWay - 1]);
-                if (WayInCell.Count > nowpositionInCell)
-                    to += PositionInCelltoCoords(WayInCell[nowpositionInCell]);
-                canMove = true;
-            }
-            else if (!allok)
-            {
-                allok = true;
-                foreach ((int, int) a in WayInCell) allok &= Roads.Roads[way[nowpositionInWay - 1]].CanMove(a);
-                if (allok) foreach ((int, int) a in WayInCell) Roads.Roads[way[nowpositionInWay - 1]].SetHumanInCell(a, true);
+                if (Roads.Roads[way[nowpositionInWay-1]].CanMove(WayInCell[nowpositionInCell])) {
+                    to = Grid.PositionCell(way[nowpositionInWay - 1]);
+                    if (prevposition!=(-1,-1))Roads.Roads[way[prevpositioninway]].SetHumanInCell(prevposition, false);
+                    Roads.Roads[way[nowpositionInWay-1]].SetHumanInCell(WayInCell[nowpositionInCell], true);
+                    if (WayInCell.Count > nowpositionInCell)
+                        to += PositionInCelltoCoords(WayInCell[nowpositionInCell]);
+                    canMove = true;
+                }
             }
             else{
                 progress += Time.deltaTime * speed;
@@ -168,9 +163,12 @@ public class HumanFunctionality : MonoBehaviour
                 if (transform.localPosition == to)
                 {
                     from = to;
+                    prevpositioninway = nowpositionInWay-1;
+                    prevposition = WayInCell[nowpositionInCell];
                     nowpositionInCell++;
                     canMove = false;
                     progress = 0;
+                    continue;
                 }
             }
             yield return new WaitForEndOfFrame();

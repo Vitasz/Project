@@ -48,37 +48,41 @@ public class GridFunc : MonoBehaviour
     }
     private void OnMouseDown()
     {
-        
-        
+        if (!EventSystem.current.IsPointerOverGameObject())
+        {
             Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
             if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
             int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
             if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
                 GameController.ClickOnGrid(X, Y);
+        }
     }
     private void OnMouseDrag()
     {
-       // if (GameController.Mode == 1)
-       // {
+        if (!EventSystem.current.IsPointerOverGameObject())
+        {
             Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
             if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
             if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
             int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
             if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
                 GameController.ClickOnGrid(X, Y);
-      //  }
+        }
 
     }
     private void OnMouseUp()
     {
-        Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
-        if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
-        int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
-        if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
-            GameController.StopClickOnGrid(X, Y);
-        else GameController.StopClickOnGrid(-1, -1);
+        if (!EventSystem.current.IsPointerOverGameObject())
+        {
+            Vector2 worldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            if (SizeX % 2 == 0) worldPosition.x -= SizeCell / 2;
+            if (SizeY % 2 == 0) worldPosition.y -= SizeCell / 2;
+            int X = Mathf.RoundToInt(worldPosition.x / SizeCell) + SizeX / 2, Y = Mathf.RoundToInt(worldPosition.y / SizeCell) + SizeY / 2;
+            if (X >= 0 && Y >= 0 && X < SizeX && Y < SizeY)
+                GameController.StopClickOnGrid(X, Y);
+            else GameController.StopClickOnGrid(-1, -1);
+        }
     }
     public void SetSquare(List<(int,int)> Positions, int what)
     {

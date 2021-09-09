@@ -54,7 +54,7 @@ public class RoadTile
             if (HumanInTiles[1][2]) count1++;
             if (HumanInTiles[2][2]) count1++;
             if (HumanInTiles[3][2]) count1++;
-            return !HumanInTiles[to.Item1][to.Item2] && (!HumanInTiles[near][2] || roads==2 || to.Item2!=2 || count1 == roads);
+            return !HumanInTiles[to.Item1][to.Item2];
         }
         else return false;
     }

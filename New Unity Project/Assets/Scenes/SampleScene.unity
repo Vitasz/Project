@@ -288,8 +288,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   EventSystemManager: {fileID: 0}
-  SizeX: 20
-  SizeY: 14
+  SizeX: 6
+  SizeY: 2
   SizeCell: 10
   GameController: {fileID: 1053592891}
   MaterialForLines: {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
@@ -412,6 +412,7 @@ GameObject:
   - component: {fileID: 519420032}
   - component: {fileID: 519420031}
   - component: {fileID: 519420029}
+  - component: {fileID: 519420030}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -427,6 +428,20 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_Enabled: 1
+--- !u!114 &519420030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 519420028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 55ffbd85d5f0c484e931d7c7498771a3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gameController: {fileID: 1053592891}
+  thisCamera: {fileID: 519420031}
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -606,7 +621,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e0a147e989e2de441a4b6ef8b16296bc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Mode: 1
+  Mode: 0
   HouseController: {fileID: 1414301251}
   RoadsController: {fileID: 1921036910}
   HouseButton: {fileID: 1845849606}
