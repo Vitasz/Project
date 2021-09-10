@@ -7,9 +7,10 @@ public class CameraFunc : MonoBehaviour
 {
     private bool isMouseDragging;
     Vector3 targetPosition=new Vector3(0,0,-100), startPosition;
-    private float cameraSpeed = 5f, progressMove = 0;
-    private float zoomSpeed = 5, zoomMultiplayer = 10, progressZoom;
-    [Range(15, 100f)]
+    private float cameraSpeed = 3f, progressMove = 0;
+    private float zoomSpeed = 5f, zoomMultiplayer = 10, progressZoom;
+    private float zoomInCellRedactor = 15f;
+    [Range(15f, 100f)]
     private float nowZoom = 50, startZoom = 50;
     public GameControlls gameController;
     public Camera thisCamera;
@@ -19,7 +20,7 @@ public class CameraFunc : MonoBehaviour
         MousePosition.z = -100;
         //Camera Position
         if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()
-            &&gameController.Mode==0)
+            &&gameController.Mode==(int)Modes.CameraMove)
         {
             targetPosition = MousePosition;
             startPosition = transform.position;
@@ -31,7 +32,7 @@ public class CameraFunc : MonoBehaviour
             transform.position = Vector3.Lerp(startPosition, targetPosition, progressMove);
         }
         //Camera Zoom
-        if (Input.mouseScrollDelta.y!=0)
+        if (Input.mouseScrollDelta.y!=0 && gameController.Mode == (int)Modes.CameraMove)
         {
             nowZoom -= Input.mouseScrollDelta.y * zoomMultiplayer;
             startZoom = thisCamera.orthographicSize;
@@ -43,5 +44,21 @@ public class CameraFunc : MonoBehaviour
             progressZoom += Time.deltaTime * zoomSpeed;
             thisCamera.orthographicSize = Mathf.Lerp(startZoom, nowZoom, progressZoom);
         }
+    }
+    public void SetTargetCell(Vector3 position)
+    {
+        targetPosition = position;
+        startPosition = transform.position;
+        progressMove = 0;
+        nowZoom = zoomInCellRedactor;
+        startZoom = thisCamera.orthographicSize;
+        progressZoom = 0;
+        progressMove = 0;
+    }
+    public void StopSetTargetCell()
+    {
+        nowZoom = 50f;
+        startZoom = thisCamera.orthographicSize;
+        progressZoom = 0;
     }
 }

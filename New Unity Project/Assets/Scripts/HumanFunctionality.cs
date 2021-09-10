@@ -10,7 +10,7 @@ public class HumanFunctionality : MonoBehaviour
     GridFunc Grid;
     RoadsControlles Roads; 
     float speed = 4;
-    public void StartGo(List<(int, int)> waytogo, GameObject EndHouse, GridFunc Grid, RoadsControlles roads)
+    /*public void StartGo(List<(int, int)> waytogo, GameObject EndHouse, GridFunc Grid, RoadsControlles roads)
     {
         this.Grid = Grid;
         Roads = roads;
@@ -173,5 +173,5 @@ public class HumanFunctionality : MonoBehaviour
             }
             yield return new WaitForEndOfFrame();
         }
-    }
+    }*/
 }

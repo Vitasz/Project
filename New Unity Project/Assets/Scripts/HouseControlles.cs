@@ -12,7 +12,7 @@ public class HouseControlles : MonoBehaviour
     Dictionary<GameObject, List<(int,int)>> Houses = new Dictionary<GameObject, List<(int, int)>>();
     public Dictionary<int, List<GameObject>> HousesTypes = new Dictionary<int, List<GameObject>>();
     private int NowType = 1;
-    public void CreateHouse(List<(int,int)> Positions)
+   /* public void CreateHouse(List<(int,int)> Positions)
     {
         if (Grid.TestSquare(Positions))
         {
@@ -78,5 +78,5 @@ public class HouseControlles : MonoBehaviour
             return Create("Sprites/Tiles/House/base" + swap(s, 6), 270);
         else Debug.LogError("File " + s + " not found in houses' tiles");
         return null;
-    }
+    }*/
 }

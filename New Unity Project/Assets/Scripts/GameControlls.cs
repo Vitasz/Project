@@ -3,33 +3,48 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.UI;
+public enum Modes: int
+{
+    /// <summary>
+    /// Движение камеры
+    /// </summary>
+    CameraMove,
+    /// <summary>
+    /// Редактор ячейки
+    /// </summary>
+    CellRedactor,
 
+}
 public class GameControlls : MonoBehaviour
 {
-    public int Mode = 0;//1 - Create House, 2 - Create Road, 0 - Camera move;
+    public int Mode = (int)Modes.CameraMove;
     public HouseControlles HouseController;
     public RoadsControlles RoadsController;
-    public Button HouseButton, RoadButton;
-    List<(int, int)> ClickedPositions = new List<(int, int)>();
+    public Button SelectRedactorCellsButton;
+    public CameraFunc cameraScript;
+    public GridFunc GridScript;
+    private bool inCell = false;
     void Start()
     {
-        void HouseButtonClick() => Mode = Mode==1?0:1;
-        void RoadButtonClick() => Mode = Mode == 2 ? 0 : 2;
-        HouseButton.onClick.AddListener(HouseButtonClick);
-        RoadButton.onClick.AddListener(RoadButtonClick);
+        void SelectRedactorMode()
+        {
+            if (Mode == (int)Modes.CellRedactor)
+            {
+                Mode = (int)Modes.CameraMove;
+                GridScript.CloseRedactorCell();
+                inCell = false;
+            }
+            else Mode = (int)Modes.CellRedactor;
+        }
+        SelectRedactorCellsButton.onClick.AddListener(SelectRedactorMode);
     }
-    public void ClickOnGrid(int X, int Y)
+    public void ClickOnGrid((int,int) Position)
     {
-        //Debug.Log(" Start Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
-        if (!ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
+        if (Mode == (int)Modes.CellRedactor&&!inCell)
+        {
+            cameraScript.SetTargetCell(GridScript.PositionCell(Position));
+            GridScript.OpenRedactorCell(Position);
+            inCell = true;
+        }
     }
-    public void StopClickOnGrid(int X, int Y)
-    {
-        if (X!=-1&&Y!=-1 && !ClickedPositions.Contains((X, Y))) ClickedPositions.Add((X, Y));
-       // Debug.Log("Stop Coordinates: X: " + Convert.ToString(X) + " Y: " + Convert.ToString(Y));
-        if (Mode == 1) HouseController.CreateHouse(ClickedPositions);
-        else if (Mode==2) RoadsController.AddRoad(ClickedPositions);
-        ClickedPositions.Clear();
-    }
-
 }
