@@ -45,15 +45,11 @@ public class CameraFunc : MonoBehaviour
             thisCamera.orthographicSize = Mathf.Lerp(startZoom, nowZoom, progressZoom);
         }
     }
-    public void SetTargetCell(Vector3 position)
+    public void SetTargetCell()
     {
-        targetPosition = position;
-        startPosition = transform.position;
-        progressMove = 0;
         nowZoom = zoomInCellRedactor;
         startZoom = thisCamera.orthographicSize;
         progressZoom = 0;
-        progressMove = 0;
     }
     public void StopSetTargetCell()
     {

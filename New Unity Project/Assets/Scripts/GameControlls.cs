@@ -20,10 +20,11 @@ public class GameControlls : MonoBehaviour
     public int Mode = (int)Modes.CameraMove;
     public HouseControlles HouseController;
     public RoadsControlles RoadsController;
-    public Button SelectRedactorCellsButton;
+    public Button SelectRedactorCellsButton, HouseChooseButton, RoadsChooseButton;
+    public Button SelectHouseModePeople, SelectHouseModeCom, SelectHouseModeFact, SelectRoadModeDefolt;
+    public GameObject Redactor, HousesChoose, RoadsChoose;
     public CameraFunc cameraScript;
     public GridFunc GridScript;
-    private bool inCell = false;
     void Start()
     {
         void SelectRedactorMode()
@@ -32,19 +33,43 @@ public class GameControlls : MonoBehaviour
             {
                 Mode = (int)Modes.CameraMove;
                 GridScript.CloseRedactorCell();
-                inCell = false;
+                SelectRedactorCellsButton.transform.GetChild(0).GetComponent<Text>().text = "Open cell Redactor";
+                Redactor.SetActive(false);
             }
-            else Mode = (int)Modes.CellRedactor;
+            else
+            {
+                Mode = (int)Modes.CellRedactor;
+                GridScript.OpenRedactorCell();
+                cameraScript.SetTargetCell();
+                SelectRedactorCellsButton.transform.GetChild(0).GetComponent<Text>().text = "Close cell Redactor";
+                Redactor.SetActive(true);
+            }
         }
-        SelectRedactorCellsButton.onClick.AddListener(SelectRedactorMode);
-    }
-    public void ClickOnGrid((int,int) Position)
-    {
-        if (Mode == (int)Modes.CellRedactor&&!inCell)
+        void OnHousesChooseButtonClick()
         {
-            cameraScript.SetTargetCell(GridScript.PositionCell(Position));
-            GridScript.OpenRedactorCell(Position);
-            inCell = true;
+            SetActiveAllButtonsFalse();
+            HousesChoose.SetActive(true);
         }
+        void OnRoadsChooseButtonClick()
+        {
+            SetActiveAllButtonsFalse();
+            RoadsChoose.SetActive(true);
+        }
+        void OnSelectHouseModePeopleButtonClick() => GridScript.SetMode(ThingsInCell.HousePeople);
+        void OnSelectHouseModeComButtonClick() => GridScript.SetMode(ThingsInCell.HouseCom);
+        void OnSelectHouseModeFactButtonClick() => GridScript.SetMode(ThingsInCell.HouseFact);
+        void OnSelectRoadModeDefoltButtonClick() => GridScript.SetMode(ThingsInCell.RoadForCars);
+        SelectRedactorCellsButton.onClick.AddListener(SelectRedactorMode);
+        HouseChooseButton.onClick.AddListener(OnHousesChooseButtonClick);
+        RoadsChooseButton.onClick.AddListener(OnRoadsChooseButtonClick);
+        SelectHouseModePeople.onClick.AddListener(OnSelectHouseModePeopleButtonClick);
+        SelectHouseModeCom.onClick.AddListener(OnSelectHouseModeComButtonClick);
+        SelectHouseModeFact.onClick.AddListener(OnSelectHouseModeFactButtonClick);
+        SelectRoadModeDefolt.onClick.AddListener(OnSelectRoadModeDefoltButtonClick);
+    }
+    private void SetActiveAllButtonsFalse()
+    {
+        HousesChoose.SetActive(false);
+        RoadsChoose.SetActive(false);
     }
 }

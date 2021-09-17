@@ -10,7 +10,7 @@ public class HumanFunctionality : MonoBehaviour
     GridFunc Grid;
     RoadsControlles Roads; 
     float speed = 4;
-    /*public void StartGo(List<(int, int)> waytogo, GameObject EndHouse, GridFunc Grid, RoadsControlles roads)
+    public void StartGo(List<(int, int)> waytogo, GameObject EndHouse, GridFunc Grid, RoadsControlles roads)
     {
         this.Grid = Grid;
         Roads = roads;
@@ -115,9 +115,9 @@ public class HumanFunctionality : MonoBehaviour
         ans.Add((nextindex / 2, 1));
         return ans;
     }
-    IEnumerator Go()
+    /*IEnumerator Go()
     {
-        int previndex = -1, nowindex = GetIndex(way[0], way[1]), nextindex = -1;
+        /*int previndex = -1, nowindex = GetIndex(way[0], way[1]), nextindex = -1;
         (int, int) prevposition = (-1, -1);
         int prevpositioninway = 0;
         if (way.Count > 2) nextindex = GetIndex(way[1], way[2]);
@@ -143,12 +143,12 @@ public class HumanFunctionality : MonoBehaviour
                 }
                 if (nowpositionInWay == way.Count)
                 {
-                    if (prevposition != (-1, -1)) Roads.Roads[way[prevpositioninway]].SetHumanInCell(prevposition, false);
+                    //if (prevposition != (-1, -1)) Roads.Roads[way[prevpositioninway]].SetHumanInCell(prevposition, false);
                     end.GetComponent<HouseFunctionality>().GetHuman();
                     Destroy(gameObject);
                     yield return null;
                 }
-                if (Roads.Roads[way[nowpositionInWay-1]].CanMove(WayInCell[nowpositionInCell])) {
+                /*if (Roads.Roads[way[nowpositionInWay-1]].CanMove(WayInCell[nowpositionInCell])) {
                     to = Grid.PositionCell(way[nowpositionInWay - 1]);
                     if (prevposition!=(-1,-1))Roads.Roads[way[prevpositioninway]].SetHumanInCell(prevposition, false);
                     Roads.Roads[way[nowpositionInWay-1]].SetHumanInCell(WayInCell[nowpositionInCell], true);

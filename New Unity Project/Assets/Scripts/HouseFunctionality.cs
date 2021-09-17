@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HouseFunctionality : MonoBehaviour
 {
-    public int Type; // 1 - House, 2 - com, 3 - fac;
+    /*public int Type; // 1 - House, 2 - com, 3 - fac;
     public GameObject HumanPrefab;
     public int totalHumans, maxHumans;
     private Dictionary<(int, int), GameObject> Tiles = new Dictionary<(int, int), GameObject>();
@@ -47,8 +47,8 @@ public class HouseFunctionality : MonoBehaviour
                 HumanFunctionality Humanf = NewHuman.GetComponent<HumanFunctionality>();
                 //Humanf.StartGo(way, End, HouseController.Grid, RoadController);
                 return;
-            }*/
+            }
         }
         totalHumans++;
-    }
+    }*/
 }
