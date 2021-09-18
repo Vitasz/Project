@@ -1,45 +1,32 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using System;
-public class CellWithHouse : Cell
+public class CellWithHouse:Cell
 {
     ThingsInCell typeHouse;
-    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type) : base(grid, houseControlles, position) {
-        type = typeHouse;
-    }
     public int HumanInCellHouse = 0;
-    protected override void UpdateTileWithNewNeighboors()
+    private int[] housefromCellOnIndex = new int[8];
+    private List<Vector3Int> thisHouse = new List<Vector3Int>();
+    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type) : base(grid, houseControlles, position) {
+        houseControlles.AddHouse(position, type);
+        typeHouse = type;
+        UpdateTile();
+        if (type == ThingsInCell.HousePeople) HumanInCellHouse = 10;
+    }
+    public void UniteHouse(Vector3Int from, Vector3Int to, bool fromthis)
     {
 
     }
-    public void UpdateTile()
+    protected override void UpdateTile()
     {
-       /* foreach (KeyValuePair<int, int[]> a in whatNearCells)
-        {
-            string temp = "";
-            foreach (int b in a.Value) temp += Convert.ToString(b);
-            grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, a.Key), Resources.Load<Tile>(ResourcesLoadedPaths[a.Key] + temp));
-        }*/
-    }
-    private IEnumerator SpawnHuman()
-    {
-        while (true)
-        {
-            if (HumanInCellHouse != 0)
-            {
-                Cell HouseTo = houseControlles.GetRandomHouseCell(ThingsInCell.HouseCom);
-                if (HouseTo != null)
-                {
-                    Vector3Int positionTo = HouseTo.GetCellPosition();
-                    List<Vector3Int> way = grid.FindWay(positioninTileMap, positionTo);
-                    if (way != null)
-                    {
-                        //Create Human
-                    }
-                }
-            }
-            yield return new WaitForSeconds(10);
-        }
+        string name = "";
+        foreach (int a in housefromCellOnIndex) name += a == 0 ? '0' : '1';
+        grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Houses/basetile" + name));
+        grid.tilemap.SetTileFlags(positioninTileMap, TileFlags.None);;
+        if (typeHouse == ThingsInCell.HousePeople) grid.tilemap.SetColor(positioninTileMap, Color.green);
+        if (typeHouse == ThingsInCell.HouseFact) grid.tilemap.SetColor(positioninTileMap, Color.yellow);
+        if (typeHouse == ThingsInCell.HouseCom) grid.tilemap.SetColor(positioninTileMap, Color.blue);
     }
 }

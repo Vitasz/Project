@@ -15,7 +15,7 @@ public class HumanFunctionality : MonoBehaviour
         this.Grid = Grid;
         Roads = roads;
         //Roads.Roads[waytogo[0]].HumanInTile();
-        transform.localPosition = GetEndPosition(GetIndex(waytogo[0], waytogo[1]), GetIndex(waytogo[0], waytogo[1]), Grid.PositionCell(waytogo[0]));
+        //transform.localPosition = GetEndPosition(GetIndex(waytogo[0], waytogo[1]), GetIndex(waytogo[0], waytogo[1]), Grid.PositionCell(waytogo[0]));
         way = waytogo;
         end = EndHouse;
         StartCoroutine("Go");

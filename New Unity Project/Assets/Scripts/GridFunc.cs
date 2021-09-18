@@ -24,33 +24,21 @@ public class GridFunc : MonoBehaviour
     {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0))
         {
-            //Debug.Log(isRedactorActive);
-            if (isRedactorActive && tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick)
+            if (isRedactorActive && (tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick||!hasfirstclick))
             {
                 prevpositionClick = nowpositionClick;
                 nowpositionClick = tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition));
+                
+                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor);
                 if (hasfirstclick && Mathf.Abs(prevpositionClick.x - nowpositionClick.x) + Mathf.Abs(prevpositionClick.y - nowpositionClick.y)<=1)
                 {
-                    if (!Map.ContainsKey(prevpositionClick)) Map.Add(prevpositionClick, new Cell(this, houseControlles, prevpositionClick));
-                    if (!Map.ContainsKey(nowpositionClick)) Map.Add(nowpositionClick, new Cell(this, houseControlles, nowpositionClick));
-                    Map[prevpositionClick].AddRoad(prevpositionClick, nowpositionClick, ModeRedactor, Map[nowpositionClick]);
-                    Map[prevpositionClick].UpdateTile(); Map[nowpositionClick].UpdateTile();
-                    //Debug.Log("Add road from " + Convert.ToString(prevpositionClick) + " to " + Convert.ToString(nowpositionClick));
+                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor);
                 }
                 hasfirstclick = true;
             }
         }
     }
-    public Vector3 PositionCell((int,int) cell)
-    {
-        Vector3 toret = new Vector3(0, 0,-100);
-        toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + cell.Item1 * SizeCell;
-        toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + cell.Item2 * SizeCell;
-        return toret;
-    }
-    public void OpenRedactorCell() {
-        isRedactorActive = true;
-    }
+    public void OpenRedactorCell() => isRedactorActive = true;
     public void CloseRedactorCell()
     {
         isRedactorActive = false;
@@ -59,37 +47,87 @@ public class GridFunc : MonoBehaviour
     public void SetMode(ThingsInCell mode)
     {
         ModeRedactor = (int)mode;
+        hasfirstclick = false;
     }
-    public List<Vector3Int> FindWay(Vector3Int from, Vector3Int to)
+    public List<Vector3Int> FindWay(List<Vector3Int> from, List<Vector3Int> to)
     {
-        SortedSet<Vector3Int> now = new SortedSet<Vector3Int>(), nownew = new SortedSet<Vector3Int>();
-        now.Add(from);
-        Dictionary<Vector3Int, int> timetoRoads = new Dictionary<Vector3Int, int>();
-        timetoRoads.Add(from, 0);
+        List<Vector3Int> now = new List<Vector3Int>(), nownew = new List<Vector3Int>();
+        Dictionary<Vector3Int, (int, Vector3Int)> timetoRoads = new Dictionary<Vector3Int, (int, Vector3Int)>();
+        foreach (Vector3Int a in from)
+        {
+            now.Add(a);
+            timetoRoads.Add(a, (0, a));
+        }
         int timer = 0;
-        while (timer < 1000)
+        bool ok = false;
+        Vector3Int end = new Vector3Int();
+        while (now.Count != 0)
         {
             timer++;
-            foreach(Vector3Int a in now)
+            foreach (Vector3Int a in now)
             {
-                if (a == to) break;
-                foreach (Vector3Int b in Map[a].GetNearRoadsWays())
+                Debug.Log(a);
+                if (to.Contains(a))
                 {
-                    nownew.Add(b);
-                    if (!timetoRoads.ContainsKey(b)) timetoRoads[b] = timer;
+                    end = a;
+                    ok = true;
+                    break;
                 }
+                if (Map.ContainsKey(a)&&Map[a]is CellWithRoad)
+                    foreach (Vector3Int b in (Map[a] as CellWithRoad).GetNearRoadsWays())
+                    {
+                        if (!nownew.Contains(b) && !timetoRoads.ContainsKey(b))
+                        {
+                            nownew.Add(b); 
+                            timetoRoads[b] = (timer, a);
+                        }
+                    }
             }
-            now = nownew;
+            now.Clear();
+            foreach (Vector3Int a in nownew) now.Add(a);
             nownew.Clear();
         }
+        if (!ok) {
+            Debug.Log("Not way found");
+            return null;
+        }
         List<Vector3Int> ans = new List<Vector3Int>();
-        ans.Add(to);
-
+        ans.Add(end);
+        Vector3Int nowPos = end;
+        while (!from.Contains(nowPos))
+        {
+            nowPos = timetoRoads[nowPos].Item2;
+            ans.Add(nowPos);
+        }
         ans.Reverse();
         return ans;
     }
-    public Cell GetCell(Vector3Int Position)
+    public Cell GetCell(Vector3Int Position) => Map[Position];
+    
+    private void CreateNewTile(Vector3Int Position, ThingsInCell type)
     {
-        return Map[Position];
+        if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
+            Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
+        else if (type == ThingsInCell.RoadForCars) Map.Add(Position, new CellWithRoad(this, houseControlles, Position));
     }
+    private void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode)
+    {
+        if (Map[PositionFrom] is CellWithRoad && Map[PositionTo] is CellWithRoad)
+        {
+            (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true);
+            (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
+        }
+        else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
+        {
+            (Map[PositionFrom] as CellWithHouse).UniteHouse(PositionFrom, PositionTo, true);
+            (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false);
+        }
+    }
+    /*public Vector3 PositionCell((int,int) cell)
+    {
+        Vector3 toret = new Vector3(0, 0,-100);
+        toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + cell.Item1 * SizeCell;
+        toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + cell.Item2 * SizeCell;
+        return toret;
+    }*/
 }

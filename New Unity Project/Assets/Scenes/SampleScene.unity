@@ -1684,7 +1684,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d893570a737bcf5439ef74a855a7297d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Grid: {fileID: 0}
+  Grid: {fileID: 1591633984}
   HousePrefab: {fileID: 7545872404278961229, guid: 3f0ade09faaa3f0428278a9e50779c4d, type: 3}
   HumanPrefab: {fileID: 11567934722639218, guid: 1e7de2f36331d044cb8abf1bc99fcaee, type: 3}
   RoadsController: {fileID: 1921036910}
@@ -1819,9 +1819,9 @@ MonoBehaviour:
   SizeX: 0
   SizeY: 0
   SizeCell: 0
+  houseControlles: {fileID: 1414301251}
   GameController: {fileID: 1053592891}
   MaterialForLines: {fileID: 0}
-  Collider: {fileID: 0}
   nowCamera: {fileID: 519420031}
   tilemap: {fileID: 1591633986}
 --- !u!483693784 &1591633985

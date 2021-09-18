@@ -13,7 +13,7 @@ public enum ThingsInCell : int
     HouseFact,
     RoadForCars,
 }
-public class Cell : MonoBehaviour
+public class Cell
 {
     protected GridFunc grid;
     protected HouseControlles houseControlles;
@@ -34,16 +34,29 @@ public class Cell : MonoBehaviour
         if (from.x + 1 == to.x && from.y - 1 == to.y) return 4;
         if (from.x == to.x && from.y - 1 == to.y) return 5;
         if (from.x - 1 == to.x && from.y - 1 == to.y) return 6;
-        else  return 7;
+        if (from.x-1==to.x && from.y==to.y) return 7;
+        return -1;
     }
-   public void UpdateTile()
-   {
+    protected virtual void UpdateTile()
+    {
         /*foreach(KeyValuePair<int, int[]> a in whatNearCells)
         {
             string temp = "";
             foreach (int b in a.Value) temp += Convert.ToString(b);
             grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, a.Key), Resources.Load<Tile>(ResourcesLoadedPaths[a.Key] + temp));
         }*/
-   }
+    }
+    public List<Vector3Int> GetNearTiles()
+    {
+        List<Vector3Int> ans = new List<Vector3Int>();
+        for (int i = -1; i < 2; i++)
+        {
+            for (int j = -1; j < 2; j++)
+            {
+                if (i != 0 || j != 0) ans.Add(new Vector3Int(positioninTileMap.x + i, positioninTileMap.y + j, positioninTileMap.z));
+            }
+        }
+        return ans;
+    }
     public Vector3Int GetCellPosition() => positioninTileMap;
 }
