@@ -66,8 +66,7 @@ public class GridFunc : MonoBehaviour
             timer++;
             foreach (Vector3Int a in now)
             {
-                Debug.Log(a);
-                if (to.Contains(a))
+                if (to.Contains(a)&&!from.Contains(a))
                 {
                     end = a;
                     ok = true;
@@ -88,7 +87,6 @@ public class GridFunc : MonoBehaviour
             nownew.Clear();
         }
         if (!ok) {
-            Debug.Log("Not way found");
             return null;
         }
         List<Vector3Int> ans = new List<Vector3Int>();

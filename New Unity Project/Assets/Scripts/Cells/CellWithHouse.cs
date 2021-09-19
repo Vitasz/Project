@@ -5,7 +5,7 @@ using UnityEngine.Tilemaps;
 using System;
 public class CellWithHouse:Cell
 {
-    ThingsInCell typeHouse;
+    public ThingsInCell typeHouse;
     public int HumanInCellHouse = 0;
     private int[] housefromCellOnIndex = new int[8];
     private List<Vector3Int> thisHouse = new List<Vector3Int>();
@@ -13,7 +13,11 @@ public class CellWithHouse:Cell
         houseControlles.AddHouse(position, type);
         typeHouse = type;
         UpdateTile();
-        if (type == ThingsInCell.HousePeople) HumanInCellHouse = 10;
+        if (type == ThingsInCell.HousePeople)
+        {
+            HumanInCellHouse = 3;
+            houseControlles.AddCellWithHumans(this);
+        }
     }
     public void UniteHouse(Vector3Int from, Vector3Int to, bool fromthis)
     {
@@ -28,5 +32,10 @@ public class CellWithHouse:Cell
         if (typeHouse == ThingsInCell.HousePeople) grid.tilemap.SetColor(positioninTileMap, Color.green);
         if (typeHouse == ThingsInCell.HouseFact) grid.tilemap.SetColor(positioninTileMap, Color.yellow);
         if (typeHouse == ThingsInCell.HouseCom) grid.tilemap.SetColor(positioninTileMap, Color.blue);
+    }
+    public void AddHuman()
+    {
+        HumanInCellHouse++;
+        if (HumanInCellHouse == 1) houseControlles.AddCellWithHumans(this);
     }
 }

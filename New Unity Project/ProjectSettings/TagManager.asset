@@ -50,3 +50,6 @@ TagManager:
   - name: House
     uniqueID: 109297073
     locked: 0
+  - name: Map
+    uniqueID: 3814252469
+    locked: 0
