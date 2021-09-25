@@ -9,6 +9,7 @@ public class CellWithRoad : Cell
     private List<Vector3Int> roadsFromCell = new List<Vector3Int>();
     //private List<Vector3Int> CanMoveTo = new List<Vector3Int>();
     private int[] roadsfromCellOnIndex = new int[8];
+    private string name = "0000000000000000";
     protected bool isEmpty = true;
     public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position) : base(grid, houseControlles, position) { UpdateTile();}
     public void AddRoad(Vector3Int from, Vector3Int to, bool fromthissell)
@@ -18,13 +19,19 @@ public class CellWithRoad : Cell
             if (fromthissell)
             {
                 roadsFromCell.Add(to);
+                name = name.Substring(0, 8);
+                roadsfromCellOnIndex[GetIndexNearCell(from, to)] = 1;
+                for (int i = 0; i < 8; i++)
+                {
+                    if (roadsfromCellOnIndex[i] == 1) name += '1';
+                    else name += '0';
+                }
                 //Debug.Log("Add");
             }
-            roadsfromCellOnIndex[GetIndexNearCell(from, to)] = 1;
+            else {
+                name = name.Substring(0, GetIndexNearCell(from, to)) + '1' + name.Substring(GetIndexNearCell(from, to) + 1);
+            }
             UpdateTile();
-            //CanMoveTo.Add(to);
-            // grid.GetComponent<Tilemap>().SetTile(from, Resources.Load<Tile>("Tiles/Roads/basetile" + roadsnear));
-            // grid.GetComponent<Tilemap>().SetTile(to, Resources.Load<Tile>("Tiles/Roads/basetile00000000"));
         }
     }
     protected override void UpdateTileWithNewNeighboors()
@@ -38,9 +45,8 @@ public class CellWithRoad : Cell
     }
     protected override void UpdateTile()
     {
-        string name = "";
-        foreach (int a in roadsfromCellOnIndex) name += a==0?'0':'1';
-        grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Roads/basetile" + name));
+        Debug.Log(name);
+        grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Roads/" + name));
     }
     public bool CanMove() => isEmpty;
     public bool MoveToThis() => isEmpty = false;
