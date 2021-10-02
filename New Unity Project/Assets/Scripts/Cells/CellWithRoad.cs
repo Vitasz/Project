@@ -11,10 +11,16 @@ public class CellWithRoad : Cell
     private int[] roadsfromCellOnIndex = new int[8];
     private string name = "0000000000000000";
     protected bool isEmpty = true;
-    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position) : base(grid, houseControlles, position) { UpdateTile();}
+    public float WaitTime = 1f;
+    HumanFunctionality HumanInCell;
+    Vector3Int NextCellHuman;
+    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position) : base(grid, houseControlles, position) {
+        grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, -1), Resources.Load<Tile>("Tiles/Roads/0000000000000000"));
+        //UpdateTile();
+    }
     public void AddRoad(Vector3Int from, Vector3Int to, bool fromthissell)
     {
-        if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to)!=-1)
+        if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to)!=-1 && name[GetIndexNearCell(from,to)]=='0'&&name[GetIndexNearCell(from,to)+8]=='0')
         {
             if (fromthissell)
             {
@@ -45,11 +51,50 @@ public class CellWithRoad : Cell
     }
     protected override void UpdateTile()
     {
-        Debug.Log(name);
+       // Debug.Log(name);
         grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Roads/" + name));
+        grid.tilemap.SetTileFlags(positioninTileMap, TileFlags.None);
+        Color color;
+        if (WaitTime <5f) color = Color.green;
+        else if (WaitTime < 10f) color = Color.yellow;
+        else color = Color.red;
+       // Debug.Log(WaitTime);
+        grid.tilemap.SetColor(positioninTileMap, color);
     }
-    public bool CanMove() => isEmpty;
-    public bool MoveToThis() => isEmpty = false;
-    public bool MoveOutThis() => isEmpty = true;
-
+    public bool CanMove(HumanFunctionality who, Vector3Int from)
+    {
+        if (isEmpty)
+        {
+            if (from == positioninTileMap) return true;
+            int indexfrom = GetIndexNearCell(positioninTileMap, from);
+            int indexcheck = (indexfrom + 6) % 8;
+            if (name[indexcheck] != '0')
+            {
+                Vector3Int PositionCheck = GetPositionNearCell(positioninTileMap, indexcheck);
+                CellWithRoad CellCheck = grid.GetCell(PositionCheck) as CellWithRoad;
+                return CellCheck.IsEmpty() || CellCheck.NextCellHuman != positioninTileMap;
+            }
+            else return true;
+        }
+        else return false;
+    }
+    public void MoveToThis(HumanFunctionality who, Vector3Int NextCellHuman)
+    {
+        HumanInCell = who;
+        isEmpty = false;
+        this.NextCellHuman = NextCellHuman;
+    }
+    public void MoveOutThis()
+    {
+        HumanInCell = null;
+        isEmpty = true;
+        WaitTime = 0.0001f;
+    }
+    public bool IsEmpty() => isEmpty;
+    public void UpdateWaitTime()
+    {
+        WaitTime = (WaitTime * 2 + (isEmpty ? 0 : 5)) / 2;
+        WaitTime = Math.Max(0.0001f, WaitTime);
+        UpdateTile();
+    }
 }

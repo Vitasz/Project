@@ -15,7 +15,8 @@ public class GridFunc : MonoBehaviour
     public Camera nowCamera;
     public Tilemap tilemap;
     public readonly float _linesWidth = 0.3f;
-    private Dictionary<Vector3Int, Cell> Map = new Dictionary<Vector3Int, Cell>();
+    public Dictionary<Vector3Int, Cell> Map = new Dictionary<Vector3Int, Cell>();
+    public List<CellWithRoad> Roads = new List<CellWithRoad>();
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
@@ -52,33 +53,33 @@ public class GridFunc : MonoBehaviour
     public List<Vector3Int> FindWay(List<Vector3Int> from, List<Vector3Int> to)
     {
         List<Vector3Int> now = new List<Vector3Int>(), nownew = new List<Vector3Int>();
-        Dictionary<Vector3Int, (int, Vector3Int)> timetoRoads = new Dictionary<Vector3Int, (int, Vector3Int)>();
+        Dictionary<Vector3Int, (float, Vector3Int)> timetoRoads = new Dictionary<Vector3Int, (float, Vector3Int)>();
         foreach (Vector3Int a in from)
         {
             now.Add(a);
             timetoRoads.Add(a, (0, a));
         }
-        int timer = 0;
-        bool ok = false;
         Vector3Int end = new Vector3Int();
+        float MinWay = 100000000;
         while (now.Count != 0)
         {
-            timer++;
             foreach (Vector3Int a in now)
             {
-                if (to.Contains(a)&&!from.Contains(a))
-                {
-                    end = a;
-                    ok = true;
-                    break;
-                }
                 if (Map.ContainsKey(a)&&Map[a]is CellWithRoad)
                     foreach (Vector3Int b in (Map[a] as CellWithRoad).GetNearRoadsWays())
                     {
-                        if (!nownew.Contains(b) && !timetoRoads.ContainsKey(b))
+                        if (timetoRoads.ContainsKey(b))
                         {
-                            nownew.Add(b); 
-                            timetoRoads[b] = (timer, a);
+                            if (timetoRoads[b].Item1>timetoRoads[a].Item1+(Map[a] as CellWithRoad).WaitTime)
+                            {
+                                timetoRoads[b] = (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a);
+                                nownew.Add(b);
+                            }
+                        }
+                        else
+                        {
+                            timetoRoads.Add(b,  (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a));
+                            nownew.Add(b);
                         }
                     }
             }
@@ -86,9 +87,18 @@ public class GridFunc : MonoBehaviour
             foreach (Vector3Int a in nownew) now.Add(a);
             nownew.Clear();
         }
-        if (!ok) {
-            return null;
+        foreach(Vector3Int a in to)
+        {
+            if (timetoRoads.ContainsKey(a)&&Map.ContainsKey(a)&&(Map[a] is CellWithRoad))
+            {
+                if (MinWay > timetoRoads[a].Item1)
+                {
+                    MinWay = timetoRoads[a].Item1;
+                    end = a;
+                }
+            }
         }
+        if (MinWay == 100000000) return null;
         List<Vector3Int> ans = new List<Vector3Int>();
         ans.Add(end);
         Vector3Int nowPos = end;
@@ -106,7 +116,11 @@ public class GridFunc : MonoBehaviour
     {
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
             Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
-        else if (type == ThingsInCell.RoadForCars) Map.Add(Position, new CellWithRoad(this, houseControlles, Position));
+        else if (type == ThingsInCell.RoadForCars)
+        {
+            Map.Add(Position, new CellWithRoad(this, houseControlles, Position));
+            Roads.Add(Map[Position] as CellWithRoad);
+        }
     }
     private void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode)
     {
@@ -128,4 +142,9 @@ public class GridFunc : MonoBehaviour
         toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + cell.Item2 * SizeCell;
         return toret;
     }*/
+    public void Optimize()
+    {
+        OptimizationAlgorithm a = new OptimizationAlgorithm();
+        a.Optimization(this);
+    }
 }

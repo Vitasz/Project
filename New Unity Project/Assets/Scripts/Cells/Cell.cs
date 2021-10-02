@@ -37,6 +37,18 @@ public class Cell
         if (from.x-1==to.x && from.y==to.y) return 7;
         return -1;
     }
+    protected Vector3Int GetPositionNearCell(Vector3Int from, int index)
+    {
+        if (index == 0) return new Vector3Int(from.x - 1, from.y + 1,0);
+        if (index == 1) return new Vector3Int(from.x, from.y + 1, 0);
+        if (index == 2) return new Vector3Int(from.x + 1, from.y + 1, 0);
+        if (index == 3) return new Vector3Int(from.x + 1, from.y, 0);
+        if (index == 4) return new Vector3Int(from.x + 1, from.y - 1, 0);
+        if (index == 5) return new Vector3Int(from.x, from.y -1, 0);
+        if (index == 6) return new Vector3Int(from.x - 1, from.y - 1, 0);
+        if (index == 7) return new Vector3Int(from.x - 1, from.y, 0);
+        return new Vector3Int();
+    }
     protected virtual void UpdateTile()
     {
         /*foreach(KeyValuePair<int, int[]> a in whatNearCells)
@@ -53,7 +65,7 @@ public class Cell
         {
             for (int j = -1; j < 2; j++)
             {
-                if (i != 0 || j != 0) ans.Add(new Vector3Int(positioninTileMap.x + i, positioninTileMap.y + j, positioninTileMap.z));
+                if ((i != 0 || j != 0)&&Math.Abs(i)+Math.Abs(j)<=1) ans.Add(new Vector3Int(positioninTileMap.x + i, positioninTileMap.y + j, positioninTileMap.z));
             }
         }
         return ans;

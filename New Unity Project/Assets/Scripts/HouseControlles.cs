@@ -10,6 +10,7 @@ public class HouseControlles : MonoBehaviour
     public GameObject HousePrefab, HumanPrefab;
     public RoadsControlles RoadsController;
     public Dictionary<ThingsInCell, List<Vector3Int>> HousesTypes = new Dictionary<ThingsInCell, List<Vector3Int>>();
+    public Clock clock;
     private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
     private void Start()
     {
@@ -57,9 +58,11 @@ public class HouseControlles : MonoBehaviour
                     {
                         //Create Human
                         HouseFrom.HumanInCellHouse--;
+                        clock.totalHumans++;
+                        clock.totalWays += way.Count;
                         if (HouseFrom.HumanInCellHouse == 0) CellsWithHumans.Remove(HouseFrom);
                         HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
-                        human.StartGo(way, HouseTo, Grid, HouseFrom);
+                        human.StartGo(way, HouseTo, Grid, HouseFrom, clock);
                     }
                 }
             }

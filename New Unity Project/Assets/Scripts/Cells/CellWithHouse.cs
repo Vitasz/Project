@@ -15,7 +15,7 @@ public class CellWithHouse:Cell
         UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
-            HumanInCellHouse = 3;
+            HumanInCellHouse = 10;
             houseControlles.AddCellWithHumans(this);
         }
     }

@@ -1,9 +1,8 @@
 import sys
 from PIL import Image
 
-def merge(a,b,c):
-    new_im1 = Image.alpha_composite(b, c)
-    new_im = Image.alpha_composite(a, new_im1)
+def merge(a,b):
+    new_im = Image.alpha_composite(a, b)
     return new_im
 #merge("0000000000000000.png", "0000000000000001.png", "0000000000010000.png")
 now1 = 0
@@ -45,7 +44,7 @@ while(now1<16):
             for i in name1+name2:
                 name+='0'+i
             name+='.png'
-            merge(Image.open("0000000000000000.png").convert('RGBA'), image1, image2).save(name)
+            merge(image1, image2).save(name)
 
         now2+=1
     now1+=1
