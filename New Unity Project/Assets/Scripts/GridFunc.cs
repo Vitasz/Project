@@ -17,6 +17,8 @@ public class GridFunc : MonoBehaviour
     public readonly float _linesWidth = 0.3f;
     public Dictionary<Vector3Int, Cell> Map = new Dictionary<Vector3Int, Cell>();
     public List<CellWithRoad> Roads = new List<CellWithRoad>();
+    public List<GameObject> Humans = new List<GameObject>();
+    public OptimizationAlgorithm a;
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
@@ -110,9 +112,14 @@ public class GridFunc : MonoBehaviour
         ans.Reverse();
         return ans;
     }
-    public Cell GetCell(Vector3Int Position) => Map[Position];
+    public Cell GetCell(Vector3Int Position)
+    {
+        if (Map.ContainsKey(Position))
+            return Map[Position];
+        else return null;
+    }
     
-    private void CreateNewTile(Vector3Int Position, ThingsInCell type)
+    public void CreateNewTile(Vector3Int Position, ThingsInCell type)
     {
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
             Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
@@ -144,7 +151,25 @@ public class GridFunc : MonoBehaviour
     }*/
     public void Optimize()
     {
-        OptimizationAlgorithm a = new OptimizationAlgorithm();
+        //OptimizationAlgorithm a = new OptimizationAlgorithm();
         a.Optimization(this);
+    }
+    public void StartSimmulation()
+    {
+        houseControlles.CanSpawn = true;
+    }
+    public void StopSimmulation()
+    {
+        houseControlles.CanSpawn = true;
+        foreach (GameObject a in Humans) Destroy(a.gameObject);
+        Humans.Clear();
+    }
+    public void RemoveTileAt(Vector3Int position)
+    {
+        if (Map[position] is CellWithHouse)
+        {
+            tilemap.SetTile(position, null);
+            Map.Remove(position);
+        }
     }
 }

@@ -1823,6 +1823,7 @@ MonoBehaviour:
   HumanPrefab: {fileID: 11567934722639218, guid: 1e7de2f36331d044cb8abf1bc99fcaee, type: 3}
   RoadsController: {fileID: 1921036910}
   clock: {fileID: 1573902187}
+  CanSpawn: 0
 --- !u!1 &1485377702
 GameObject:
   m_ObjectHideFlags: 0
@@ -2054,6 +2055,8 @@ MonoBehaviour:
   MaterialForLines: {fileID: 0}
   nowCamera: {fileID: 519420031}
   tilemap: {fileID: 1591633986}
+  Humans: []
+  a: {fileID: 1809316477}
 --- !u!483693784 &1591633985
 TilemapRenderer:
   m_ObjectHideFlags: 0
@@ -2276,6 +2279,49 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1768352944}
   m_CullTransparentMesh: 0
+--- !u!1 &1809316476
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1809316478}
+  - component: {fileID: 1809316477}
+  m_Layer: 0
+  m_Name: Optimization
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1809316477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809316476}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72d38224a0fdf334b90f88b6cb9e9439, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!4 &1809316478
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1809316476}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -4.408407, y: -0.24840079, z: -24.342482}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1845849604
 GameObject:
   m_ObjectHideFlags: 0
