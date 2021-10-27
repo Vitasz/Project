@@ -84,9 +84,10 @@ public class HouseControlles : MonoBehaviour
     }
     public void SpawnHumanNotInf()
     {
-        int maxHumans = 100;
+        int maxHumans = 10;
         clock.totalHumans = 0;
         clock.totalTimes = 0;
+        clock.totalWays = 0;
         while (maxHumans != 0)
         {
             if (CanSpawn && CellsWithHouses.Count > 1)

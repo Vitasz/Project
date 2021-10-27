@@ -20,7 +20,7 @@ public class Clock : MonoBehaviour
         {
             int seconds = Mathf.CeilToInt(Time.time);
             MaxEfficiency = Math.Max(MaxEfficiency, UpdateEfficiency());
-            TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString(UpdateEfficiency());
+            TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString(GetEfficiencyForOA());
             UpdateWaitTime();
             yield return new WaitForEndOfFrame();
         }

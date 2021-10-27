@@ -11,11 +11,11 @@ public class OptimizationAlgorithm:MonoBehaviour
     public bool isCoroutineWorking = false;
     Vector3Int bestPosition = new Vector3Int();
     double bestEfficienty = -1;
-    private int Deep = 2;
+    private readonly int Deep = 3;
     ThingsInCell bestVariant;
     List<Vector3Int> bestRoadsFrom = new List<Vector3Int>();
     List<Vector3Int> bestRoadsTo = new List<Vector3Int>();
-    List<ThingsInCell> Variants = new List<ThingsInCell>() { ThingsInCell.HousePeople, ThingsInCell.HouseCom, ThingsInCell.HouseFact, ThingsInCell.RoadForCars };
+    List<ThingsInCell> Variants = new List<ThingsInCell>() { ThingsInCell.HousePeople,/* ThingsInCell.HouseCom, ThingsInCell.HouseFact,*/ ThingsInCell.RoadForCars };
 
     private bool IsGran(Vector3Int position)
     {
@@ -50,16 +50,15 @@ public class OptimizationAlgorithm:MonoBehaviour
     }
     IEnumerator F()
     {
-        
         while (true)
         {
-            List<Vector3Int> PositionsToCheck = new List<Vector3Int>(), PosToCheckCopy = new List<Vector3Int>();
+            List<Vector3Int> PositionsToCheck = new List<Vector3Int>(), PosToCheckWithoutWas= new List<Vector3Int>();
             foreach (CellWithRoad a in GranRoad)
                 foreach (Vector3Int b in GetGrans(a.GetCellPosition()))
                     if (!PositionsToCheck.Contains(b))
                     {
                         PositionsToCheck.Add(b);
-                        PosToCheckCopy.Add(b);
+                        PosToCheckWithoutWas.Add(b);
                     }
 
 
@@ -74,8 +73,7 @@ public class OptimizationAlgorithm:MonoBehaviour
                     if (c == ThingsInCell.HouseCom || c == ThingsInCell.HouseFact || c == ThingsInCell.HousePeople)
                     {
                         grid.CreateNewTile(b, c, true);
-
-                        Hod(PosToCheckCopy, Deep-1, b, c, null, null);
+                        Hod(PosToCheckWithoutWas, Deep-1, b, c, null, null);
                         grid.RemoveTileAt(b);
                     }
                     else if (c == ThingsInCell.RoadForCars)
@@ -123,14 +121,14 @@ public class OptimizationAlgorithm:MonoBehaviour
                                     now2 /= 2;
                                 }
                                 grid.CreateNewTile(b, c, true);
-                                foreach (Vector3Int a in GetGrans(b)) if (!PosToCheckCopy.Contains(a)) PosToCheckCopy.Add(a);
+                                foreach (Vector3Int a in GetGrans(b)) if (!PosToCheckWithoutWas.Contains(a)) PosToCheckWithoutWas.Add(a);
                                 foreach (Vector3Int position in RoadsFrom)
                                     grid.UniteTiles(b, position, ThingsInCell.RoadForCars,true);
                                 foreach (Vector3Int position in RoadsTo)
                                     grid.UniteTiles(position, b, ThingsInCell.RoadForCars,true);
-                                Hod(PosToCheckCopy, Deep-1, b, c, RoadsFrom, RoadsTo);
-                                PosToCheckCopy.Clear();
-                                foreach (Vector3Int a in PositionsToCheck) if (!wasStart.Contains(a)) PosToCheckCopy.Add(a);
+                                Hod(PosToCheckWithoutWas, Deep-1, b, c, RoadsFrom, RoadsTo);
+                                PosToCheckWithoutWas.Clear();
+                                foreach (Vector3Int a in PositionsToCheck) if (!wasStart.Contains(a)) PosToCheckWithoutWas.Add(a);
                                 grid.RemoveTileAt(b);
                                 yield return new WaitForEndOfFrame();
                             }
@@ -140,7 +138,7 @@ public class OptimizationAlgorithm:MonoBehaviour
                 }
                 Debug.Log(s);
                 s++;
-                PosToCheckCopy.Remove(b);
+                PosToCheckWithoutWas.Remove(b);
                 wasStart.Add(b);
                 yield return new WaitForEndOfFrame();
             }
@@ -172,6 +170,8 @@ public class OptimizationAlgorithm:MonoBehaviour
         
         if (deep != 0)
         {
+
+            List<Vector3Int> wasStart = new List<Vector3Int>();
             List<Vector3Int> PosToCheckCopy = new List<Vector3Int>();
             foreach (Vector3Int b in PosToCheck) PosToCheckCopy.Add(b);
             foreach (Vector3Int b in PosToCheck)
@@ -184,10 +184,8 @@ public class OptimizationAlgorithm:MonoBehaviour
                         {
 
                             grid.CreateNewTile(b, c, true);
-                            PosToCheckCopy.Remove(b);
-                            Hod(PosToCheckCopy, deep - 1, b, c, startRoadsFrom, startRoadsTo);
+                            Hod(PosToCheckCopy, deep - 1, start, startthing, startRoadsFrom, startRoadsTo);
                             grid.RemoveTileAt(b);
-                            PosToCheckCopy.Add(b);
                         }
                         else if (c == ThingsInCell.RoadForCars)
                         {
@@ -240,9 +238,9 @@ public class OptimizationAlgorithm:MonoBehaviour
                                         grid.UniteTiles(b, position, ThingsInCell.RoadForCars, true);
                                     foreach (Vector3Int position in RoadsTo)
                                         grid.UniteTiles(position, b, ThingsInCell.RoadForCars, true);
-                                    Hod(PosToCheckCopy, deep-1, b, c, RoadsFrom, RoadsTo);
+                                    Hod(PosToCheckCopy, deep-1, start, startthing, startRoadsFrom, startRoadsTo);
                                     PosToCheckCopy.Clear();
-                                    foreach (Vector3Int a in PosToCheck) PosToCheckCopy.Add(a);
+                                    foreach (Vector3Int a in PosToCheck) if (!wasStart.Contains(a)) PosToCheckCopy.Add(a);
                                     grid.RemoveTileAt(b);
                                 }
                             }
@@ -250,6 +248,8 @@ public class OptimizationAlgorithm:MonoBehaviour
                         }
                     }
                 }
+                PosToCheckCopy.Remove(b);
+                wasStart.Add(b);
             }
         }
         else
