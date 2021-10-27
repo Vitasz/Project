@@ -9,10 +9,10 @@ public class CellWithHouse:Cell
     public int HumanInCellHouse = 0;
     private int[] housefromCellOnIndex = new int[8];
     private List<Vector3Int> thisHouse = new List<Vector3Int>();
-    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type) : base(grid, houseControlles, position) {
-        houseControlles.AddHouse(position, type);
+    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type, bool ForOA) : base(grid, houseControlles, position) {
+        houseControlles.AddHouse(position, type, this);
         typeHouse = type;
-        UpdateTile();
+       if (!ForOA)UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
             HumanInCellHouse = 10;

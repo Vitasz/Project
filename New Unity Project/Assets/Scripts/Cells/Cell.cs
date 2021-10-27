@@ -25,7 +25,7 @@ public class Cell
         positioninTileMap = PositionCell;
     }
     protected virtual void UpdateTileWithNewNeighboors() { }
-    protected int GetIndexNearCell(Vector3Int from, Vector3Int to)
+    public int GetIndexNearCell(Vector3Int from, Vector3Int to)
     {
         if (from.x - 1 == to.x && from.y + 1 == to.y) return 0;
         if (from.x == to.x && from.y + 1 == to.y) return 1;
@@ -37,7 +37,7 @@ public class Cell
         if (from.x-1==to.x && from.y==to.y) return 7;
         return -1;
     }
-    protected Vector3Int GetPositionNearCell(Vector3Int from, int index)
+    public Vector3Int GetPositionNearCell(Vector3Int from, int index)
     {
         if (index == 0) return new Vector3Int(from.x - 1, from.y + 1,0);
         if (index == 1) return new Vector3Int(from.x, from.y + 1, 0);

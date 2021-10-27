@@ -14,6 +14,8 @@ public class GridFunc : MonoBehaviour
     public Material MaterialForLines;
     public Camera nowCamera;
     public Tilemap tilemap;
+    public Clock clock;
+    public HumanController HumanControlles;
     public readonly float _linesWidth = 0.3f;
     public Dictionary<Vector3Int, Cell> Map = new Dictionary<Vector3Int, Cell>();
     public List<CellWithRoad> Roads = new List<CellWithRoad>();
@@ -31,11 +33,10 @@ public class GridFunc : MonoBehaviour
             {
                 prevpositionClick = nowpositionClick;
                 nowpositionClick = tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition));
-                
-                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor);
+                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor, false);
                 if (hasfirstclick && Mathf.Abs(prevpositionClick.x - nowpositionClick.x) + Mathf.Abs(prevpositionClick.y - nowpositionClick.y)<=1)
                 {
-                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor);
+                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor, false);
                 }
                 hasfirstclick = true;
             }
@@ -119,28 +120,28 @@ public class GridFunc : MonoBehaviour
         else return null;
     }
     
-    public void CreateNewTile(Vector3Int Position, ThingsInCell type)
+    public void CreateNewTile(Vector3Int Position, ThingsInCell type,bool ForOA)
     {
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
-            Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
+            Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type, ForOA));
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, houseControlles, Position));
+            Map.Add(Position, new CellWithRoad(this, houseControlles, Position, ForOA));
             Roads.Add(Map[Position] as CellWithRoad);
         }
     }
-    private void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode)
+    public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode, bool ForOA)
     {
         if (Map[PositionFrom] is CellWithRoad && Map[PositionTo] is CellWithRoad)
         {
-            (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true);
-            (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
+            (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true, ForOA);
+            (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
         }
-        else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
+        /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
         {
-            (Map[PositionFrom] as CellWithHouse).UniteHouse(PositionFrom, PositionTo, true);
-            (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false);
-        }
+            (Map[PositionFrom] as CellWithHouse).UniteHouse(PositionFrom, PositionTo, true, ForOA);
+            (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false, ForOA);
+        }*/
     }
     /*public Vector3 PositionCell((int,int) cell)
     {
@@ -154,9 +155,14 @@ public class GridFunc : MonoBehaviour
         //OptimizationAlgorithm a = new OptimizationAlgorithm();
         a.Optimization(this);
     }
-    public void StartSimmulation()
+    public double StartSimmulation(OptimizationAlgorithm OA)
     {
         houseControlles.CanSpawn = true;
+        houseControlles.CoroutineWork = true;
+        clock.MaxEfficiency = -1;
+        houseControlles.SpawnHumanNotInf();
+        return clock.GetEfficiencyForOA();
+        
     }
     public void StopSimmulation()
     {
@@ -170,6 +176,44 @@ public class GridFunc : MonoBehaviour
         {
             tilemap.SetTile(position, null);
             Map.Remove(position);
+            houseControlles.RemoveHouse(position);
         }
+        else if (Map[position] is CellWithRoad)
+        {
+            (Map[position] as CellWithRoad).Remove();
+            //tilemap.SetTile(position, null);
+            //tilemap.SetTile(new Vector3Int(position.x, position.y, -1), null);
+            Map.Remove(position);
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    if (Math.Abs(i)+Math.Abs(j)<=1 && Map.ContainsKey(new Vector3Int(position.x+i, position.y + j,0))){
+                        if (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad!=null)
+                        {
+                            (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad).RemoveRoad(new Vector3Int(position.x + i, position.y + j, 0), position);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    public List<Vector3Int> PositionsRoadAround(Vector3Int position)
+    {
+        List<Vector3Int> ans = new List<Vector3Int>();
+        for (int i = -1; i < 2; i++)
+        {
+            for (int j = -1; j < 2; j++)
+            {
+                if (Math.Abs(i)+Math.Abs(j)<=1 && Map.ContainsKey(new Vector3Int(position.x + i, position.y + j, 0)))
+                {
+                    if (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad != null)
+                    {
+                        ans.Add(new Vector3Int(position.x + i, position.y + j, 0));
+                    }
+                }
+            }
+        }
+        return ans;
     }
 }

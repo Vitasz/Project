@@ -6,8 +6,9 @@ using System;
 public class Clock : MonoBehaviour
 {
     Text TextComponent;
-    public int totalWays, totalHumans;
+    public int totalWays, totalHumans, totalTimes;
     public GridFunc grid;
+    public float MaxEfficiency = -1;
     private void Start()
     {
         TextComponent = GetComponent<Text>();
@@ -18,16 +19,17 @@ public class Clock : MonoBehaviour
         while (true)
         {
             int seconds = Mathf.CeilToInt(Time.time);
+            MaxEfficiency = Math.Max(MaxEfficiency, UpdateEfficiency());
             TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString(UpdateEfficiency());
             UpdateWaitTime();
-            yield return new WaitForSecondsRealtime(1f);
+            yield return new WaitForEndOfFrame();
         }
     }
-    private float UpdateEfficiency()
+    public float UpdateEfficiency()
     {
         if (totalHumans < 0) Debug.LogError("HUMANS");
         else if (totalWays < 0) Debug.LogError("WAYS");
-        if (totalHumans != 0) return totalWays / totalHumans;
+        if (totalHumans != 0) return (float)totalWays / totalHumans;
         else return -1;
     }
     private void UpdateWaitTime()
@@ -36,5 +38,10 @@ public class Clock : MonoBehaviour
         {
             a.UpdateWaitTime();
         }
+    }
+    
+    public double GetEfficiencyForOA()
+    {
+        return (double)totalTimes / totalHumans;
     }
 }
