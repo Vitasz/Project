@@ -52,21 +52,175 @@ public class OptimizationAlgorithm:MonoBehaviour
     {
         while (true)
         {
-            List<Vector3Int> PositionsToCheck = new List<Vector3Int>(), PosToCheckWithoutWas= new List<Vector3Int>();
-            foreach (CellWithRoad a in GranRoad)
-                foreach (Vector3Int b in GetGrans(a.GetCellPosition()))
-                    if (!PositionsToCheck.Contains(b))
+            List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>,List<Vector3Int>)> PositionsToCheck = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>, List<Vector3Int>)>();//{Position, Type, RoadsFrom, RoadsTo, Bonus grans(if type is road))}
+            foreach (CellWithRoad cell in GranRoad)
+                foreach (Vector3Int PositionGran in GetGrans(cell.GetCellPosition()))
+                        foreach(ThingsInCell type in Variants)
+                            if (type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact || type == ThingsInCell.HouseFact)
+                                PositionsToCheck.Add((PositionGran, type, null, null, null));
+                            else if (type==ThingsInCell.RoadForCars)
+                            {
+                                List<Vector3Int> Bonus = new List<Vector3Int>();
+                                foreach (Vector3Int bonusgran in GetGrans(PositionGran)) Bonus.Add(bonusgran);
+                                foreach ((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
+                                    PositionsToCheck.Add((PositionGran, type, a.Item1, a.Item2, Bonus));
+                            }
+            //List<int> indexs = new List<int>(Deep);
+            //for (int i = 0; i < Deep; i++) //Start indexs is {0, 1, 2...}
+            //    indexs[i] = i;
+            int totalVariants = 0;
+            for (int i = 0; i < PositionsToCheck.Count; i++)
+            {
+                List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>, List<Vector3Int>)> Bonus = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>,List<Vector3Int>)>();
+                if (PositionsToCheck[i].Item2 == ThingsInCell.RoadForCars)
+                    foreach (Vector3Int PositionGran in PositionsToCheck[i].Item5)
+                        foreach (ThingsInCell type in Variants)
+                            if (type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact || type == ThingsInCell.HouseFact)
+                                Bonus.Add((PositionGran, type, null, null, null));
+                            else if (type == ThingsInCell.RoadForCars)
+                            {
+                                List<Vector3Int> BonusNew = new List<Vector3Int>();
+                                foreach (Vector3Int bonusgran in GetGrans(PositionGran)) BonusNew.Add(bonusgran);
+                                foreach((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
+                                    Bonus.Add((PositionGran, type, a.Item1, a.Item2, BonusNew));
+                            }
+
+                List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();//{pos, type, roadsfrom, roadsto};
+                TilesToAdd.Add((PositionsToCheck[i].Item1, PositionsToCheck[i].Item2, PositionsToCheck[i].Item3, PositionsToCheck[i].Item4));
+                for (int j = i+1; j < PositionsToCheck.Count; j++)
+                {
+                    if (PositionsToCheck[j].Item1 == PositionsToCheck[i].Item1) continue;
+                    TilesToAdd.Add((PositionsToCheck[j].Item1, PositionsToCheck[j].Item2, PositionsToCheck[j].Item3, PositionsToCheck[j].Item4));
+
+                    for (int f = 0; f < TilesToAdd.Count; f++)
                     {
-                        PositionsToCheck.Add(b);
-                        PosToCheckWithoutWas.Add(b);
+                        grid.CreateNewTile(TilesToAdd[f].Item1, TilesToAdd[f].Item2, true);
+                        if (TilesToAdd[f].Item2 == ThingsInCell.RoadForCars)
+                        {
+                            foreach (Vector3Int a in TilesToAdd[f].Item3)
+                                grid.UniteTiles(TilesToAdd[f].Item1, a, ThingsInCell.RoadForCars, true) ;
+                            foreach (Vector3Int a in TilesToAdd[f].Item4)
+                                grid.UniteTiles(a, TilesToAdd[f].Item1, ThingsInCell.RoadForCars, true);
+                        }
                     }
+                   // yield return new WaitForEndOfFrame();
+                    double nowEfficiency = grid.StartSimmulation(this);
+                    totalVariants++;
+                    if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
+                    {
+                        bestEfficienty = nowEfficiency;
+                        bestPosition = TilesToAdd[0].Item1;
+                        bestVariant = TilesToAdd[0].Item2;
+                        bestRoadsFrom = TilesToAdd[0].Item3;
+                        bestRoadsTo = TilesToAdd[0].Item4;
+                    }
+                    for (int f = 0; f < TilesToAdd.Count; f++)
+                    {
+                        grid.RemoveTileAt(TilesToAdd[f].Item1);
+                    }
+                    TilesToAdd.RemoveAt(1);
+                    
+                }
+                for (int j = 0; j < Bonus.Count; j++)
+                {
+                    if (Bonus[j].Item1 == PositionsToCheck[i].Item1) continue;
+                    TilesToAdd.Add((Bonus[j].Item1, Bonus[j].Item2, Bonus[j].Item3, Bonus[j].Item4));
 
+                    for (int f = 0; f < TilesToAdd.Count; f++)
+                    {
+                        grid.CreateNewTile(TilesToAdd[f].Item1, TilesToAdd[f].Item2, true);
+                        if (TilesToAdd[f].Item2 == ThingsInCell.RoadForCars)
+                        {
+                            foreach (Vector3Int a in TilesToAdd[f].Item3)
+                                grid.UniteTiles(TilesToAdd[f].Item1, a, ThingsInCell.RoadForCars, true);
+                            foreach (Vector3Int a in TilesToAdd[f].Item4)
+                                grid.UniteTiles(a, TilesToAdd[f].Item1, ThingsInCell.RoadForCars, true);
+                        }
+                    }
+                    // yield return new WaitForEndOfFrame();
+                    double nowEfficiency = grid.StartSimmulation(this);
+                    totalVariants++;
+                    if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
+                    {
+                        bestEfficienty = nowEfficiency;
+                        bestPosition = TilesToAdd[0].Item1;
+                        bestVariant = TilesToAdd[0].Item2;
+                        bestRoadsFrom = TilesToAdd[0].Item3;
+                        bestRoadsTo = TilesToAdd[0].Item4;
+                    }
+                    for (int f = 0; f < TilesToAdd.Count; f++)
+                    {
+                        grid.RemoveTileAt(TilesToAdd[f].Item1);
+                    }
+                    TilesToAdd.RemoveAt(1);
 
-            Debug.Log("To Check:" + Convert.ToString(PositionsToCheck.Count));
-            List<Vector3Int> wasStart = new List<Vector3Int>();
+                }
+                TilesToAdd.RemoveAt(0);
+                yield return new WaitForEndOfFrame();
 
-            int s = 0;
-            foreach (Vector3Int b in PositionsToCheck)
+            }
+            Debug.Log("Total variants:" + Convert.ToString(totalVariants));
+            grid.CreateNewTile(bestPosition, bestVariant, false);
+            if (bestVariant == ThingsInCell.RoadForCars)
+            {
+                foreach (Vector3Int a in bestRoadsTo)
+                    grid.UniteTiles(a, bestPosition, ThingsInCell.RoadForCars, false);
+                foreach (Vector3Int a in bestRoadsFrom)
+                    grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars, false);
+            }
+            bestEfficienty = -1;
+            GranRoad.Clear();
+            GranHouse.Clear();
+            foreach (Vector3Int a in grid.Map.Keys)
+            {
+                if (IsGran(a))
+                {
+                    if (grid.Map[a] is CellWithHouse) GranHouse.Add(grid.Map[a] as CellWithHouse);
+                    else if (grid.Map[a] is CellWithRoad) GranRoad.Add(grid.Map[a] as CellWithRoad);
+                }
+            }
+            /*while (indexs[0] < PositionsToCheck.Count-Deep)
+            {
+                List<List<Vector3Int>> BonusesOnDeep = new List<List<Vector3Int>>(Deep);
+                for (int i = 0; i < indexs.Count; i++)
+                {
+                    if (PositionsToCheck[i].Item2 == ThingsInCell.RoadForCars)
+                    {
+                        foreach (Vector3Int a in PositionsToCheck[i].Item5) BonusesOnDeep[i].Add(a);
+                    }
+                }
+                for (int i = 0; i < indexs.Count; i++)
+                {
+                    grid.CreateNewTile(PositionsToCheck[indexs[i]].Item1, PositionsToCheck[indexs[i]].Item2, true);
+                    if (PositionsToCheck[indexs[i]].Item2 == ThingsInCell.RoadForCars)
+                    {
+                        foreach (Vector3Int a in PositionsToCheck[indexs[i]].Item3)
+                            grid.UniteTiles(a, PositionsToCheck[indexs[i]].Item1, ThingsInCell.RoadForCars, true);
+                        foreach (Vector3Int a in PositionsToCheck[indexs[i]].Item4)
+                            grid.UniteTiles(PositionsToCheck[indexs[i]].Item1, a, ThingsInCell.RoadForCars, true);
+                    }
+                }
+                double nowEfficiency = grid.StartSimmulation(this);
+                if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
+                {
+                    bestEfficienty = nowEfficiency;
+                    bestPosition = PositionsToCheck[indexs[0]].Item1;
+                    bestVariant = PositionsToCheck[indexs[0]].Item2;
+                    bestRoadsFrom = PositionsToCheck[indexs[0]].Item3;
+                    bestRoadsTo = PositionsToCheck[indexs[0]].Item4;
+                }
+                totalVariants++;
+            }
+            grid.CreateNewTile(bestPosition, bestVariant, false);
+            if (bestVariant == ThingsInCell.RoadForCars)
+            {
+                foreach (Vector3Int a in bestRoadsTo)
+                    grid.UniteTiles(a, bestPosition, ThingsInCell.RoadForCars, false);
+                foreach (Vector3Int a in bestRoadsFrom)
+                    grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars, false);
+            }*/
+
+            /*foreach (Vector3Int b in PositionsToCheck)
             {
                 foreach (ThingsInCell c in Variants)
                 {
@@ -143,14 +297,7 @@ public class OptimizationAlgorithm:MonoBehaviour
                 yield return new WaitForEndOfFrame();
             }
             Debug.Log(bestVariant);
-            grid.CreateNewTile(bestPosition, bestVariant, false);
-            if (bestVariant == ThingsInCell.RoadForCars)
-            {
-                foreach(Vector3Int a in bestRoadsTo)
-                    grid.UniteTiles(a, bestPosition, ThingsInCell.RoadForCars,false);
-                foreach (Vector3Int a in bestRoadsFrom)
-                    grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars,false);
-            }
+            
             foreach (Vector3Int a in grid.Map.Keys)
             {
                 if (IsGran(a))
@@ -162,8 +309,57 @@ public class OptimizationAlgorithm:MonoBehaviour
             wasStart.Clear();
             Debug.Log("BEST VARIANT FIND");
             bestEfficienty = -1;
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();*/
         }
+    }
+    private List<(List<Vector3Int>, List<Vector3Int>)> GetRoadsVariants(Vector3Int Position)
+    {
+        List<(List<Vector3Int>, List<Vector3Int>)> res = new List<(List<Vector3Int>, List<Vector3Int>)>();
+        List<Vector3Int> CanBeRoadsFrom = grid.PositionsRoadAround(Position);
+        int st1 = 1;
+        for (int i = 0; i < CanBeRoadsFrom.Count; i++)
+            st1 *= 2;
+
+        for (int i = 0; i < st1; i++)
+        {
+            int now1 = i;
+            List<Vector3Int> RoadsFrom = new List<Vector3Int>();
+            int pos = 0;
+            List<Vector3Int> CanBeRoadsTo = new List<Vector3Int>();
+            foreach (Vector3Int a in CanBeRoadsFrom)
+            {
+                CanBeRoadsTo.Add(a);
+            }
+            while (now1 != 0)
+            {
+                if (now1 % 2 == 1)
+                {
+                    RoadsFrom.Add(CanBeRoadsFrom[pos]);
+                    CanBeRoadsTo.Remove(CanBeRoadsFrom[pos]);
+                }
+                now1 /= 2;
+            }
+            int st2 = 1;
+
+            for (int j = 0; j < CanBeRoadsTo.Count; j++)
+            {
+                st2 *= 2;
+            }
+            for (int j = 0; j < st2; j++)
+            {
+                if (i == 0 && j == 0) continue;
+                int now2 = j;
+                List<Vector3Int> RoadsTo = new List<Vector3Int>();
+                int pos2 = 0;
+                while (now2 != 0)
+                {
+                    if (now2 % 2 == 1) RoadsTo.Add(CanBeRoadsTo[pos2]);
+                    now2 /= 2;
+                }
+                res.Add((RoadsFrom, RoadsTo));
+            }
+        }
+        return res;
     }
     private void Hod(List<Vector3Int>PosToCheck, int deep, Vector3Int start, ThingsInCell startthing, List<Vector3Int>startRoadsFrom, List<Vector3Int> startRoadsTo)
     {
