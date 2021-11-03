@@ -87,7 +87,7 @@ public class HumanController : MonoBehaviour
                     yield return new WaitForEndOfFrame();
                 }
             }
-            yield return new WaitForEndOfFrame();
+            else yield return new WaitForEndOfFrame();
         }
         
     }
