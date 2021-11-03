@@ -15,8 +15,9 @@ public class CellWithHouse:Cell
        if (!ForOA)UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
-            HumanInCellHouse = 10;
+            HumanInCellHouse = 2;
             houseControlles.AddCellWithHumans(this);
+            //Debug.Log("add");
         }
     }
     public void UniteHouse(Vector3Int from, Vector3Int to, bool fromthis)

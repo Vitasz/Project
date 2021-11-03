@@ -21,18 +21,22 @@ public class HumanFunctionality : MonoBehaviour
         (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
         Destroy(transform.gameObject);
     }
-    public bool MoveToNext()
+    public bool MoveToNext(out Vector3 from, out Vector3 to)
     {
         (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
         if (nowposition + 1 != way.Count)
         {
+            from = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
             nowposition++;
-            transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
+            to = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
+            //transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
             (grid.GetCell(way[nowposition]) as CellWithRoad).MoveToThis(this);
             return false;
         }
         else
         {
+            from = new Vector3();
+            to = new Vector3();
             return true;
         }
     }

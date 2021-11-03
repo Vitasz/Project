@@ -13,12 +13,10 @@ public class HouseControlles : MonoBehaviour
     public Clock clock;
     private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
     private List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
-    public bool CanSpawn = true;
     public HumanController humanController;
-    public bool CoroutineWork = false;
     private void Start()
     {
-       // StartCoroutine("SpawnHuman");
+        StartCoroutine("SpawnHuman");
     }
     public void AddHouse(Vector3Int Position, ThingsInCell type, CellWithHouse house)
     {
@@ -52,14 +50,19 @@ public class HouseControlles : MonoBehaviour
     {
         while (true)
         {
-            if (CanSpawn && CellsWithHouses.Count>1)
+           // Debug.Log(CellsWithHumans.Count);
+            if (CellsWithHumans.Count>=1)
             {
-                CellWithHouse HouseFrom = CellsWithHouses[UnityEngine.Random.Range(0, CellsWithHouses.Count)];
+                CellWithHouse HouseFrom = CellsWithHumans[UnityEngine.Random.Range(0, CellsWithHumans.Count)];
                 if (HouseFrom != null)
                 {
                     List<CellWithHouse> houseswithout = new List<CellWithHouse>();
                     foreach (CellWithHouse a in CellsWithHouses) if (HouseFrom != a) houseswithout.Add(a);
-                    
+                    if (houseswithout.Count == 0)
+                    {
+                        yield return new WaitForEndOfFrame();
+                        continue;
+                    }
                     CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
                     if (HouseTo != null)
                     {
@@ -72,7 +75,6 @@ public class HouseControlles : MonoBehaviour
                             clock.totalWays += way.Count;
                             if (HouseFrom.HumanInCellHouse == 0) CellsWithHumans.Remove(HouseFrom);
                             HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
-                            
                             human.StartGo(way, HouseTo, Grid, HouseFrom);
                             humanController.AddHuman(human);
                         }
@@ -82,47 +84,50 @@ public class HouseControlles : MonoBehaviour
              yield return new WaitForFixedUpdate();
         }
     }
-    public void SpawnHumanNotInf()
+    public float SpawnHumanNotInf()
     {
-        int maxHumans = 10;
-        clock.totalHumans = 0;
-        clock.totalTimes = 0;
-        clock.totalWays = 0;
-        while (maxHumans != 0)
+        List<List<Vector3Int>> WaysTo = new List<List<Vector3Int>>();
+        
+        for (int i = 0; i < CellsWithHouses.Count; i++)
         {
-            if (CanSpawn && CellsWithHouses.Count > 1)
+            List<List<Vector3Int>> temp = new List<List<Vector3Int>>();
+            for (int j = 0; j < CellsWithHouses.Count; j++)
             {
-                CellWithHouse HouseFrom = CellsWithHouses[UnityEngine.Random.Range(0, CellsWithHouses.Count)];
-                if (HouseFrom != null)
+                if (i != j)
                 {
-                    List<CellWithHouse> houseswithout = new List<CellWithHouse>();
-                    foreach (CellWithHouse a in CellsWithHouses) if (HouseFrom != a) houseswithout.Add(a);
-
-                    CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
-                    if (HouseTo != null)
+                    List<Vector3Int> NowWay = Grid.FindWay(CellsWithHouses[i].GetNearTiles(), CellsWithHouses[j].GetNearTiles());
+                    if (NowWay == null)
                     {
-                        List<Vector3Int> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
-                        if (way != null)
+                        return -1f;
+                    }
+                    else
+                    {
+                        if (temp.Count<5)
+                        temp.Add(NowWay);
+                        else
                         {
-                            //Create Human
-                            maxHumans--;
-                            HouseFrom.HumanInCellHouse--;
-                            clock.totalHumans++;
-                            clock.totalWays += way.Count;
-                            if (HouseFrom.HumanInCellHouse == 0) CellsWithHumans.Remove(HouseFrom);
-                            HFforOA human = new HFforOA();
-                            human.StartGo(way, HouseTo, Grid, HouseFrom);
-                            humanController.AddHumanForOA(human);
+                            int nowpos = 4;
+                            while (nowpos!=-1&&temp[nowpos].Count < NowWay.Count) nowpos--;
+                            nowpos++;
+                            if (nowpos != 5)
+                            {
+                                temp.RemoveAt(temp.Count - 1);
+                                temp.Insert(nowpos, NowWay);
+                            }
                         }
                     }
                 }
             }
+            for (int k = 0; k < temp.Count; k++)
+            {
+                WaysTo.Add(temp[k]);
+            }
         }
-        humanController.GoNotInf();
+        return  humanController.GetEfficiencySystem(WaysTo);
     }
     public void AddCellWithHumans(CellWithHouse temp) => CellsWithHumans.Add(temp);
-    public void RemoveHouse(Vector3Int position)
+    public void RemoveHouse(CellWithHouse what)
     {
-        CellsWithHouses.Remove(Grid.GetCell(position) as CellWithHouse);
+        CellsWithHouses.Remove(what);
     }
 }
