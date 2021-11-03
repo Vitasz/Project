@@ -13,7 +13,6 @@ public class CellWithRoad : Cell
     protected bool isEmpty = true;
     public float WaitTime = 1f;
     HumanFunctionality HumanInCell;
-    HFforOA HumanInCellforOA;
     Vector3Int NextCellHuman;
     private bool todel = false;
     private bool visible = false;
@@ -107,15 +106,9 @@ public class CellWithRoad : Cell
         HumanInCell = who;
         isEmpty = false;
     }
-    public void MoveToThis(HFforOA who)
-    {
-        HumanInCellforOA = who;
-        isEmpty = false;
-    }
     public void MoveOutThis()
     {
         HumanInCell = null;
-        HumanInCellforOA = null;
         isEmpty = true;
         WaitTime = 0.0001f;
     }
@@ -129,13 +122,5 @@ public class CellWithRoad : Cell
     public void Remove()
     {
         todel = true;
-    }
-    public HFforOA CanMoveForOA()
-    {
-        if (isEmpty)
-        {
-            return null;
-        }
-        else return HumanInCellforOA;
     }
 }

@@ -143,46 +143,28 @@ public class GridFunc : MonoBehaviour
             (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false, ForOA);
         }*/
     }
-    /*public Vector3 PositionCell((int,int) cell)
-    {
-        Vector3 toret = new Vector3(0, 0,-100);
-        toret.x = -(float)SizeX / 2 * SizeCell + (float)SizeCell / 2 + cell.Item1 * SizeCell;
-        toret.y = -(float)SizeY / 2 * SizeCell + (float)SizeCell / 2 + cell.Item2 * SizeCell;
-        return toret;
-    }*/
     public void Optimize()
     {
         //OptimizationAlgorithm a = new OptimizationAlgorithm();
         a.Optimization(this);
     }
-    public double StartSimmulation(OptimizationAlgorithm OA)
+    public float StartSimmulation()
     {
-        houseControlles.CanSpawn = true;
-        houseControlles.CoroutineWork = true;
-        clock.MaxEfficiency = -1;
-        houseControlles.SpawnHumanNotInf();
-        return clock.GetEfficiencyForOA();
-        
-    }
-    public void StopSimmulation()
-    {
-        houseControlles.CanSpawn = true;
-        foreach (GameObject a in Humans) Destroy(a.gameObject);
-        Humans.Clear();
+        return  houseControlles.SpawnHumanNotInf();
     }
     public void RemoveTileAt(Vector3Int position)
     {
         if (Map[position] is CellWithHouse)
         {
             tilemap.SetTile(position, null);
+            houseControlles.RemoveHouse(Map[position] as CellWithHouse);
             Map.Remove(position);
-            houseControlles.RemoveHouse(position);
         }
         else if (Map[position] is CellWithRoad)
         {
             (Map[position] as CellWithRoad).Remove();
-            tilemap.SetTile(position, null);
-            tilemap.SetTile(new Vector3Int(position.x, position.y, -1), null);
+            //tilemap.SetTile(position, null);
+            //tilemap.SetTile(new Vector3Int(position.x, position.y, -1), null);
             Map.Remove(position);
             for (int i = -1; i < 2; i++)
             {

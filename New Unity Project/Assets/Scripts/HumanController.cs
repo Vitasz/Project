@@ -8,11 +8,10 @@ public class HumanController : MonoBehaviour
     public Clock clock;
     List<HumanFunctionality> Humans = new List<HumanFunctionality>();
     List<HumanFunctionality> queue = new List<HumanFunctionality>();
-    List<HFforOA> HumansForOA = new List<HFforOA>();
-    
+    public float speed=3;
     public void Start()
     {
-      //  StartCoroutine("Go");
+        StartCoroutine("Go");
     }
     public IEnumerator Go()
     {
@@ -23,6 +22,7 @@ public class HumanController : MonoBehaviour
             Dictionary<HumanFunctionality, bool> tryedMoved = new Dictionary<HumanFunctionality, bool>();
             foreach (HumanFunctionality a in Humans) tryedMoved.Add(a, false);
             List<HumanFunctionality> todel = new List<HumanFunctionality>();
+            List<(HumanFunctionality, Vector3, Vector3)> toMove = new List<(HumanFunctionality, Vector3, Vector3)>();
             foreach (HumanFunctionality i in Humans)
             {
                 if (!tryedMoved[i])
@@ -37,8 +37,10 @@ public class HumanController : MonoBehaviour
                         {
                             for (int j = tryedMovedHuman.Count - 1; j >= 0; j--)
                             {
-                                bool notok = tryedMovedHuman[j].MoveToNext();
+                                Vector3 from, to;
+                                bool notok = tryedMovedHuman[j].MoveToNext(out from, out to);
                                 if (notok) todel.Add(tryedMovedHuman[j]);
+                                else toMove.Add((tryedMovedHuman[j], from, to));
                             }
                             break;
                         }
@@ -49,8 +51,10 @@ public class HumanController : MonoBehaviour
                                 int lastind = tryedMovedHuman.IndexOf(nowHuman.CanMove());
                                 for (int j = tryedMovedHuman.Count - 1; j >= lastind; j--)
                                 {
-                                    bool notok = tryedMovedHuman[j].MoveToNext();
+                                    Vector3 from, to;
+                                    bool notok = tryedMovedHuman[j].MoveToNext(out from, out to);
                                     if (notok) todel.Add(tryedMovedHuman[j]);
+                                    else toMove.Add((tryedMovedHuman[j], from, to));
                                 }
                                 break;
                             }
@@ -69,70 +73,56 @@ public class HumanController : MonoBehaviour
                 a.DeleteHuman();
                 Humans.Remove(a);
             }
-            yield return new WaitForSeconds(0.1f);
-        }
-    }
-    public void GoNotInf()
-    {
-        int time = 1;
-        while (HumansForOA.Count!=0)
-        {
-            Dictionary<HFforOA, bool> tryedMoved = new Dictionary<HFforOA, bool>();
-            foreach (HFforOA a in HumansForOA) tryedMoved.Add(a, false);
-            List<HFforOA> todel = new List<HFforOA>();
-            foreach (HFforOA i in HumansForOA)
+            float progress = 0f;
+           // Debug.Log(toMove.Count);
+            if (toMove.Count!=0)
             {
-                if (!tryedMoved[i])
+                while (progress < 1f)
                 {
-                    tryedMoved[i] = true;
-                    List<HFforOA> tryedMovedHuman = new List<HFforOA>() { i };
-                    while (true)
+                    progress += Time.deltaTime*speed;
+                    foreach ((HumanFunctionality, Vector3, Vector3) a in toMove)
                     {
-                        HFforOA nowHuman = tryedMovedHuman[tryedMovedHuman.Count - 1];
-
-                        if (nowHuman.CanMove() == null)
-                        {
-                            for (int j = tryedMovedHuman.Count - 1; j >= 0; j--)
-                            {
-                                bool notok = tryedMovedHuman[j].MoveToNext();
-                                if (notok) todel.Add(tryedMovedHuman[j]);
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            if (tryedMovedHuman.Contains(nowHuman.CanMove()))
-                            {
-                                int lastind = tryedMovedHuman.IndexOf(nowHuman.CanMove());
-                                for (int j = tryedMovedHuman.Count - 1; j >= lastind; j--)
-                                {
-                                    bool notok = tryedMovedHuman[j].MoveToNext();
-                                    if (notok) todel.Add(tryedMovedHuman[j]);
-                                }
-                                break;
-                            }
-                            else
-                            {
-                                tryedMovedHuman.Add(nowHuman.CanMove());
-                                if (tryedMoved[tryedMovedHuman[tryedMovedHuman.Count - 1]]) break;
-                                tryedMoved[nowHuman.CanMove()] = true;
-                            }
-                        }
+                        a.Item1.transform.localPosition = Vector3.Lerp(a.Item2, a.Item3, progress);
                     }
+                    yield return new WaitForEndOfFrame();
                 }
             }
-            clock.totalTimes += todel.Count * time;
-            foreach (HFforOA a in todel)
-            {
-                
-                a.DeleteHuman();
-                HumansForOA.Remove(a);
-            }
-            time++;
+            yield return new WaitForEndOfFrame();
         }
+        
+    }
+    public float GetEfficiencySystem(List<List<Vector3Int>> Ways)
+    {
+        int totalTimes = 0, totalWays = 0;
+        List<List<Vector3Int>> busyCells = new List<List<Vector3Int>>() { new List<Vector3Int>() };
+        for (int i = 0; i < Ways.Count; i++)
+        {
+            int nowtime = 0;
+            int prevtime = 0;
+            for (int j = 0; j < Ways[i].Count; j++)
+            {
+                if (busyCells[nowtime].Contains(Ways[i][j]))
+                {
+                    nowtime++;
+                    if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
+                    while (busyCells[nowtime].Contains(Ways[i][j]))
+                    {
+                        nowtime++;
+                        if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
+                    }
+                }
+                if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
+                busyCells[nowtime].Add(Ways[i][j]);
+                totalTimes += nowtime-prevtime;
+                prevtime = nowtime;
+                nowtime++;
+                if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
+            }
+            totalWays += Ways[i].Count;
+        }
+        return (float)totalTimes / totalWays;
     }
     public void AddHuman(HumanFunctionality human) => queue.Add(human);
-    public void AddHumanForOA(HFforOA human) => HumansForOA.Add(human);
     public void DeleteAllHumans()
     {
         foreach (HumanFunctionality a in queue) Humans.Add(a);
