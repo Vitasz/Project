@@ -10,13 +10,13 @@ public class CellWithHouse:Cell
     private int[] housefromCellOnIndex = new int[8];
     private List<Vector3Int> thisHouse = new List<Vector3Int>();
     public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type, bool ForOA) : base(grid, houseControlles, position) {
-        houseControlles.AddHouse(position, type, this);
+        houseControlles.AddHouse(position, type, this, ForOA);
         typeHouse = type;
        if (!ForOA)UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
             HumanInCellHouse = 2;
-            houseControlles.AddCellWithHumans(this);
+            if (!ForOA)houseControlles.AddCellWithHumans(this);
             //Debug.Log("add");
         }
     }

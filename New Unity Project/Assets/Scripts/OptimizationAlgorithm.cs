@@ -73,6 +73,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                             foreach ((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
                                 PositionsToCheck[PositionsToCheck.Count - 1].Add((PositionGran, type, a.Item1, a.Item2));
                         }
+                    if (PositionsToCheck[PositionsToCheck.Count - 1].Count == 0) PositionsToCheck.RemoveAt(PositionsToCheck.Count - 1);
                 }
             total = 0;
             List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> temp = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
@@ -112,6 +113,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                         foreach ((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
                             res[res.Count - 1].Add((PositionGran, type, a.Item1, a.Item2));
                     }
+                if (res[res.Count - 1].Count == 0) res.RemoveAt(res.Count - 1);
             }
         return res;
     }
@@ -138,6 +140,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                 bestVariant = TilesToAdd[0].Item2;
                 bestRoadsFrom = TilesToAdd[0].Item3;
                 bestRoadsTo = TilesToAdd[0].Item4;
+               // UnityEngine.Debug.Log(Convert.ToString(bestRoadsFrom.Count) + ' ' + Convert.ToString(bestRoadsTo.Count));
             }
         }
         for (int f = 0; f < TilesToAdd.Count; f++)
@@ -169,6 +172,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                     CanBeRoadsTo.Remove(CanBeRoadsFrom[pos]);
                 }
                 now1 /= 2;
+                pos++;
             }
             int st2 = 1;
 
@@ -186,6 +190,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                 {
                     if (now2 % 2 == 1) RoadsTo.Add(CanBeRoadsTo[pos2]);
                     now2 /= 2;
+                    pos2++;
                 }
                 res.Add((RoadsFrom, RoadsTo));
             }
@@ -194,7 +199,13 @@ public class OptimizationAlgorithm : MonoBehaviour
     }
     private void Hod(ref List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> nowdeep,ref List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd,int prevpos, int deep, List<Vector3Int> PosToadd)
     {
-        for (int i = prevpos + 1; i < nowdeep.Count; i++)
+        if (nowdeep.Count==0)
+        {
+            TestSystem(TilesToAdd);
+            total++;
+            return;
+        }
+        for (int i = prevpos+1; i < nowdeep.Count; i++)
         {
             for (int j = 0; j < nowdeep[i].Count; j++)
             {
@@ -203,7 +214,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                 PosToadd.Add(nowdeep[i][j].Item1);
                 if (deep == 1)
                 {
-                    //TestSystem(TilesToAdd);
+                    TestSystem(TilesToAdd);
                     total++;
                 }
                 else

@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 public class GridFunc : MonoBehaviour
 {
     public EventSystem EventSystemManager;
-    public int SizeX, SizeY, SizeCell;
+    //public int SizeX, SizeY, SizeCell;
     public HouseControlles houseControlles;
     public GameControlls GameController;
     public Material MaterialForLines;
@@ -16,7 +16,7 @@ public class GridFunc : MonoBehaviour
     public Tilemap tilemap;
     public Clock clock;
     public HumanController HumanControlles;
-    public readonly float _linesWidth = 0.3f;
+    //public readonly float _linesWidth = 0.3f;
     public Dictionary<Vector3Int, Cell> Map = new Dictionary<Vector3Int, Cell>();
     public List<CellWithRoad> Roads = new List<CellWithRoad>();
     public List<GameObject> Humans = new List<GameObject>();
@@ -127,7 +127,7 @@ public class GridFunc : MonoBehaviour
         else if (type == ThingsInCell.RoadForCars)
         {
             Map.Add(Position, new CellWithRoad(this, houseControlles, Position, ForOA));
-            Roads.Add(Map[Position] as CellWithRoad);
+            if (!ForOA)Roads.Add(Map[Position] as CellWithRoad);
         }
     }
     public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode, bool ForOA)
@@ -135,7 +135,7 @@ public class GridFunc : MonoBehaviour
         if (Map[PositionFrom] is CellWithRoad && Map[PositionTo] is CellWithRoad)
         {
             (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true, ForOA);
-            (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
+            if (!ForOA)(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
         }
         /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
         {

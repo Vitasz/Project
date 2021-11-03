@@ -43,7 +43,11 @@ public class CellWithRoad : Cell
     }
     public void AddRoad(Vector3Int from, Vector3Int to, bool fromthissell, bool ForOA)
     {
-        if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to)!=-1 && name[GetIndexNearCell(from,to)]=='0'&&name[GetIndexNearCell(from,to)+8]=='0')
+        if (ForOA)
+        {
+            roadsFromCell.Add(to);
+        }
+        else if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to) != -1 && name[GetIndexNearCell(from, to)] == '0' && name[GetIndexNearCell(from, to) + 8] == '0')
         {
             if (fromthissell)
             {
@@ -60,7 +64,8 @@ public class CellWithRoad : Cell
                 }
                 //Debug.Log("Add");
             }
-            else {
+            else
+            {
                 if (!ForOA)
                     name = name.Substring(0, GetIndexNearCell(from, to)) + '1' + name.Substring(GetIndexNearCell(from, to) + 1);
             }
