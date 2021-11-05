@@ -126,7 +126,7 @@ public class GridFunc : MonoBehaviour
             Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type, ForOA));
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, houseControlles, Position, ForOA));
+            Map.Add(Position, new CellWithRoad(this, houseControlles, Position,type, ForOA));
             if (!ForOA)Roads.Add(Map[Position] as CellWithRoad);
         }
     }
@@ -147,10 +147,6 @@ public class GridFunc : MonoBehaviour
     {
         //OptimizationAlgorithm a = new OptimizationAlgorithm();
         a.Optimization(this);
-    }
-    public float StartSimmulation()
-    {
-        return  houseControlles.SpawnHumanNotInf();
     }
     public void RemoveTileAt(Vector3Int position)
     {

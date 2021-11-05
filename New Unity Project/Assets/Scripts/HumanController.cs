@@ -74,7 +74,8 @@ public class HumanController : MonoBehaviour
                 Humans.Remove(a);
             }
             float progress = 0f;
-           // Debug.Log(toMove.Count);
+            clock.UpdateWaitTime();
+            // Debug.Log(toMove.Count);
             if (toMove.Count!=0)
             {
                 while (progress < 1f)
@@ -87,40 +88,10 @@ public class HumanController : MonoBehaviour
                     yield return new WaitForEndOfFrame();
                 }
             }
-            else yield return new WaitForEndOfFrame(); ;
+            else 
+                yield return new WaitForEndOfFrame(); ;
         }
         
-    }
-    public float GetEfficiencySystem(List<List<Vector3Int>> Ways)
-    {
-        int totalTimes = 0, totalWays = 0;
-        List<List<Vector3Int>> busyCells = new List<List<Vector3Int>>() { new List<Vector3Int>() };
-        for (int i = 0; i < Ways.Count; i++)
-        {
-            int nowtime = 0;
-            int prevtime = 0;
-            for (int j = 0; j < Ways[i].Count; j++)
-            {
-                if (busyCells[nowtime].Contains(Ways[i][j]))
-                {
-                    nowtime++;
-                    if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
-                    while (busyCells[nowtime].Contains(Ways[i][j]))
-                    {
-                        nowtime++;
-                        if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
-                    }
-                }
-                if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
-                busyCells[nowtime].Add(Ways[i][j]);
-                totalTimes += nowtime-prevtime;
-                prevtime = nowtime;
-                nowtime++;
-                if (busyCells.Count == nowtime) busyCells.Add(new List<Vector3Int>());
-            }
-            totalWays += Ways[i].Count;
-        }
-        return (float)totalTimes / totalWays;
     }
     public void AddHuman(HumanFunctionality human) => queue.Add(human);
     public void DeleteAllHumans()

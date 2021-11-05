@@ -21,7 +21,7 @@ public class Clock : MonoBehaviour
             int seconds = Mathf.CeilToInt(Time.time);
             MaxEfficiency = Math.Max(MaxEfficiency, UpdateEfficiency());
             TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString(GetEfficiencyForOA());
-            UpdateWaitTime();
+            //UpdateWaitTime();
             yield return new WaitForEndOfFrame();
         }
     }
@@ -32,7 +32,7 @@ public class Clock : MonoBehaviour
         if (totalHumans != 0) return (float)totalWays / totalHumans;
         else return -1;
     }
-    private void UpdateWaitTime()
+    public void UpdateWaitTime()
     {
         foreach(CellWithRoad a in grid.Roads)
         {

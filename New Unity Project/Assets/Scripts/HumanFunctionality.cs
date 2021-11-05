@@ -23,7 +23,7 @@ public class HumanFunctionality : MonoBehaviour
     }
     public bool MoveToNext(out Vector3 from, out Vector3 to)
     {
-        if (grid.GetCell(way[nowposition]) is CellWithRoad) (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
+        if (grid.GetCell(way[nowposition]) is CellWithRoad) (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis(this);
         if (nowposition + 1 != way.Count)
         {
             from = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));

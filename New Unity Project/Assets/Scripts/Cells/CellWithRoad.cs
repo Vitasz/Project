@@ -11,12 +11,13 @@ public class CellWithRoad : Cell
     private int[] roadsfromCellOnIndex = new int[8];
     private string name = "0000000000000000";
     protected bool isEmpty = true;
+    List<bool> EmptyLastFrames = new List<bool>(100);
     public float WaitTime = 1f;
     HumanFunctionality HumanInCell;
     Vector3Int NextCellHuman;
     private bool todel = false;
     private bool visible = false;
-    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position, bool ForOA) : base(grid, houseControlles, position) {
+    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type, bool ForOA) : base(grid, houseControlles, position, type) {
         if (!ForOA)grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, -1), Resources.Load<Tile>("Tiles/Roads/0000000000000000"));
         visible = !ForOA;
         //UpdateTile();
@@ -78,7 +79,9 @@ public class CellWithRoad : Cell
     }
     public List<Vector3Int> GetNearRoadsWays()
     {
-        return roadsFromCell;
+        List<Vector3Int> ans = new List<Vector3Int>();
+        foreach (Vector3Int a in roadsFromCell) ans.Add(a);
+        return ans;
     }
     protected override void UpdateTile()
     {
@@ -108,20 +111,28 @@ public class CellWithRoad : Cell
     }
     public void MoveToThis(HumanFunctionality who)
     {
-        HumanInCell = who;
         isEmpty = false;
+        HumanInCell = who;
     }
-    public void MoveOutThis()
+    public void MoveOutThis(HumanFunctionality who)
     {
-        HumanInCell = null;
-        isEmpty = true;
-        WaitTime = 0.0001f;
+        if (who == HumanInCell)
+        {
+            HumanInCell = null;
+            isEmpty = true;
+        }
     }
     public bool IsEmpty() => isEmpty;
     public void UpdateWaitTime()
     {
-        WaitTime = (WaitTime * 2 + (isEmpty ? 0 : 5)) / 2;
-        WaitTime = Math.Max(0.0001f, WaitTime);
+        EmptyLastFrames.Add(isEmpty);
+        if (EmptyLastFrames.Count>15)EmptyLastFrames.RemoveAt(0);
+        int notwasEmpty = 0;
+        for (int i = 0; i < EmptyLastFrames.Count; i++)
+        {
+            if (!EmptyLastFrames[i]) notwasEmpty++;
+        }
+        WaitTime = (float)notwasEmpty;
         UpdateTile();
     }
     public void Remove()

@@ -68,47 +68,6 @@ public class HouseControlles : MonoBehaviour
              yield return new WaitForFixedUpdate();
         }
     }
-    public float SpawnHumanNotInf()
-    {
-        List<List<Vector3Int>> WaysTo = new List<List<Vector3Int>>();
-        
-        for (int i = 0; i < CellsWithHouses.Count; i++)
-        {
-            List<List<Vector3Int>> temp = new List<List<Vector3Int>>();
-            for (int j = 0; j < CellsWithHouses.Count; j++)
-            {
-                if (i != j)
-                {
-                    List<Vector3Int> NowWay = Grid.FindWay(CellsWithHouses[i].GetNearTiles(), CellsWithHouses[j].GetNearTiles());
-                    if (NowWay == null)
-                    {
-                        return -1f;
-                    }
-                    else
-                    {
-                        if (temp.Count<5)
-                        temp.Add(NowWay);
-                        else
-                        {
-                            int nowpos = 4;
-                            while (nowpos!=-1&&temp[nowpos].Count < NowWay.Count) nowpos--;
-                            nowpos++;
-                            if (nowpos != 5)
-                            {
-                                temp.RemoveAt(temp.Count - 1);
-                                temp.Insert(nowpos, NowWay);
-                            }
-                        }
-                    }
-                }
-            }
-            for (int k = 0; k < temp.Count; k++)
-            {
-                WaysTo.Add(temp[k]);
-            }
-        }
-        return  humanController.GetEfficiencySystem(WaysTo);
-    }
     public void AddCellWithHumans(CellWithHouse temp) => CellsWithHumans.Add(temp);
     public void RemoveHouse(CellWithHouse what)
     {

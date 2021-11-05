@@ -18,11 +18,13 @@ public class Cell
     protected GridFunc grid;
     protected HouseControlles houseControlles;
     protected Vector3Int positioninTileMap;
-    public Cell(GridFunc Grid, HouseControlles HouseControlles, Vector3Int PositionCell)
+    ThingsInCell typeCell;
+    public Cell(GridFunc Grid, HouseControlles HouseControlles, Vector3Int PositionCell, ThingsInCell type)
     {
         grid = Grid;
         houseControlles = HouseControlles;
         positioninTileMap = PositionCell;
+        typeCell = type;
     }
     protected virtual void UpdateTileWithNewNeighboors() { }
     public int GetIndexNearCell(Vector3Int from, Vector3Int to)
@@ -57,6 +59,10 @@ public class Cell
             foreach (int b in a.Value) temp += Convert.ToString(b);
             grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, a.Key), Resources.Load<Tile>(ResourcesLoadedPaths[a.Key] + temp));
         }*/
+    }
+    public ThingsInCell GetTypeCell()
+    {
+        return typeCell;
     }
     public List<Vector3Int> GetNearTiles()
     {
