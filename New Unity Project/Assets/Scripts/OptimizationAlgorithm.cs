@@ -342,14 +342,13 @@ public class OptimizationAlgorithm : MonoBehaviour
                             {
                                 if (houses.ContainsKey(b) && !was.ContainsKey(b))
                                 {
-                                    WaysTo.Add(a.Item2);
+                                    if (houses[b] != houses[startPos])
+                                    {
+                                        WaysTo.Add(a.Item2);
+                                    }
                                     was.Add(b, a.Item2);
                                     HousesFind++;
                                 }
-                            }
-                            if (!roads.ContainsKey(a.Item1))
-                            {
-                                UnityEngine.Debug.LogError(a.Item1);
                             }
                             foreach (Vector3Int b in roads[a.Item1])
                             {
