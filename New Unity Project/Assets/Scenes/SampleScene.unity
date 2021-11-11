@@ -2309,9 +2309,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d38224a0fdf334b90f88b6cb9e9439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Deep: 1
+  Deep: 2
   AddRoad: 0
-  AddHouse: 0
+  AddHousePeople: 0
+  AddHouseCom: 0
+  AddHouseFact: 0
+  HODS: 30
 --- !u!4 &1809316478
 Transform:
   m_ObjectHideFlags: 0

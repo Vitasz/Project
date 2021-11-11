@@ -12,7 +12,6 @@ public class OptimizationAlgorithm : MonoBehaviour
     //GridFunc grid;
     public int Deep = 1;
     List<ThingsInCell> Variants = new List<ThingsInCell>() { ThingsInCell.HousePeople, ThingsInCell.HouseCom, ThingsInCell.HouseFact, ThingsInCell.RoadForCars };
-    List<ThingsInCell> StartVariants = new List<ThingsInCell>();
     Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
     Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
     Dictionary<Vector3Int, ThingsInCell> MapCopy = new Dictionary<Vector3Int, ThingsInCell>();
@@ -22,7 +21,6 @@ public class OptimizationAlgorithm : MonoBehaviour
     ThingsInCell bestVariant;
     List<Vector3Int> bestRoadsFrom = new List<Vector3Int>();
     List<Vector3Int> bestRoadsTo = new List<Vector3Int>();
-    public bool AddRoad, AddHousePeople, AddHouseCom, AddHouseFact;
     public int HODS = 0;
     private int total = 0;
     private bool IsGran(Vector3Int position)
@@ -77,16 +75,8 @@ public class OptimizationAlgorithm : MonoBehaviour
             }
             HODS -= 1;
             cntroads = Roads.Count;
-            if (cntroads < (cnthousesFact + cnthousesCom + cnthousesPeople) * 3) AddRoad = true;
-            else if (cnthousesCom < cnthousesFact && cnthousesPeople > cnthousesCom) AddHouseCom = true;
-            else if (cnthousesFact < cnthousesCom && cnthousesPeople > cnthousesFact) AddHouseFact = true;
-            else  AddHousePeople = true;
             List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> PositionsToCheck = new List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>>();//{Position, Type, RoadsFrom, RoadsTo, Bonus grans(if type is road))}
             List<Vector3Int> was = new List<Vector3Int>();
-            if (AddRoad) StartVariants.Add(ThingsInCell.RoadForCars);
-            if (AddHousePeople) StartVariants.Add(ThingsInCell.HousePeople);
-            if (AddHouseCom) StartVariants.Add(ThingsInCell.HouseCom);
-            if (AddHouseFact) StartVariants.Add(ThingsInCell.HouseFact);
             foreach (CellWithRoad cell in GranRoad)
                 foreach (Vector3Int PositionGran in GetGrans(cell.GetCellPosition()))
                 {
@@ -107,7 +97,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> temp = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            if (PositionsToCheck.Count != 0) Hod(ref PositionsToCheck, temp, -1, Deep, new List<Vector3Int>());
+            if (PositionsToCheck.Count != 0) Hod(ref PositionsToCheck, temp, Deep, new List<Vector3Int>(), cntroads,cnthousesPeople,cnthousesCom,cnthousesFact);
             UnityEngine.Debug.Log(tasks.Count);
             yield return new WaitForEndOfFrame();
             Task.WaitAll(tasks.ToArray());
@@ -123,17 +113,12 @@ public class OptimizationAlgorithm : MonoBehaviour
                     grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars, false);
             }
             bestEfficienty = -1;
-            StartVariants.Clear();
             GranRoad.Clear();
             GranHouse.Clear();
             MapCopy.Clear();
             Roads.Clear();
             Houses.Clear();
             tasks.Clear();
-            AddRoad = false;
-            AddHouseCom = false;
-            AddHouseFact = false;
-            AddHousePeople = false;
             yield return new WaitForEndOfFrame();
         }
         yield return null;
@@ -209,41 +194,41 @@ public class OptimizationAlgorithm : MonoBehaviour
         }
         return res;
     }
-    private void Hod(ref List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> nowdeep,List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd,int prevpos, int deep, List<Vector3Int> PosToadd)
+    private void Hod(ref List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> nowdeep,List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd, int deep, List<Vector3Int> PosToadd, int cntroads,int cnthousePeople,int cnthouseCom, int cnthouseFact)
     {
-        if (nowdeep.Count==0)
+        ThingsInCell whatadd;
+        if (cntroads <= (cnthouseFact + cnthouseCom + cnthousePeople) * 3)
         {
-            List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> tilesToAddCopy = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
-            foreach((Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>) a in TilesToAdd)
-                tilesToAddCopy.Add(a);
-            Dictionary<Vector3Int, List<Vector3Int>> RoadsCopy = new Dictionary<Vector3Int, List<Vector3Int>>();
-            Dictionary<Vector3Int, ThingsInCell> HousesCopy = new Dictionary<Vector3Int, ThingsInCell>();
-            
-            foreach (Vector3Int a in Roads.Keys)
-            {
-                RoadsCopy.Add(a, new List<Vector3Int>());
-                foreach(Vector3Int b in Roads[a])
-                {
-                    RoadsCopy[a].Add(b);
-                }
-            }
-            foreach(Vector3Int a in Houses.Keys)
-            {
-                HousesCopy.Add(a, Houses[a]);
-            }
-            tasks.Add(Task.Run(()=>TestSystem(tilesToAddCopy, RoadsCopy, HousesCopy)));
-            total++;
-            return;
+            whatadd = ThingsInCell.RoadForCars;
+            cntroads++;
         }
-        for (int i = prevpos+1; i < nowdeep.Count; i++)
+        else if (cnthouseCom <= cnthouseFact && cnthousePeople >= cnthouseCom)
+        {
+            whatadd = ThingsInCell.HouseCom;
+            cnthouseCom++;
+        }
+        else if (cnthouseFact <= cnthouseCom && cnthousePeople >= cnthouseFact)
+        {
+            whatadd = ThingsInCell.HouseFact;
+            cnthouseFact++;
+        }
+        else
+        {
+            whatadd = ThingsInCell.HousePeople;
+            cnthousePeople++;
+        }
+        if (deep==Deep)UnityEngine.Debug.Log(whatadd);
+        for (int i = 0; i < nowdeep.Count; i++)
         {
             for (int j = 0; j < nowdeep[i].Count; j++)
             {
                 if (PosToadd.Contains(nowdeep[i][j].Item1)) continue;
-                if (deep == 1 && nowdeep[i][j].Item2 == ThingsInCell.RoadForCars)
+                if (deep == 1)
                 {
-                    continue;
-                };
+                    if (nowdeep[i][j].Item2 == ThingsInCell.RoadForCars)
+                        continue;
+                }
+                else if (nowdeep[i][j].Item2 != whatadd) continue;
                 TilesToAdd.Add(nowdeep[i][j]);
                 PosToadd.Add(nowdeep[i][j].Item1);
                 if (deep == 1)
@@ -274,7 +259,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                     List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> nextdeep = new List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>>();
                     foreach (List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> a in nowdeep) nextdeep.Add(a);
                     foreach (List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> b in BonusFor(nowdeep[i][j])) nextdeep.Add(b);
-                    Hod(ref nextdeep, TilesToAdd, i, deep - 1, PosToadd);
+                    Hod(ref nextdeep, TilesToAdd, deep - 1, PosToadd, cntroads, cnthousePeople,cnthouseCom,cnthouseFact);
                 }
                 TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
                 PosToadd.RemoveAt(PosToadd.Count - 1);
@@ -380,7 +365,7 @@ public class OptimizationAlgorithm : MonoBehaviour
     private void TestSystem(List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd,
         Dictionary<Vector3Int, List<Vector3Int>> roads, Dictionary<Vector3Int, ThingsInCell> houses)
     {
-        int indexOk = -1;
+        /*int indexOk = -1;
         for (int i = 0; i < TilesToAdd.Count-1; i++)
         {
             if (StartVariants.Contains(TilesToAdd[i].Item2))
@@ -388,7 +373,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                 indexOk = i;
             }
         }
-        if (indexOk == -1) return;
+        if (indexOk == -1) return;*/
         double GetEfficiencyOfSystem()
         {
             List<List<Vector3Int>> WaysTo = GetWaysToEachOther(ref roads, ref houses);
@@ -422,30 +407,18 @@ public class OptimizationAlgorithm : MonoBehaviour
             }
             return (double)totalTimes / totalWays;
         }
-        if (TilesToAdd[indexOk].Item2 == ThingsInCell.RoadForCars)
-        {
-            roads.Add(TilesToAdd[indexOk].Item1, new List<Vector3Int>());
-            foreach (Vector3Int a in TilesToAdd[indexOk].Item3)
-                roads[TilesToAdd[indexOk].Item1].Add(a);
-            foreach (Vector3Int a in TilesToAdd[indexOk].Item4)
-                roads[a].Add(TilesToAdd[indexOk].Item1);
-        }
-        else houses.Add(TilesToAdd[indexOk].Item1, TilesToAdd[indexOk].Item2);
         if (GetEfficiencyOfSystem() == -1f) return;
         for (int f = 0; f < TilesToAdd.Count; f++)
         {
-                if (f != indexOk)
-                {
-                    if (TilesToAdd[f].Item2 == ThingsInCell.RoadForCars)
-                    {
-                        roads.Add(TilesToAdd[f].Item1, new List<Vector3Int>());
-                        foreach (Vector3Int a in TilesToAdd[f].Item3)
-                            roads[TilesToAdd[f].Item1].Add(a);
-                        foreach (Vector3Int a in TilesToAdd[f].Item4)
-                            roads[a].Add(TilesToAdd[f].Item1);
-                    }
-                    else houses.Add(TilesToAdd[f].Item1, TilesToAdd[f].Item2);
-                }
+            if (TilesToAdd[f].Item2 == ThingsInCell.RoadForCars)
+            {
+                roads.Add(TilesToAdd[f].Item1, new List<Vector3Int>());
+                foreach (Vector3Int a in TilesToAdd[f].Item3)
+                    roads[TilesToAdd[f].Item1].Add(a);
+                foreach (Vector3Int a in TilesToAdd[f].Item4)
+                    roads[a].Add(TilesToAdd[f].Item1);
+            }
+            else houses.Add(TilesToAdd[f].Item1, TilesToAdd[f].Item2);
         }
         double nowEfficiency = GetEfficiencyOfSystem();
         //UnityEngine.Debug.Log(nowEfficiency);
@@ -455,10 +428,10 @@ public class OptimizationAlgorithm : MonoBehaviour
             {
                 //UnityEngine.Debug.Log(TilesToAdd.Count);
                 bestEfficienty = nowEfficiency;
-                bestPosition = TilesToAdd[indexOk].Item1;
-                bestVariant = TilesToAdd[indexOk].Item2;
-                bestRoadsFrom = TilesToAdd[indexOk].Item3;
-                bestRoadsTo = TilesToAdd[indexOk].Item4;
+                bestPosition = TilesToAdd[0].Item1;
+                bestVariant = TilesToAdd[0].Item2;
+                bestRoadsFrom = TilesToAdd[0].Item3;
+                bestRoadsTo = TilesToAdd[0].Item4;
     
             }
         }
