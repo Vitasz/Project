@@ -547,6 +547,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                     else
                     {
                         int index = 0;
+                        if (roadsandWaysFromThem.ContainsKey(k.Item1))
                         foreach ((int, List<Vector3Int>) f in roadsandWaysFromThem[k.Item1])
                         {
                             if (f.Item1 == k.Item2)
