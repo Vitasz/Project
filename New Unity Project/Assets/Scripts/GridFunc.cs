@@ -21,6 +21,7 @@ public class GridFunc : MonoBehaviour
     public List<CellWithRoad> Roads = new List<CellWithRoad>();
     public List<GameObject> Humans = new List<GameObject>();
     public OptimizationAlgorithm a;
+    public Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
@@ -129,6 +130,7 @@ public class GridFunc : MonoBehaviour
             Map.Add(Position, new CellWithRoad(this, houseControlles, Position,type, ForOA));
             if (!ForOA)Roads.Add(Map[Position] as CellWithRoad);
         }
+        UpdateSystem();
     }
     public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode, bool ForOA)
     {
@@ -137,11 +139,107 @@ public class GridFunc : MonoBehaviour
             (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true, ForOA);
             if (!ForOA)(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
         }
+        UpdateSystem();
         /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
         {
             (Map[PositionFrom] as CellWithHouse).UniteHouse(PositionFrom, PositionTo, true, ForOA);
             (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false, ForOA);
         }*/
+    }
+    private void UpdateSystem()
+    {
+        List<Vector3Int> GetNearTiles(Vector3Int a)
+        {
+            List<Vector3Int> ans2 = new List<Vector3Int>();
+            for (int i = -1; i < 2; i++)
+            {
+                for (int j = -1; j < 2; j++)
+                {
+                    Vector3Int now = new Vector3Int(a.x + i, a.y + j, a.z);
+                    if ((i != 0 || j != 0) && Math.Abs(i) + Math.Abs(j) <= 1) ans2.Add(now);
+                }
+            }
+            return ans2;
+        }
+        List<Vector3Int> HousesInList = new List<Vector3Int>();
+        Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> roadsandWaysFromThem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
+        Dictionary<Vector3Int, List<int>> roadstohouses = new Dictionary<Vector3Int, List<int>>();
+        Dictionary<Vector3Int, List<int>> RoadsWithHouses = new Dictionary<Vector3Int, List<int>>();
+        foreach (Vector3Int a in Map.Keys) if (Map[a] is CellWithHouse) HousesInList.Add(a);
+        for (int i = 0; i < HousesInList.Count; i++)
+        {
+            foreach (Vector3Int a in GetNearTiles(HousesInList[i]))
+            {
+                if (Map.ContainsKey(a)&&(Map[a]is CellWithRoad))
+                {
+                    if (!roadstohouses.ContainsKey(a))
+                    {
+                        roadstohouses.Add(a, new List<int>());
+                        roadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
+                        RoadsWithHouses.Add(a, new List<int>());
+                    }
+                    if (!roadstohouses[a].Contains(i))
+                    {
+                        roadstohouses[a].Add(i);
+                        RoadsWithHouses[a].Add(i);
+                        roadsandWaysFromThem[a].Add((i, new List<Vector3Int>() { a }));
+                    }
+                }
+            }
+        }
+        Dictionary<Vector3Int, List<Vector3Int>> roads = new Dictionary<Vector3Int, List<Vector3Int>>();
+        foreach (Vector3Int a in Map.Keys) if (Map[a] is CellWithRoad) roads.Add(a, (Map[a] as CellWithRoad).GetNearRoadsWays());
+        foreach (Vector3Int a in roads.Keys)
+        {
+            List<(Vector3Int, List<Vector3Int>)> nowpos = new List<(Vector3Int, List<Vector3Int>)>() { (a, new List<Vector3Int>()) }, newpos = new List<(Vector3Int, List<Vector3Int>)>();
+            List<Vector3Int> Used = new List<Vector3Int>(); ;
+            while (nowpos.Count != 0)
+            {
+                foreach ((Vector3Int, List<Vector3Int>) b in nowpos)
+                {
+                    Used.Add(b.Item1);
+                    b.Item2.Add(b.Item1);
+                    if (RoadsWithHouses.ContainsKey(b.Item1))
+                    {
+                        List<Vector3Int> copy = new List<Vector3Int>();
+                        foreach (Vector3Int c in b.Item2) copy.Add(c);
+                        if (!roadstohouses.ContainsKey(a))
+                        {
+                            roadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
+                            roadstohouses.Add(a, new List<int>());
+                        }
+                        foreach (int c in RoadsWithHouses[b.Item1])
+                        {
+                            if (roadstohouses[a].Contains(c)) continue;
+                            roadsandWaysFromThem[a].Add((c, copy));
+                            roadstohouses[a].Add(c);
+                        }
+                    }
+                    foreach (Vector3Int f in roads[b.Item1])
+                    {
+                        if (!Used.Contains(f))
+                        {
+                            bool ok = true;
+                            foreach ((Vector3Int, List<Vector3Int>) k in newpos)
+                            {
+                                if (k.Item1 == f) ok = false;
+                            }
+
+                            if (ok)
+                            {
+                                List<Vector3Int> Copy = new List<Vector3Int>();
+                                foreach (Vector3Int l in b.Item2) Copy.Add(l);
+                                newpos.Add((f, Copy));
+                            }
+                        }
+                    }
+                }
+                nowpos.Clear();
+                foreach ((Vector3Int, List<Vector3Int>) b in newpos) nowpos.Add(b);
+                newpos.Clear();
+            }
+        }
+        NowSystem = roadsandWaysFromThem;
     }
     public void Optimize()
     {
