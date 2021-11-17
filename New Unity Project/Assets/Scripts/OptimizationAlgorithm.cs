@@ -268,7 +268,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             whatadd = ThingsInCell.HousePeople;
             cnthousePeople++;
         }
-        if (deep == 1) whatadd = ThingsInCell.HousePeople;
+        if (deep == 1 && Deep!=1) whatadd = ThingsInCell.HousePeople;
         //UnityEngine.Debug.Log(nowdeep[whatadd]);
         foreach((Vector3Int, List<Vector3Int>, List<Vector3Int>) NowPosition in nowdeep[whatadd])
         {
