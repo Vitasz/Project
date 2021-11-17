@@ -517,8 +517,14 @@ public class OptimizationAlgorithm : MonoBehaviour
         foreach (Vector3Int a in NotChecked)
         {
             List<(Vector3Int, List<Vector3Int>)> nowpos = new List<(Vector3Int, List<Vector3Int>)>() { (a, new List<Vector3Int>()) }, newpos = new List<(Vector3Int, List<Vector3Int>)>();
-            List<Vector3Int> Used = new List<Vector3Int>(); ;
-            while (nowpos.Count != 0)
+            List<Vector3Int> Used = new List<Vector3Int>();
+            bool end = false;
+            if (!BonusroadsandWaysFromThem.ContainsKey(a))
+            {
+                BonusroadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
+                Bonusroadstohouses.Add(a, new HashSet<int>());
+            }
+            while (nowpos.Count != 0&&!end)
             {
                 foreach ((Vector3Int, List<Vector3Int>) b in nowpos)
                 {
@@ -529,16 +535,12 @@ public class OptimizationAlgorithm : MonoBehaviour
                     {
                         List<Vector3Int> copy = new List<Vector3Int>();
                         foreach (Vector3Int c in b.Item2) copy.Add(c);
-                        if (!BonusroadsandWaysFromThem.ContainsKey(a))
-                        {
-                            BonusroadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
-                            Bonusroadstohouses.Add(a, new HashSet<int>());
-                        }
                         foreach (int c in RoadsWithHouses[b.Item1])
                         {
                             if (RoadsToHouses.ContainsKey(a)&&RoadsToHouses[a].Contains(c)||Bonusroadstohouses[a].Contains(c)) continue;
                             BonusroadsandWaysFromThem[a].Add((c, copy));
                             Bonusroadstohouses[a].Add(c);
+                            if (Bonusroadstohouses[a].Count == Houses.Count + bonushouses.Count) end = true;
                         }
                     }
                     if (Roads.ContainsKey(b.Item1)){
@@ -845,7 +847,8 @@ public class OptimizationAlgorithm : MonoBehaviour
                 foreach (Vector3Int a in TilesToAdd[f].Item4)
                     if (BonusRoads.ContainsKey(a)) BonusRoads[a].Add(NowPosition);
                     else BonusRoads.Add(a, new List<Vector3Int>() { NowPosition });
-                if (!tocheck.Contains(NowPosition)) tocheck.Add(NowPosition);
+                if (!tocheck.Contains(NowPosition)) 
+                    tocheck.Add(NowPosition);
                 List<Vector3Int> ans2 = new List<Vector3Int>();
                 ans2.Add(new Vector3Int(NowPosition.x - 1, NowPosition.y,0));
                 ans2.Add(new Vector3Int(NowPosition.x +1, NowPosition.y,0));
@@ -869,7 +872,8 @@ public class OptimizationAlgorithm : MonoBehaviour
                 ans2.Add(new Vector3Int(NowPosition.x, NowPosition.y + 1, 0));
                 foreach (Vector3Int a in ans2) if (Roads.ContainsKey(a)||BonusRoads.ContainsKey(a))
                 {
-                    if (!tocheck.Contains(a))tocheck.Add(a);
+                    if (!tocheck.Contains(a))
+                            tocheck.Add(a);
                     NearRoads.Add(a);
                 }
             }
@@ -878,7 +882,20 @@ public class OptimizationAlgorithm : MonoBehaviour
        // UnityEngine.Debug.Log(nowEfficiency);
         if (nowEfficiency != -1f)
         {
-            if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
+            if (bestEfficienty == nowEfficiency && nowEfficiency != -1)
+            {
+                if (bestVariant == ThingsInCell.RoadForCars)
+                {
+                    if (bestRoadsFrom.Count + bestRoadsTo.Count > TilesToAdd[0].Item3.Count + TilesToAdd[0].Item4.Count)
+                    {
+                        bestPosition = TilesToAdd[0].Item1;
+                        bestVariant = TilesToAdd[0].Item2;
+                        bestRoadsFrom = TilesToAdd[0].Item3;
+                        bestRoadsTo = TilesToAdd[0].Item4;
+                    }
+                }
+            }
+            else if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
             {
                 bestEfficienty = nowEfficiency;
                 bestPosition = TilesToAdd[0].Item1;

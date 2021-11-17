@@ -34,10 +34,10 @@ public class Clock : MonoBehaviour
     }
     public void UpdateWaitTime()
     {
-        //foreach(CellWithRoad a in grid.Roads)
-       // {
-        //    a.UpdateWaitTime();
-//}
+        foreach(CellWithRoad a in grid.Roads)
+        {
+            a.UpdateWaitTime();
+        }
     }
     
     public double GetEfficiencyForOA()
