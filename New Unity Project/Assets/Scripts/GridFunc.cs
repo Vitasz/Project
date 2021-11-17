@@ -138,14 +138,15 @@ public class GridFunc : MonoBehaviour
         {
             (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true, ForOA);
             if (!ForOA)(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
+            UpdateSystem();
         }
-        UpdateSystem();
         /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
         {
             (Map[PositionFrom] as CellWithHouse).UniteHouse(PositionFrom, PositionTo, true, ForOA);
             (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false, ForOA);
         }*/
     }
+   
     private void UpdateSystem()
     {
         List<Vector3Int> GetNearTiles(Vector3Int a)
@@ -243,7 +244,6 @@ public class GridFunc : MonoBehaviour
     }
     public void Optimize()
     {
-        //OptimizationAlgorithm a = new OptimizationAlgorithm();
         a.Optimization(this);
     }
     public void RemoveTileAt(Vector3Int position)
