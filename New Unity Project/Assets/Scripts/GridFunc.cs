@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.Linq;
-using UnityEngine.EventSystems ;
+using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 public class GridFunc : MonoBehaviour
 {
@@ -30,14 +30,14 @@ public class GridFunc : MonoBehaviour
     {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0))
         {
-            if (isRedactorActive && (tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick||!hasfirstclick))
+            if (isRedactorActive && (tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick || !hasfirstclick))
             {
                 prevpositionClick = nowpositionClick;
                 nowpositionClick = tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition));
-                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor);
-                if (hasfirstclick && Mathf.Abs(prevpositionClick.x - nowpositionClick.x) + Mathf.Abs(prevpositionClick.y - nowpositionClick.y)<=1)
+                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell)ModeRedactor, new List<Vector3Int>());
+                if (hasfirstclick && Mathf.Abs(prevpositionClick.x - nowpositionClick.x) + Mathf.Abs(prevpositionClick.y - nowpositionClick.y) <= 1)
                 {
-                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor);
+                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell)ModeRedactor);
                 }
                 hasfirstclick = true;
             }
@@ -69,21 +69,24 @@ public class GridFunc : MonoBehaviour
         {
             foreach (Vector3Int a in now)
             {
-                if (Map.ContainsKey(a)&&Map[a]is CellWithRoad)
+                if (Map.ContainsKey(a) && Map[a] is CellWithRoad)
                     foreach (Vector3Int b in (Map[a] as CellWithRoad).GetNearRoadsWays())
                     {
-                        if (timetoRoads.ContainsKey(b))
+                        if (Map.ContainsKey(b))
                         {
-                            if (timetoRoads[b].Item1>timetoRoads[a].Item1+(Map[a] as CellWithRoad).WaitTime)
+                            if (timetoRoads.ContainsKey(b))
                             {
-                                timetoRoads[b] = (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a);
+                                if (timetoRoads[b].Item1 > timetoRoads[a].Item1 + (Map[a] as CellWithRoad).WaitTime)
+                                {
+                                    timetoRoads[b] = (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a);
+                                    nownew.Add(b);
+                                }
+                            }
+                            else
+                            {
+                                timetoRoads.Add(b, (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a));
                                 nownew.Add(b);
                             }
-                        }
-                        else
-                        {
-                            timetoRoads.Add(b,  (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a));
-                            nownew.Add(b);
                         }
                     }
             }
@@ -91,9 +94,9 @@ public class GridFunc : MonoBehaviour
             foreach (Vector3Int a in nownew) now.Add(a);
             nownew.Clear();
         }
-        foreach(Vector3Int a in to)
+        foreach (Vector3Int a in to)
         {
-            if (timetoRoads.ContainsKey(a)&&Map.ContainsKey(a)&&(Map[a] is CellWithRoad))
+            if (timetoRoads.ContainsKey(a) && Map.ContainsKey(a) && (Map[a] is CellWithRoad))
             {
                 if (MinWay > timetoRoads[a].Item1)
                 {
@@ -120,17 +123,17 @@ public class GridFunc : MonoBehaviour
             return Map[Position];
         else return null;
     }
-    
-    public void CreateNewTile(Vector3Int Position, ThingsInCell type)
+
+    public void CreateNewTile(Vector3Int Position, ThingsInCell type, List<Vector3Int> roads)
     {
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
             Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, houseControlles, Position,type));
+            Map.Add(Position, new CellWithRoad(this, houseControlles, Position, type, roads));
             Roads.Add(Map[Position] as CellWithRoad);
         }
-        UpdateSystem();
+        //UpdateSystem();
     }
     public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode)
     {
@@ -138,7 +141,7 @@ public class GridFunc : MonoBehaviour
         {
             (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true);
             (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
-            UpdateSystem();
+            //UpdateSystem();
         }
         /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)
         {
@@ -146,7 +149,7 @@ public class GridFunc : MonoBehaviour
             (Map[PositionTo] as CellWithHouse).UniteHouse(PositionTo, PositionFrom, false, ForOA);
         }*/
     }
-   
+
     private void UpdateSystem()
     {
         List<Vector3Int> GetNearTiles(Vector3Int a)
@@ -171,7 +174,7 @@ public class GridFunc : MonoBehaviour
         {
             foreach (Vector3Int a in GetNearTiles(HousesInList[i]))
             {
-                if (Map.ContainsKey(a)&&(Map[a]is CellWithRoad))
+                if (Map.ContainsKey(a) && (Map[a] is CellWithRoad))
                 {
                     if (!roadstohouses.ContainsKey(a))
                     {
@@ -264,8 +267,9 @@ public class GridFunc : MonoBehaviour
             {
                 for (int j = -1; j < 2; j++)
                 {
-                    if (Math.Abs(i)+Math.Abs(j)<=1 && Map.ContainsKey(new Vector3Int(position.x+i, position.y + j,0))){
-                        if (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad!=null)
+                    if (Math.Abs(i) + Math.Abs(j) <= 1 && Map.ContainsKey(new Vector3Int(position.x + i, position.y + j, 0)))
+                    {
+                        if (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad != null)
                         {
                             (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad).RemoveRoad(new Vector3Int(position.x + i, position.y + j, 0), position);
                         }
@@ -281,7 +285,7 @@ public class GridFunc : MonoBehaviour
         {
             for (int j = -1; j < 2; j++)
             {
-                if (Math.Abs(i)+Math.Abs(j)<=1 && Map.ContainsKey(new Vector3Int(position.x + i, position.y + j, 0)))
+                if (Math.Abs(i) + Math.Abs(j) <= 1 && Map.ContainsKey(new Vector3Int(position.x + i, position.y + j, 0)))
                 {
                     if (Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad != null)
                     {

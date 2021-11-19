@@ -1,100 +1,164 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Threading.Tasks;
+using System.Diagnostics;
 
 public class Generator : MonoBehaviour
 {
     public GridFunc grid;
+
+    public int r, N;
     public void Start()
     {
-        GenerateCity(3);
+        GenerateCity(N);
     }
+
     /// <summary>
     /// Генерирует город с Count домами
     /// </summary>
     /// <param name="Count">Количество домов</param>
     public void GenerateCity(int Count)
     {
+        Stopwatch timer = new Stopwatch();
+        timer.Start();
         Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
         Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
         List<Vector3Int> HousesPositions = new List<Vector3Int>();
-        void CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
+        /*List<Vector3Int>*/void CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
         {
-            List<Vector3Int> nowPosition = new List<Vector3Int>();
-            List<Vector3Int> newPosition = new List<Vector3Int>();
-            Dictionary<Vector3Int, Vector3Int> USED = new Dictionary<Vector3Int, Vector3Int>();
+            List<(Vector3Int, int)> nowPosition = new List<(Vector3Int, int)>();
+            List<(Vector3Int, int)> newPosition = new List<(Vector3Int, int)>();
+            Dictionary<Vector3Int, (Vector3Int, int)> USED = new Dictionary<Vector3Int, (Vector3Int, int)>();
 
             bool ok = false;
-            USED.Add(from, new Vector3Int());
-            nowPosition.Add(from);
+            int minWay = int.MaxValue;
+            USED.Add(from, (new Vector3Int(), 0));
+            nowPosition.Add((from, 0));
 
             while (nowPosition.Count != 0)
             {
-                foreach (Vector3Int a in nowPosition)
+                foreach ((Vector3Int, int) a in nowPosition)
                 {
-                    if (a == to)
-                    {
-                        ok = true;
-                        newPosition.Clear();
-                        break;
-                    }
-                    if (Houses.ContainsKey(a) && a != from)
+                    if (a.Item2 > minWay)
                     {
                         continue;
                     }
-                    if (Roads.ContainsKey(a))
+                    if (a.Item1 == to)
                     {
-                        if (!USED.ContainsKey(new Vector3Int(a.x - 1, a.y, 0)))
+                        ok = true;
+                        minWay = Math.Min(minWay, a.Item2);
+                        continue;
+                    }
+                    if (Houses.ContainsKey(a.Item1) && a.Item1 != from)
+                    {
+                        continue;
+                    }
+                    if (Roads.ContainsKey(a.Item1))
+                    {
+                        for (int i = -1; i < 2; i += 2)
                         {
-                            newPosition.Insert(0, new Vector3Int(a.x - 1, a.y, 0));
-                            USED.Add(new Vector3Int(a.x - 1, a.y, 0), a);
+                            Vector3Int temp = new Vector3Int(a.Item1.x + i, a.Item1.y, 0);
+                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
+
+                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > a.Item2 + roads)
+                            {
+                                if (!Roads.ContainsKey(temp))
+                                {
+                                    newPosition.Insert(0, (temp, a.Item2 + 1));
+
+                                    if (USED.ContainsKey(temp))
+                                    {
+                                        USED[temp] = (a.Item1, a.Item2 + 1);
+                                    }
+                                    else USED.Add(temp, a);
+                                }
+                                else if (!Roads[temp].Contains(a.Item1))
+                                {
+                                    newPosition.Insert(0, (temp, a.Item2));
+
+                                    if (USED.ContainsKey(temp))
+                                    {
+                                        USED[temp] = (a.Item1, a.Item2);
+                                    }
+                                    else USED.Add(temp, a);
+                                }
+                            }
+
                         }
-                        if (!USED.ContainsKey(new Vector3Int(a.x + 1, a.y, 0)))
+                        for (int i = -1; i < 2; i += 2)
                         {
-                            newPosition.Insert(0, new Vector3Int(a.x + 1, a.y, 0));
-                            USED.Add(new Vector3Int(a.x + 1, a.y, 0), a);
+                            Vector3Int temp = new Vector3Int(a.Item1.x, a.Item1.y + i, 0);
+                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
+
+                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > a.Item2 + roads)
+                            {
+                                if (!Roads.ContainsKey(temp))
+                                {
+                                    newPosition.Insert(0, (temp, a.Item2 + 1));
+
+                                    if (USED.ContainsKey(temp))
+                                    {
+                                        USED[temp] = (a.Item1, a.Item2 + 1);
+                                    }
+                                    else USED.Add(temp, a);
+                                }
+                                else if (!Roads[temp].Contains(a.Item1))
+                                {
+                                    newPosition.Insert(0, (temp, a.Item2));
+
+                                    if (USED.ContainsKey(temp))
+                                    {
+                                        USED[temp] = (a.Item1, a.Item2);
+                                    }
+                                    else USED.Add(temp, a);
+                                }
+                            }
                         }
-                        if (!USED.ContainsKey(new Vector3Int(a.x, a.y - 1, 0)))
-                        {
-                            newPosition.Insert(0, new Vector3Int(a.x, a.y - 1, 0));
-                            USED.Add(new Vector3Int(a.x, a.y - 1, 0), a);
-                        }
-                        if (!USED.ContainsKey(new Vector3Int(a.x, a.y + 1, 0)))
-                        {
-                            newPosition.Insert(0, new Vector3Int(a.x, a.y + 1, 0));
-                            USED.Add(new Vector3Int(a.x, a.y + 1, 0), a);
-                        }
+
                     }
                     else
                     {
-                        if (!USED.ContainsKey(new Vector3Int(a.x - 1, a.y, 0)))
+                        for (int i = -1; i < 2; i += 2)
                         {
-                            newPosition.Add(new Vector3Int(a.x - 1, a.y, 0));
-                            USED.Add(new Vector3Int(a.x - 1, a.y, 0), a);
+                            Vector3Int temp = new Vector3Int(a.Item1.x + i, a.Item1.y, 0);
+                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
+
+                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > a.Item2 + roads)
+                            {
+                                newPosition.Add((temp, a.Item2 + roads));
+
+                                if (USED.ContainsKey(temp))
+                                {
+                                    USED[temp] = (a.Item1, a.Item2 + roads);
+                                }
+                                else USED.Add(temp, a);
+
+                            }
                         }
-                        if (!USED.ContainsKey(new Vector3Int(a.x + 1, a.y, 0)))
+                        for (int i = -1; i < 2; i += 2)
                         {
-                            newPosition.Add(new Vector3Int(a.x + 1, a.y, 0));
-                            USED.Add(new Vector3Int(a.x + 1, a.y, 0), a);
-                        }
-                        if (!USED.ContainsKey(new Vector3Int(a.x, a.y - 1, 0)))
-                        {
-                            newPosition.Add(new Vector3Int(a.x, a.y - 1, 0));
-                            USED.Add(new Vector3Int(a.x, a.y - 1, 0), a);
-                        }
-                        if (!USED.ContainsKey(new Vector3Int(a.x, a.y + 1, 0)))
-                        {
-                            newPosition.Add(new Vector3Int(a.x, a.y + 1, 0));
-                            USED.Add(new Vector3Int(a.x, a.y + 1, 0), a);
+
+                            Vector3Int temp = new Vector3Int(a.Item1.x, a.Item1.y + i, 0);
+                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
+
+                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > a.Item2 + roads)
+                            {
+                                newPosition.Add((temp, a.Item2 + roads));
+
+                                if (USED.ContainsKey(temp))
+                                {
+                                    USED[temp] = (a.Item1, a.Item2 + roads);
+                                }
+                                else USED.Add(temp, a);
+
+                            }
                         }
                     }
-
-
-
-
                 }
                 nowPosition.Clear();
-                foreach (Vector3Int a in newPosition)
+                foreach ((Vector3Int, int) a in newPosition)
                 {
                     nowPosition.Add(a);
                 }
@@ -102,28 +166,34 @@ public class Generator : MonoBehaviour
             }
             if (!ok)
             {
-                Debug.LogError("Can't find way");
+                UnityEngine.Debug.LogError("Can't find way");
             }
             else
             {
+                List<Vector3Int> ans = new List<Vector3Int>();
                 //to = USED[to];
-                while (USED[to] != from)
+                while (USED[to].Item1 != from)
                 {
-                    if (Roads.ContainsKey(USED[to]))
+                    if (Roads.ContainsKey(USED[to].Item1))
                     {
-                        if (!Roads[USED[to]].Contains(to))
+                        if (!Roads[USED[to].Item1].Contains(to))
                         {
-                            Roads[USED[to]].Add(to);
+                            Roads[USED[to].Item1].Add(to);
                         }
-                        to = USED[to];
+                        to = USED[to].Item1;
                     }
                     else
                     {
-                        Roads.Add(USED[to], new List<Vector3Int>() { to });
-                        to = USED[to];
+                        Roads.Add(USED[to].Item1, new List<Vector3Int>() { to });
+                        to = USED[to].Item1;
                     }
+                    /*ans.Add(USED[to].Item1);
+                    to = USED[to].Item1;*/
                 }
+                /*ans.RemoveAt(ans.Count - 1);
+                return ans;*/
             }
+            //return null;
         }
 
         int cntHousePeople = 1, cntHouseCom = 0, cntHouseFact = 0;
@@ -135,9 +205,9 @@ public class Generator : MonoBehaviour
         {
             List<Vector3Int> canBePositions = new List<Vector3Int>();
             Vector3Int randomHouse = HousesPositions[UnityEngine.Random.Range(0, HousesPositions.Count)];
-            for (int i = -5; i <= 5; i++)
+            for (int i = -r; i <= r; i++)
             {
-                for (int j = -5; j <= 5; j++)
+                for (int j = -r; j <= r; j++)
                 {
                     if (!Houses.ContainsKey(new Vector3Int(randomHouse.x + i, randomHouse.y + j, 0)) &&
                         !Roads.ContainsKey(new Vector3Int(randomHouse.x + i, randomHouse.y + j, 0)))
@@ -169,6 +239,7 @@ public class Generator : MonoBehaviour
                 }
                 Houses.Add(Position, whatadd);
                 HousesPositions.Add(Position);
+                //List<List<Vector3Int>> 
                 foreach (Vector3Int a in Houses.Keys)
                 {
                     if (a != Position)
@@ -185,21 +256,34 @@ public class Generator : MonoBehaviour
 
             }
         }
+
+        timer.Stop();
+        UnityEngine.Debug.Log(timer.ElapsedMilliseconds);
+        List<Task> tasks = new List<Task>();
+
         foreach (Vector3Int a in Houses.Keys)
         {
-            grid.CreateNewTile(a, Houses[a]);
+            /*tasks.Add(Task.Run(() =>*/ grid.CreateNewTile(a, Houses[a], new List<Vector3Int>());
         }
+
         foreach (Vector3Int a in Roads.Keys)
         {
-            grid.CreateNewTile(a, ThingsInCell.RoadForCars);
+            /*tasks.Add(Task.Run(() =>*/ grid.CreateNewTile(a, ThingsInCell.RoadForCars, Roads[a]);
         }
-        foreach (Vector3Int a in Roads.Keys)
+
+        //Task.WaitAll(tasks.ToArray());
+        //tasks.Clear();
+
+        /*foreach (Vector3Int a in Roads.Keys)
         {
             foreach (Vector3Int b in Roads[a])
             {
-                grid.UniteTiles(a, b, ThingsInCell.RoadForCars);
+                tasks.Add(Task.Run(() => grid.UniteTiles(a, b, ThingsInCell.RoadForCars)));
             }
-        }
+        }*/
+
+        //ask.WaitAll(tasks.ToArray());
+        
     }
 }
 

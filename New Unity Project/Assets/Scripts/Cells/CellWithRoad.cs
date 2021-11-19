@@ -17,9 +17,24 @@ public class CellWithRoad : Cell
     Vector3Int NextCellHuman;
     private bool todel = false;
     private bool visible = true;
-    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type) : base(grid, houseControlles, position, type) {
+    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type, List<Vector3Int> RoadsFrom) : base(grid, houseControlles, position, type) {
         grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, -1), Resources.Load<Tile>("Tiles/Roads/0000000000000000"));
-        //UpdateTile();
+        roadsFromCell = RoadsFrom;
+        foreach (Vector3Int a in RoadsFrom)
+        {
+            roadsfromCellOnIndex[GetIndexNearCell(position, a)] = 1;
+        }
+
+        name = name.Substring(0, 8);
+
+        for (int i = 0; i < 8; i++)
+        {
+            if (roadsfromCellOnIndex[i] == 1) name += '1';
+            else name += '0';
+        }
+
+        if(RoadsFrom.Count != 0) UpdateTile();
+
     }
     public void RemoveRoad(Vector3Int from, Vector3Int to)
     {

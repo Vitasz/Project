@@ -147,7 +147,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             PereborWatch.Stop();
             TOTALTIME += PereborWatch.ElapsedMilliseconds;
             UnityEngine.Debug.Log("Total variants:" + Convert.ToString(total) + " Time Perebor: " + Convert.ToString(PereborWatch.ElapsedMilliseconds));
-            if (bestEfficienty != -1) grid.CreateNewTile(bestPosition, bestVariant);
+            if (bestEfficienty != -1) grid.CreateNewTile(bestPosition, bestVariant, new List<Vector3Int>());
             else
             {
                 UnityEngine.Debug.Log("NO VARIANTS");

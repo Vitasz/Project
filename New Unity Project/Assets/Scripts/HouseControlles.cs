@@ -25,7 +25,7 @@ public class HouseControlles : MonoBehaviour
           //  HousesTypes[type].Add(Position);
         //}
         CellsWithHouses.Add(house);
-        Debug.Log("ADD");
+        
     }
     public IEnumerator SpawnHuman()
     {
