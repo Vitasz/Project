@@ -34,10 +34,10 @@ public class GridFunc : MonoBehaviour
             {
                 prevpositionClick = nowpositionClick;
                 nowpositionClick = tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition));
-                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor, false);
+                if (!Map.ContainsKey(nowpositionClick)) CreateNewTile(nowpositionClick, (ThingsInCell) ModeRedactor);
                 if (hasfirstclick && Mathf.Abs(prevpositionClick.x - nowpositionClick.x) + Mathf.Abs(prevpositionClick.y - nowpositionClick.y)<=1)
                 {
-                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor, false);
+                    UniteTiles(prevpositionClick, nowpositionClick, (ThingsInCell) ModeRedactor);
                 }
                 hasfirstclick = true;
             }
@@ -121,23 +121,23 @@ public class GridFunc : MonoBehaviour
         else return null;
     }
     
-    public void CreateNewTile(Vector3Int Position, ThingsInCell type,bool ForOA)
+    public void CreateNewTile(Vector3Int Position, ThingsInCell type)
     {
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
-            Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type, ForOA));
+            Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, houseControlles, Position,type, ForOA));
-            if (!ForOA)Roads.Add(Map[Position] as CellWithRoad);
+            Map.Add(Position, new CellWithRoad(this, houseControlles, Position,type));
+            Roads.Add(Map[Position] as CellWithRoad);
         }
         UpdateSystem();
     }
-    public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode, bool ForOA)
+    public void UniteTiles(Vector3Int PositionFrom, Vector3Int PositionTo, ThingsInCell Mode)
     {
         if (Map[PositionFrom] is CellWithRoad && Map[PositionTo] is CellWithRoad)
         {
-            (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true, ForOA);
-            if (!ForOA)(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false, ForOA);
+            (Map[PositionFrom] as CellWithRoad).AddRoad(PositionFrom, PositionTo, true);
+            (Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
             UpdateSystem();
         }
         /*else if (Map[PositionFrom] is CellWithHouse && Map[PositionTo] is CellWithHouse)

@@ -18,13 +18,14 @@ public class HouseControlles : MonoBehaviour
     {
         StartCoroutine("SpawnHuman");
     }
-    public void AddHouse(Vector3Int Position, ThingsInCell type, CellWithHouse house, bool ForOA)
+    public void AddHouse(Vector3Int Position, ThingsInCell type, CellWithHouse house)
     {
         //if (!HousesTypes.ContainsKey(type)) HousesTypes.Add(type, new List<Vector3Int>());
         //if (!HousesTypes[type].Contains(Position)) {
           //  HousesTypes[type].Add(Position);
         //}
         CellsWithHouses.Add(house);
+        Debug.Log("ADD");
     }
     public IEnumerator SpawnHuman()
     {

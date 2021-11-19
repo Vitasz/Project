@@ -9,14 +9,14 @@ public class CellWithHouse:Cell
     public int HumanInCellHouse = 0;
     private int[] housefromCellOnIndex = new int[8];
     private List<Vector3Int> thisHouse = new List<Vector3Int>();
-    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type, bool ForOA) : base(grid, houseControlles, position,type) {
-        houseControlles.AddHouse(position, type, this, ForOA);
+    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type) : base(grid, houseControlles, position,type) {
+        houseControlles.AddHouse(position, type, this);
         typeHouse = type;
-       if (!ForOA)UpdateTile();
+        UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
             HumanInCellHouse = 2;
-            if (!ForOA)houseControlles.AddCellWithHumans(this);
+            houseControlles.AddCellWithHumans(this);
             //Debug.Log("add");
         }
     }

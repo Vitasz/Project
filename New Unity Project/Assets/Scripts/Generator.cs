@@ -7,7 +7,7 @@ public class Generator : MonoBehaviour
     public GridFunc grid;
     public void Start()
     {
-        GenerateCity(200);
+        GenerateCity(3);
     }
     /// <summary>
     /// Генерирует город с Count домами
@@ -187,17 +187,17 @@ public class Generator : MonoBehaviour
         }
         foreach (Vector3Int a in Houses.Keys)
         {
-            grid.CreateNewTile(a, Houses[a], false);
+            grid.CreateNewTile(a, Houses[a]);
         }
         foreach (Vector3Int a in Roads.Keys)
         {
-            grid.CreateNewTile(a, ThingsInCell.RoadForCars, false);
+            grid.CreateNewTile(a, ThingsInCell.RoadForCars);
         }
         foreach (Vector3Int a in Roads.Keys)
         {
             foreach (Vector3Int b in Roads[a])
             {
-                grid.UniteTiles(a, b, ThingsInCell.RoadForCars, false);
+                grid.UniteTiles(a, b, ThingsInCell.RoadForCars);
             }
         }
     }

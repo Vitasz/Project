@@ -16,10 +16,9 @@ public class CellWithRoad : Cell
     HumanFunctionality HumanInCell;
     Vector3Int NextCellHuman;
     private bool todel = false;
-    private bool visible = false;
-    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type, bool ForOA) : base(grid, houseControlles, position, type) {
-        if (!ForOA)grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, -1), Resources.Load<Tile>("Tiles/Roads/0000000000000000"));
-        visible = !ForOA;
+    private bool visible = true;
+    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type) : base(grid, houseControlles, position, type) {
+        grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, -1), Resources.Load<Tile>("Tiles/Roads/0000000000000000"));
         //UpdateTile();
     }
     public void RemoveRoad(Vector3Int from, Vector3Int to)
@@ -42,35 +41,27 @@ public class CellWithRoad : Cell
             UpdateTile();
         }
     }
-    public void AddRoad(Vector3Int from, Vector3Int to, bool fromthissell, bool ForOA)
+    public void AddRoad(Vector3Int from, Vector3Int to, bool fromthissell)
     {
-        if (ForOA)
-        {
-            roadsFromCell.Add(to);
-        }
-        else if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to) != -1 && name[GetIndexNearCell(from, to)] == '0' && name[GetIndexNearCell(from, to) + 8] == '0')
+        if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to) != -1 && name[GetIndexNearCell(from, to)] == '0' && name[GetIndexNearCell(from, to) + 8] == '0')
         {
             if (fromthissell)
             {
                 roadsFromCell.Add(to);
-                if (!ForOA)
+                name = name.Substring(0, 8);
+                roadsfromCellOnIndex[GetIndexNearCell(from, to)] = 1;
+                for (int i = 0; i < 8; i++)
                 {
-                    name = name.Substring(0, 8);
-                    roadsfromCellOnIndex[GetIndexNearCell(from, to)] = 1;
-                    for (int i = 0; i < 8; i++)
-                    {
-                        if (roadsfromCellOnIndex[i] == 1) name += '1';
-                        else name += '0';
-                    }
+                    if (roadsfromCellOnIndex[i] == 1) name += '1';
+                    else name += '0';
                 }
                 //Debug.Log("Add");
             }
             else
             {
-                if (!ForOA)
-                    name = name.Substring(0, GetIndexNearCell(from, to)) + '1' + name.Substring(GetIndexNearCell(from, to) + 1);
+                name = name.Substring(0, GetIndexNearCell(from, to)) + '1' + name.Substring(GetIndexNearCell(from, to) + 1);
             }
-            if (!ForOA) UpdateTile();
+            UpdateTile();
         }
     }
     protected override void UpdateTileWithNewNeighboors()
