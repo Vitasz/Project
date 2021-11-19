@@ -24,9 +24,9 @@ public class Generator : MonoBehaviour
         Stopwatch timer = new Stopwatch();
         timer.Start();
         Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
-        Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
+        Dictionary<Vector3Int, (List<Vector3Int>,List<Vector3Int>)> Roads = new Dictionary<Vector3Int, (List<Vector3Int>, List<Vector3Int>)>();
         List<Vector3Int> HousesPositions = new List<Vector3Int>();
-        /*List<Vector3Int>*/void CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
+        void CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
         {
             List<(Vector3Int, int)> nowPosition = new List<(Vector3Int, int)>();
             List<(Vector3Int, int)> newPosition = new List<(Vector3Int, int)>();
@@ -74,7 +74,7 @@ public class Generator : MonoBehaviour
                                     }
                                     else USED.Add(temp, a);
                                 }
-                                else if (!Roads[temp].Contains(a.Item1))
+                                else if (!Roads[temp].Item1.Contains(a.Item1))
                                 {
                                     newPosition.Insert(0, (temp, a.Item2));
 
@@ -104,7 +104,7 @@ public class Generator : MonoBehaviour
                                     }
                                     else USED.Add(temp, a);
                                 }
-                                else if (!Roads[temp].Contains(a.Item1))
+                                else if (!Roads[temp].Item1.Contains(a.Item1))
                                 {
                                     newPosition.Insert(0, (temp, a.Item2));
 
@@ -171,36 +171,40 @@ public class Generator : MonoBehaviour
             else
             {
                 List<Vector3Int> ans = new List<Vector3Int>();
-                //to = USED[to];
-                while (USED[to].Item1 != from)
+                Vector3Int tosave = to;
+                Vector3Int nowpos = USED[to].Item1;
+                while (nowpos != from)
                 {
-                    if (Roads.ContainsKey(USED[to].Item1))
+                    if (to != tosave)
                     {
-                        if (!Roads[USED[to].Item1].Contains(to))
+                        if (Roads.ContainsKey(nowpos))
                         {
-                            Roads[USED[to].Item1].Add(to);
+                            Roads[nowpos].Item1.Add(to);
                         }
-                        to = USED[to].Item1;
+                        else
+                        {
+                            Roads.Add(nowpos, (new List<Vector3Int>() { to }, new List<Vector3Int>()));
+                        }
+                        if (Roads.ContainsKey(to))
+                        {
+                            Roads[to].Item2.Add(nowpos);
+                        }
+                        else
+                        {
+                            Roads.Add(to, (new List<Vector3Int>(), new List<Vector3Int>() { nowpos }));
+                        }
                     }
-                    else
-                    {
-                        Roads.Add(USED[to].Item1, new List<Vector3Int>() { to });
-                        to = USED[to].Item1;
-                    }
-                    /*ans.Add(USED[to].Item1);
-                    to = USED[to].Item1;*/
+                    to = nowpos;
+                    nowpos = USED[to].Item1;
                 }
-                /*ans.RemoveAt(ans.Count - 1);
-                return ans;*/
             }
-            //return null;
         }
 
         int cntHousePeople = 1, cntHouseCom = 0, cntHouseFact = 0;
 
         Houses.Add(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople);
         HousesPositions.Add(new Vector3Int(0, 0, 0));
-
+        long totaltimefind = 0;
         while (cntHousePeople + cntHouseFact + cntHouseCom != Count)
         {
             List<Vector3Int> canBePositions = new List<Vector3Int>();
@@ -239,51 +243,47 @@ public class Generator : MonoBehaviour
                 }
                 Houses.Add(Position, whatadd);
                 HousesPositions.Add(Position);
-                //List<List<Vector3Int>> 
                 foreach (Vector3Int a in Houses.Keys)
                 {
                     if (a != Position)
                     {
+                        Stopwatch timefind = new Stopwatch();
+                        timefind.Start();
                         CreateRoadsBetweenHouses(a, Position);
                         CreateRoadsBetweenHouses(Position, a);
+                        timefind.Stop();
+                        totaltimefind += timefind.ElapsedMilliseconds;
                     }
                 }
             }
             else
             {
                 HousesPositions.Remove(randomHouse);
-                //Debug.Log(Houses.Count);
-
             }
         }
 
+        UnityEngine.Debug.Log(totaltimefind);
         timer.Stop();
         UnityEngine.Debug.Log(timer.ElapsedMilliseconds);
-        List<Task> tasks = new List<Task>();
-
+        Stopwatch timeVisible = new Stopwatch();
+        timeVisible.Start();
         foreach (Vector3Int a in Houses.Keys)
         {
-            /*tasks.Add(Task.Run(() =>*/ grid.CreateNewTile(a, Houses[a], new List<Vector3Int>());
+            grid.CreateNewTile(a, Houses[a]);
         }
-
         foreach (Vector3Int a in Roads.Keys)
         {
-            /*tasks.Add(Task.Run(() =>*/ grid.CreateNewTile(a, ThingsInCell.RoadForCars, Roads[a]);
+            grid.CreateNewTile(a, ThingsInCell.RoadForCars);
         }
-
-        //Task.WaitAll(tasks.ToArray());
-        //tasks.Clear();
-
-        /*foreach (Vector3Int a in Roads.Keys)
+        foreach (Vector3Int a in Roads.Keys)
         {
-            foreach (Vector3Int b in Roads[a])
-            {
-                tasks.Add(Task.Run(() => grid.UniteTiles(a, b, ThingsInCell.RoadForCars)));
-            }
-        }*/
-
-        //ask.WaitAll(tasks.ToArray());
-        
+            List<Vector3Int> RoadsFromCell = Roads[a].Item1;
+            List<Vector3Int> RoadsToCell = Roads[a].Item2;
+            grid.UniteTiles(a, RoadsFromCell, ThingsInCell.RoadForCars, true);
+            grid.UniteTiles(a, RoadsToCell, ThingsInCell.RoadForCars, false);
+        }
+        timeVisible.Stop();
+        UnityEngine.Debug.Log("TIME DRAW: " + Convert.ToString(timeVisible.ElapsedMilliseconds));
     }
 }
 

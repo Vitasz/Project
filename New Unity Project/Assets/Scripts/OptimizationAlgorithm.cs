@@ -147,7 +147,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             PereborWatch.Stop();
             TOTALTIME += PereborWatch.ElapsedMilliseconds;
             UnityEngine.Debug.Log("Total variants:" + Convert.ToString(total) + " Time Perebor: " + Convert.ToString(PereborWatch.ElapsedMilliseconds));
-            if (bestEfficienty != -1) grid.CreateNewTile(bestPosition, bestVariant, new List<Vector3Int>());
+            if (bestEfficienty != -1) grid.CreateNewTile(bestPosition, bestVariant);
             else
             {
                 UnityEngine.Debug.Log("NO VARIANTS");
@@ -156,9 +156,16 @@ public class OptimizationAlgorithm : MonoBehaviour
             if (bestVariant == ThingsInCell.RoadForCars)
             {
                 foreach (Vector3Int a in bestRoadsTo)
-                    grid.UniteTiles(a, bestPosition, ThingsInCell.RoadForCars);
+                {
+                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition }, ThingsInCell.RoadForCars, true);
+                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a }, ThingsInCell.RoadForCars, false);
+                }
                 foreach (Vector3Int a in bestRoadsFrom)
-                    grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars);
+                {
+                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a }, ThingsInCell.RoadForCars, true);
+                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition }, ThingsInCell.RoadForCars, false);
+                }
+                    
             }
             
             bestEfficienty = -1;
