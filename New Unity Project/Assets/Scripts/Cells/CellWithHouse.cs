@@ -6,16 +6,16 @@ using System;
 public class CellWithHouse:Cell
 {
     public ThingsInCell typeHouse;
-    public int HumanInCellHouse = 0;
+    //public int HumanInCellHouse = 0;
     private int[] housefromCellOnIndex = new int[8];
-    private List<Vector3Int> thisHouse = new List<Vector3Int>();
+    //private List<Vector3Int> thisHouse = new List<Vector3Int>();
     public CellWithHouse(GridFunc grid, HouseControlles houseControlles, Vector3Int position, ThingsInCell type) : base(grid, houseControlles, position,type) {
         houseControlles.AddHouse(position, type, this);
         typeHouse = type;
         UpdateTile();
         if (type == ThingsInCell.HousePeople)
         {
-            HumanInCellHouse = 2;
+            //HumanInCellHouse = 2;
             houseControlles.AddCellWithHumans(this);
             //Debug.Log("add");
         }
@@ -33,10 +33,5 @@ public class CellWithHouse:Cell
         if (typeHouse == ThingsInCell.HousePeople) grid.tilemap.SetColor(positioninTileMap, Color.green);
         if (typeHouse == ThingsInCell.HouseFact) grid.tilemap.SetColor(positioninTileMap, Color.yellow);
         if (typeHouse == ThingsInCell.HouseCom) grid.tilemap.SetColor(positioninTileMap, Color.blue);
-    }
-    public void AddHuman()
-    {
-        HumanInCellHouse++;
-        if (HumanInCellHouse == 1) houseControlles.AddCellWithHumans(this);
     }
 }

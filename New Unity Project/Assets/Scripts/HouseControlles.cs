@@ -14,6 +14,7 @@ public class HouseControlles : MonoBehaviour
     private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
     private List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
     public HumanController humanController;
+    Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
     private void Start()
     {
         StartCoroutine("SpawnHuman");
@@ -25,6 +26,20 @@ public class HouseControlles : MonoBehaviour
           //  HousesTypes[type].Add(Position);
         //}
         CellsWithHouses.Add(house);
+        HumansInHouses.Add(house, new List<HumanFunctionality>());
+        if (type == ThingsInCell.HousePeople)
+        {
+            HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
+            human.houseControlles = this;
+            human.grid = Grid;
+            human.transform.localPosition = house.GetCellPosition();
+            HumansInHouses[house].Add(human);
+            human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
+            human.houseControlles = this;
+            human.grid = Grid;
+            human.transform.localPosition = house.GetCellPosition();
+            HumansInHouses[house].Add(human);
+        }
         
     }
     public IEnumerator SpawnHuman()
@@ -54,13 +69,13 @@ public class HouseControlles : MonoBehaviour
                             way.Insert(0, HouseFrom.GetCellPosition());
                             way.Add(HouseTo.GetCellPosition());
                             //Create Human
-
-                            HouseFrom.HumanInCellHouse--;
+                            List<HumanFunctionality> NowHouses = HumansInHouses[HouseFrom];
+                            HumanFunctionality human = NowHouses[0];
+                            NowHouses.RemoveAt(0);
                             clock.totalHumans++;
                             clock.totalWays += way.Count;
-                            if (HouseFrom.HumanInCellHouse == 0) CellsWithHumans.Remove(HouseFrom);
-                            HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
-                            human.StartGo(way, HouseTo, Grid, HouseFrom);
+                            if (NowHouses.Count == 0) CellsWithHumans.Remove(HouseFrom);
+                            human.StartGo(way, HouseTo);
                             humanController.AddHuman(human);
                         }
                     }
@@ -73,5 +88,10 @@ public class HouseControlles : MonoBehaviour
     public void RemoveHouse(CellWithHouse what)
     {
         CellsWithHouses.Remove(what);
+    }
+    public void AddHumanToHouse(HumanFunctionality human, CellWithHouse where)
+    {
+        HumansInHouses[where].Add(human);
+        if (!CellsWithHumans.Contains(where)) CellsWithHumans.Add(where);
     }
 }

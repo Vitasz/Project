@@ -22,6 +22,7 @@ public class GridFunc : MonoBehaviour
     public List<GameObject> Humans = new List<GameObject>();
     public OptimizationAlgorithm a;
     public Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
+    private Dictionary<Vector3Int, Dictionary<Vector3Int, List<Vector3Int>>> WaysToHouses = new Dictionary<Vector3Int, Dictionary<Vector3Int, List<Vector3Int>>>();
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();

@@ -6,20 +6,21 @@ public class HumanFunctionality : MonoBehaviour
 {
     public List<Vector3Int> way;
     CellWithHouse end;
-    GridFunc grid;
+    public GridFunc grid;
     public int nowposition = 0;
-    public void StartGo(List<Vector3Int> waytogo, CellWithHouse EndHouse, GridFunc Grid, CellWithHouse FromHouse)
+    public HouseControlles houseControlles;
+    public void StartGo(List<Vector3Int> waytogo, CellWithHouse EndHouse)
     {
-        grid = Grid;
+        nowposition = 0;
         way = waytogo;
         end = EndHouse;
-        transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(waytogo[0].x, waytogo[0].y, 1));
+        //transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(waytogo[0].x, waytogo[0].y, 1));
     }
     public void DeleteHuman()
     {
-        end.AddHuman();
+        houseControlles.AddHumanToHouse(this, end);
         //(grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
-        Destroy(transform.gameObject);
+        //Destroy(transform.gameObject);
     }
     public bool MoveToNext(out Vector3 from, out Vector3 to)
     {
