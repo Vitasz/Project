@@ -261,8 +261,8 @@ public class GridFunc : MonoBehaviour
         else if (Map[position] is CellWithRoad)
         {
             (Map[position] as CellWithRoad).Remove();
-            //tilemap.SetTile(position, null);
-            //tilemap.SetTile(new Vector3Int(position.x, position.y, -1), null);
+            tilemap.SetTile(position, null);
+            tilemap.SetTile(new Vector3Int(position.x, position.y, -1), null);
             Map.Remove(position);
             for (int i = -1; i < 2; i++)
             {
