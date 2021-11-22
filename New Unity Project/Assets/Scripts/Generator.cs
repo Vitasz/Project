@@ -4,7 +4,7 @@ using UnityEngine;
 using System;
 using System.Threading.Tasks;
 using System.Diagnostics;
-
+using System.Linq;
 public class Generator : MonoBehaviour
 {
     public GridFunc grid;
@@ -13,19 +13,20 @@ public class Generator : MonoBehaviour
     public bool MinimumRoads;
     public void Start()
     {
-        GenerateCity(N);
+        StartCoroutine(GenerateCity(N));
     }
 
     /// <summary>
     /// Генерирует город с Count домами
     /// </summary>
     /// <param name="Count">Количество домов</param>
-    public void GenerateCity(int Count)
+    public IEnumerator GenerateCity(int Count)
     {
+        System.Random random = new System.Random();
         Stopwatch timer = new Stopwatch();
         timer.Start();
-        List<Vector3Int> canBePositions = new List<Vector3Int>();
-        List<Vector3Int> wasPositions = new List<Vector3Int>();
+        HashSet<(int, int)> canBePositions = new HashSet<(int, int)>();
+        HashSet<(int, int)> wasPositions = new HashSet<(int, int)>();
         Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
         Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
         List<Vector3Int> newRoads = new List<Vector3Int>();
@@ -43,6 +44,7 @@ public class Generator : MonoBehaviour
             bool nowind = false;
             while (PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)
             {
+                if (ok && !MinimumRoads) break;
                 Dictionary<Vector3Int, int> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
                 foreach (Vector3Int a in nowPosition.Keys)
                 {
@@ -161,9 +163,8 @@ public class Generator : MonoBehaviour
             {
                 for (int j = -r; j <= r; j++)
                 {
-                    Vector3Int NowPosition = new Vector3Int(position.x + i, position.y + j, 0);
-                    if (!Houses.ContainsKey(NowPosition) &&
-                        !Roads.ContainsKey(NowPosition)&&!wasPositions.Contains(NowPosition))
+                    (int, int) NowPosition = (position.x + i, position.y + j);
+                    if (!wasPositions.Contains(NowPosition))
                     {
                          if (!canBePositions.Contains(NowPosition))canBePositions.Add(NowPosition);
                     }
@@ -176,9 +177,8 @@ public class Generator : MonoBehaviour
             {
                 for (int j = -1; j <= 1; j+=2)
                 {
-                    Vector3Int NowPosition = new Vector3Int(position.x + i, position.y + j, 0);
-                    if (!Houses.ContainsKey(NowPosition) &&
-                        !Roads.ContainsKey(NowPosition)&&!wasPositions.Contains(NowPosition))
+                    (int,int) NowPosition = (position.x + i, position.y + j);
+                    if (!wasPositions.Contains(NowPosition))
                     {
                         if (!canBePositions.Contains(NowPosition)) canBePositions.Add(NowPosition);
                     }
@@ -187,16 +187,24 @@ public class Generator : MonoBehaviour
         }
         int cntHousePeople = 1, cntHouseCom = 0, cntHouseFact = 0;
         Houses.Add(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople);
+        wasPositions.Add((0, 0));
+        //grid.CreateNewTile(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople);
         GetBonusPositions(new Vector3Int(0, 0, 0));
+        long totalct = 0;
         while (Houses.Count != Count)
         {
             if (canBePositions.Count != 0)
             {
-                Vector3Int Position = canBePositions[UnityEngine.Random.Range(0, canBePositions.Count)];
+                (int,int) positionpair = canBePositions.ElementAt(random.Next(canBePositions.Count));
+                Vector3Int Position = new Vector3Int(positionpair.Item1, positionpair.Item2, 0);
                 ThingsInCell whatadd;
-                canBePositions.Remove(Position);
-                wasPositions.Add(Position);
+                canBePositions.Remove(positionpair);
+                wasPositions.Add(positionpair);
+                Stopwatch createtime = new Stopwatch();
+                createtime.Start();
                 bool ok = CreateRoadsBetweenHouses(Position, new Vector3Int(0, 0, 0));
+                createtime.Stop();
+                totalct += createtime.ElapsedMilliseconds;
                 if (ok)
                 {
                     if (cntHouseCom <= cntHouseFact && cntHousePeople >= cntHouseCom)
@@ -216,39 +224,35 @@ public class Generator : MonoBehaviour
                     }
                     Houses.Add(Position, whatadd);
                     GetBonusPositions(Position);
-                    for (int i = 0; i < canBePositions.Count; i++)
+                    foreach (Vector3Int c in newRoads)
                     {
-                        if (newRoads.Contains(canBePositions[i]))
-                        {
-                            canBePositions.RemoveAt(i);
-                            i--;
-                        }
+                        GetBonusPositionsForRoad(c);
+                        canBePositions.Remove((c.x, c.y));
+                        wasPositions.Add((c.x, c.y));
                     }
+                    //grid.CreateNewTile(Position, whatadd);
+                    //yield return new WaitForEndOfFrame();
                 }
                 else
                 {
-                    //UnityEngine.Debug.LogError(Position);
                     foreach (Vector3Int a in newRoads) Roads.Remove(a);
                 }
-                foreach (Vector3Int c in newRoads)
-                {
-                    canBePositions.Remove(c);
-                    GetBonusPositionsForRoad(c);
-                }
                 newRoads.Clear();
+                
             }
             else
             {
                 UnityEngine.Debug.LogError("END PLACE");
                 break;
             }
+            
         }
-        UnityEngine.Debug.Log(Houses.Count);
+        UnityEngine.Debug.Log(totalct);
         timer.Stop();
         UnityEngine.Debug.Log(timer.ElapsedMilliseconds);
         Stopwatch timeVisible = new Stopwatch();
         timeVisible.Start();
-        foreach (Vector3Int a in Houses.Keys)
+        foreach(Vector3Int a in Houses.Keys)
         {
             grid.CreateNewTile(a, Houses[a]);
         }
@@ -263,6 +267,7 @@ public class Generator : MonoBehaviour
         }
         timeVisible.Stop();
         UnityEngine.Debug.Log("TIME DRAW: " + Convert.ToString(timeVisible.ElapsedMilliseconds));
+        yield return null;
     }
 }
 

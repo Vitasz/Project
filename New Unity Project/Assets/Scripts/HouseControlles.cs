@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using System.IO;
-
+using System.Diagnostics;
 public class HouseControlles : MonoBehaviour
 {
     public GridFunc Grid;
@@ -66,8 +66,11 @@ public class HouseControlles : MonoBehaviour
                     CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
                     if (HouseTo != null)
                     {
+                        Stopwatch wayfind = new Stopwatch();
+                        wayfind.Start();
                         List<Vector3Int> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
-                        
+                        wayfind.Stop();
+                        UnityEngine.Debug.Log(wayfind.ElapsedMilliseconds);
                         if (way != null)
                         {
                             way.Insert(0, HouseFrom.GetCellPosition());
