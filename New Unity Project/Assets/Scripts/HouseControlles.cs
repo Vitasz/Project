@@ -25,20 +25,24 @@ public class HouseControlles : MonoBehaviour
         //if (!HousesTypes[type].Contains(Position)) {
           //  HousesTypes[type].Add(Position);
         //}
-        CellsWithHouses.Add(house);
-        HumansInHouses.Add(house, new List<HumanFunctionality>());
-        if (type == ThingsInCell.HousePeople)
+        void AddHuman()
         {
             HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
             human.houseControlles = this;
             human.grid = Grid;
-            human.transform.localPosition = house.GetCellPosition();
+            human.transform.localPosition = new Vector3(house.GetCellPosition().x+0.5f, house.GetCellPosition().y+0.5f, 0);
             HumansInHouses[house].Add(human);
-            human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
-            human.houseControlles = this;
-            human.grid = Grid;
-            human.transform.localPosition = house.GetCellPosition();
-            HumansInHouses[house].Add(human);
+        }
+        CellsWithHouses.Add(house);
+        HumansInHouses.Add(house, new List<HumanFunctionality>());
+        if (type == ThingsInCell.HousePeople)
+        {
+
+            AddHuman();
+            AddHuman();
+            AddHuman();
+            AddHuman();
+            AddHuman();
         }
         
     }

@@ -157,15 +157,14 @@ public class OptimizationAlgorithm : MonoBehaviour
             {
                 foreach (Vector3Int a in bestRoadsTo)
                 {
-                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition }, ThingsInCell.RoadForCars, true);
-                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a }, ThingsInCell.RoadForCars, false);
+                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition });
+                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a });
                 }
                 foreach (Vector3Int a in bestRoadsFrom)
                 {
-                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a }, ThingsInCell.RoadForCars, true);
-                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition }, ThingsInCell.RoadForCars, false);
+                    grid.UniteTiles(bestPosition, new List<Vector3Int>() { a });
+                    grid.UniteTiles(a, new List<Vector3Int>() { bestPosition });
                 }
-                    
             }
             
             bestEfficienty = -1;

@@ -9,9 +9,12 @@ public class HumanFunctionality : MonoBehaviour
     public GridFunc grid;
     public int nowposition = 0;
     public HouseControlles houseControlles;
+    List<Vector3> wayInCell = new List<Vector3>();
+    int positionInCell = 0;
     public void StartGo(List<Vector3Int> waytogo, CellWithHouse EndHouse)
     {
         nowposition = 0;
+        positionInCell = -1;
         way = waytogo;
         end = EndHouse;
         //transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(waytogo[0].x, waytogo[0].y, 1));
@@ -24,14 +27,34 @@ public class HumanFunctionality : MonoBehaviour
     }
     public bool MoveToNext(out Vector3 from, out Vector3 to)
     {
-        if (grid.GetCell(way[nowposition]) is CellWithRoad) (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis(this);
-        if (nowposition + 1 != way.Count)
+        if (grid.GetCell(way[nowposition]) is CellWithRoad) (grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis(this, wayInCell[positionInCell]);
+        if (positionInCell + 1 < wayInCell.Count)
         {
-            from = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
+            from = wayInCell[positionInCell];
+            positionInCell++;
+            to = wayInCell[positionInCell];
+            (grid.GetCell(way[nowposition]) as CellWithRoad).MoveToThis(this, wayInCell[positionInCell]);
+            return false;
+        }
+        else if (nowposition + 1 < way.Count)
+        {
+            from = transform.localPosition;
             nowposition++;
-            to = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
-            //transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(way[nowposition].x, way[nowposition].y, 1));
-            if (grid.GetCell(way[nowposition]) is CellWithRoad) (grid.GetCell(way[nowposition]) as CellWithRoad).MoveToThis(this);
+            CellWithRoad nowRoad= grid.GetCell(way[nowposition]) as CellWithRoad;
+            positionInCell = 0;
+            if (nowRoad != null)
+            {
+                wayInCell = nowRoad.GetWayInTheCell(way[nowposition - 1], way[nowposition + 1]);
+                to = wayInCell[positionInCell];
+                (grid.GetCell(way[nowposition]) as CellWithRoad).MoveToThis(this, wayInCell[positionInCell]);
+            }
+            else
+            {
+                wayInCell = new List<Vector3>();
+                Vector3Int housePosition= grid.GetCell(way[nowposition]).GetCellPosition();
+
+                to = new Vector3(housePosition.x + 0.5f, housePosition.y + 0.5f, 0); ;
+            }
             return false;
         }
         else
@@ -43,10 +66,20 @@ public class HumanFunctionality : MonoBehaviour
     }
     public HumanFunctionality CanMove()
     {
-        if (nowposition + 1 != way.Count)
+        if (positionInCell + 1 < wayInCell.Count)
         {
-            Cell nowCell = grid.GetCell(way[nowposition + 1]);
-            if (nowCell is CellWithRoad) return (nowCell as CellWithRoad).CanMove();
+            CellWithRoad nowCell = grid.GetCell(way[nowposition]) as CellWithRoad;
+            return nowCell.CanMove(wayInCell[positionInCell + 1]);
+        }
+        else if (nowposition + 1 < way.Count)
+        {
+            CellWithRoad nowCell = grid.GetCell(way[nowposition + 1]) as CellWithRoad;
+
+            if (nowCell != null)
+            {
+                List<Vector3> nextway = nowCell.GetWayInTheCell(way[nowposition], way[nowposition + 1]);
+                return nowCell.CanMove(nextway[0]);
+            }
             else return null;
         }
         else return null;
