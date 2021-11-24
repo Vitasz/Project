@@ -58,64 +58,63 @@ public class GridFunc : MonoBehaviour
     }
     public List<Vector3Int> FindWay(List<Vector3Int> from, List<Vector3Int> to)
     {
-        List<Vector3Int> now = new List<Vector3Int>(), nownew = new List<Vector3Int>();
-        Dictionary<Vector3Int, (float, Vector3Int)> timetoRoads = new Dictionary<Vector3Int, (float, Vector3Int)>();
+        HashSet<(int,int)> now = new HashSet<(int, int)>(), nownew = new HashSet<(int,int)>();
+        Dictionary<(int, int), (float, (int, int))> timetoRoads = new Dictionary<(int, int), (float, (int, int))>();
         foreach (Vector3Int a in from)
         {
-            now.Add(a);
-            timetoRoads.Add(a, (0, a));
+            now.Add((a.x,a.y));
+            timetoRoads.Add((a.x,a.y), (0, (a.x,a.y)));
         }
-        Vector3Int end = new Vector3Int();
-        float MinWay = 100000000;
+        (int, int) end=(0,0);
+        float MinWay = float.MaxValue;
         while (now.Count != 0)
         {
-            foreach (Vector3Int a in now)
+            foreach ((int, int) a in now)
             {
-                if (Map.ContainsKey(a) && Map[a] is CellWithRoad)
-                    foreach (Vector3Int b in (Map[a] as CellWithRoad).GetNearRoadsWays())
+                Vector3Int AVector3 = new Vector3Int(a.Item1, a.Item2, 0);
+                if (to.Contains(AVector3)&&!from.Contains(AVector3))
+                {
+                    end = a;
+                    MinWay = timetoRoads[a].Item1;
+                    break;
+                }
+                CellWithRoad MapA = Map.ContainsKey(AVector3)?Map[AVector3] as CellWithRoad:null;
+                if (MapA!=null)
+                    foreach (Vector3Int b in MapA.GetNearRoadsWays())
                     {
-                        
+                        (int, int) nowB = (b.x, b.y);
                         if (Map.ContainsKey(b))
                         {
-                            if (timetoRoads.ContainsKey(b))
+                            if (timetoRoads.ContainsKey(nowB))
                             {
-                                if (timetoRoads[b].Item1 > timetoRoads[a].Item1 + (Map[a] as CellWithRoad).WaitTime)
+                                if (timetoRoads[nowB].Item1 > timetoRoads[a].Item1 + MapA.WaitTime)
                                 {
-                                    timetoRoads[b] = (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a);
-                                    nownew.Add(b);
+                                    timetoRoads[nowB] = (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a);
+                                    nownew.Add(nowB);
                                 }
                             }
                             else
                             {
-                                timetoRoads.Add(b, (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a));
-                                nownew.Add(b);
+                                timetoRoads.Add(nowB, (timetoRoads[a].Item1 + (Map[b] as CellWithRoad).WaitTime, a));
+                                nownew.Add(nowB);
                             }
                         }
                     }
             }
             now.Clear();
-            foreach (Vector3Int a in nownew) now.Add(a);
+            foreach ((int,int) a  in nownew) now.Add(a);
             nownew.Clear();
         }
-        foreach (Vector3Int a in to)
-        {
-            if (timetoRoads.ContainsKey(a) && Map.ContainsKey(a) && (Map[a] is CellWithRoad))
-            {
-                if (MinWay > timetoRoads[a].Item1)
-                {
-                    MinWay = timetoRoads[a].Item1;
-                    end = a;
-                }
-            }
-        }
-        if (MinWay == 100000000) return null;
+        if (MinWay == float.MaxValue) return null;
         List<Vector3Int> ans = new List<Vector3Int>();
-        ans.Add(end);
-        Vector3Int nowPos = end;
-        while (!from.Contains(nowPos))
+        ans.Add(new Vector3Int(end.Item1, end.Item2, 0));
+        (int,int) nowPos = end;
+        Vector3Int nowPosVec = new Vector3Int(nowPos.Item1, nowPos.Item2, 0);
+        while (!from.Contains(nowPosVec))
         {
             nowPos = timetoRoads[nowPos].Item2;
-            ans.Add(nowPos);
+            nowPosVec = new Vector3Int(nowPos.Item1, nowPos.Item2, 0);
+            ans.Add(nowPosVec);
         }
         ans.Reverse();
         return ans;

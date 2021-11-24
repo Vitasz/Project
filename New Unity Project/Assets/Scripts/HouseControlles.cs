@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Diagnostics;
+using System.Threading;
 public class HouseControlles : MonoBehaviour
 {
     public GridFunc Grid;
@@ -39,10 +40,6 @@ public class HouseControlles : MonoBehaviour
         {
 
             AddHuman();
-            AddHuman();
-            AddHuman();
-            AddHuman();
-            AddHuman();
         }
         
     }
@@ -68,9 +65,20 @@ public class HouseControlles : MonoBehaviour
                     {
                         Stopwatch wayfind = new Stopwatch();
                         wayfind.Start();
-                        List<Vector3Int> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
+                        List<Vector3Int> way = new List<Vector3Int>() ;
+                        bool threadwork = true;
+                        Thread _thread = new Thread(
+                            ()=>
+                            {
+                                way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
+                                threadwork = false;
+                            });
+                        _thread.Start();
+                        while (threadwork)
+                        {
+                            yield return new WaitForEndOfFrame();
+                        }
                         wayfind.Stop();
-                        UnityEngine.Debug.Log(wayfind.ElapsedMilliseconds);
                         if (way != null)
                         {
                             way.Insert(0, HouseFrom.GetCellPosition());
@@ -88,7 +96,7 @@ public class HouseControlles : MonoBehaviour
                     }
                 }
             }
-             yield return new WaitForFixedUpdate();
+             yield return new WaitForEndOfFrame();
         }
     }
     public void AddCellWithHumans(CellWithHouse temp) => CellsWithHumans.Add(temp);

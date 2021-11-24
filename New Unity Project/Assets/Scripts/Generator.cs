@@ -25,11 +25,19 @@ public class Generator : MonoBehaviour
         System.Random random = new System.Random();
         Stopwatch timer = new Stopwatch();
         timer.Start();
+        Dictionary<(int, int), (int, (int, int, int))> verHouses = new Dictionary<(int, int), (int, (int, int, int))>();
         HashSet<(int, int)> canBePositions = new HashSet<(int, int)>();
         HashSet<(int, int)> wasPositions = new HashSet<(int, int)>();
         Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
         Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
         List<Vector3Int> newRoads = new List<Vector3Int>();
+        (int, int,int) GetVerForHouse(ThingsInCell type)
+        {
+            if (type == ThingsInCell.HousePeople) return (55, 40, 5);
+            else if (type == ThingsInCell.HouseCom) return (40, 55, 5);
+            else if (type == ThingsInCell.HouseFact) return (5, 5, 90);
+            else return (34, 33, 33);
+        }
         bool CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
         {
             Dictionary<Vector3Int, int> PositionIND0 = new Dictionary<Vector3Int, int>();
@@ -54,7 +62,7 @@ public class Generator : MonoBehaviour
                     {
                         continue;
                     }
-                    if (aPos == to&&Roads.Count==0)
+                    if (aPos == to&&Roads.Count==0&&NewRoads!=0)
                     {
                         ok = true;
                         if (minWay>NewRoads)
@@ -166,7 +174,20 @@ public class Generator : MonoBehaviour
                     (int, int) NowPosition = (position.x + i, position.y + j);
                     if (!wasPositions.Contains(NowPosition))
                     {
-                         if (!canBePositions.Contains(NowPosition))canBePositions.Add(NowPosition);
+                        if (!verHouses.ContainsKey(NowPosition))
+                        {
+                            verHouses.Add(NowPosition, (1, GetVerForHouse(Houses[position])));
+                        }
+                        else
+                        {
+                            (int, int, int) newVer = GetVerForHouse(Houses[position]);
+                            (int, int, int) prevVer = verHouses[NowPosition].Item2;
+                            int cnthousesAround = verHouses[NowPosition].Item1;
+                            (int, int, int) sumPrev = (prevVer.Item1 * cnthousesAround, prevVer.Item2 * cnthousesAround, prevVer.Item3 * cnthousesAround);
+                            cnthousesAround += 1;
+                            verHouses[NowPosition] = (cnthousesAround, ((sumPrev.Item1 + newVer.Item1) / cnthousesAround, (sumPrev.Item2 + newVer.Item2) / cnthousesAround, (sumPrev.Item2 + newVer.Item2) / cnthousesAround));
+                        }
+                        if (!canBePositions.Contains(NowPosition))canBePositions.Add(NowPosition);
                     }
                 }
             }
@@ -180,6 +201,19 @@ public class Generator : MonoBehaviour
                     (int,int) NowPosition = (position.x + i, position.y + j);
                     if (!wasPositions.Contains(NowPosition))
                     {
+                        if (!verHouses.ContainsKey(NowPosition))
+                        {
+                            verHouses.Add(NowPosition, (1, GetVerForHouse(ThingsInCell.RoadForCars)));
+                        }
+                        else
+                        {
+                            (int, int, int) newVer = GetVerForHouse(ThingsInCell.RoadForCars);
+                            (int, int, int) prevVer = verHouses[NowPosition].Item2;
+                            int cnthousesAround = verHouses[NowPosition].Item1;
+                            (int, int, int) sumPrev = (prevVer.Item1 * cnthousesAround, prevVer.Item2 * cnthousesAround, prevVer.Item3 * cnthousesAround);
+                            cnthousesAround += 1;
+                            verHouses[NowPosition] = (cnthousesAround, ((sumPrev.Item1 + newVer.Item1) / cnthousesAround, (sumPrev.Item2 + newVer.Item2) / cnthousesAround, (sumPrev.Item2 + newVer.Item2) / cnthousesAround));
+                        }
                         if (!canBePositions.Contains(NowPosition)) canBePositions.Add(NowPosition);
                     }
                 }
@@ -195,10 +229,60 @@ public class Generator : MonoBehaviour
         {
             if (canBePositions.Count != 0)
             {
-                (int,int) positionpair = canBePositions.ElementAt(random.Next(canBePositions.Count));
-                Vector3Int Position = new Vector3Int(positionpair.Item1, positionpair.Item2, 0);
                 ThingsInCell whatadd;
+                (int, int) positionpair;
+                if (cntHousePeople < (cntHouseCom + cntHouseFact))
+                {
+                    whatadd = ThingsInCell.HousePeople;
+                }
+                else if (cntHouseCom <= cntHouseFact && cntHousePeople >= cntHouseCom)
+                {
+                    whatadd = ThingsInCell.HouseCom;
+                }
+                else
+                {
+                    whatadd = ThingsInCell.HouseFact;
+                }
+                if (whatadd == ThingsInCell.HousePeople)
+                {
+                    SortedDictionary<int,(int, int)> nowhouses = new SortedDictionary<int, (int, int)>();
+                    int nowsum = 0;
+                    foreach((int,int) a in verHouses.Keys)
+                    {
+                        nowsum += verHouses[a].Item2.Item1;
+                        nowhouses.Add(nowsum, a);
+                    }
+                    int rndNum = UnityEngine.Random.Range(0, nowsum);
+                    positionpair = nowhouses.Where(p => (rndNum <= p.Key)).First().Value;
+                }
+                else if (whatadd == ThingsInCell.HouseCom)
+                {
+                    SortedDictionary<int, (int, int)> nowhouses = new SortedDictionary<int, (int, int)>();
+                    int nowsum = 0;
+                    foreach ((int, int) a in verHouses.Keys)
+                    {
+                        nowsum += verHouses[a].Item2.Item2;
+                        nowhouses.Add(nowsum, a);
+                    }
+                    int rndNum = UnityEngine.Random.Range(0, nowsum);
+                    positionpair = nowhouses.Where(p => (rndNum <= p.Key)).First().Value;
+                }
+                else
+                {
+                    SortedDictionary<int, (int, int)> nowhouses = new SortedDictionary<int, (int, int)>();
+                    int nowsum = 0;
+                    foreach ((int, int) a in verHouses.Keys)
+                    {
+                        nowsum += verHouses[a].Item2.Item3;
+                        nowhouses.Add(nowsum, a);
+                    }
+                    int rndNum = UnityEngine.Random.Range(0, nowsum);
+                    positionpair = nowhouses.Where(p => (rndNum <= p.Key)).First().Value;
+                }
+                Vector3Int Position = new Vector3Int(positionpair.Item1, positionpair.Item2, 0);
+                
                 canBePositions.Remove(positionpair);
+                verHouses.Remove(positionpair);
                 wasPositions.Add(positionpair);
                 Stopwatch createtime = new Stopwatch();
                 createtime.Start();
@@ -207,19 +291,16 @@ public class Generator : MonoBehaviour
                 totalct += createtime.ElapsedMilliseconds;
                 if (ok)
                 {
-                    if (cntHouseCom <= cntHouseFact && cntHousePeople >= cntHouseCom)
+                    if (whatadd == ThingsInCell.HouseCom)
                     {
-                        whatadd = ThingsInCell.HouseCom;
                         cntHouseCom++;
                     }
-                    else if (cntHouseFact <= cntHouseCom && cntHousePeople >= cntHouseFact)
+                    else if (whatadd == ThingsInCell.HouseFact)
                     {
-                        whatadd = ThingsInCell.HouseFact;
                         cntHouseFact++;
                     }
                     else
                     {
-                        whatadd = ThingsInCell.HousePeople;
                         cntHousePeople++;
                     }
                     Houses.Add(Position, whatadd);
@@ -228,6 +309,7 @@ public class Generator : MonoBehaviour
                     {
                         GetBonusPositionsForRoad(c);
                         canBePositions.Remove((c.x, c.y));
+                        verHouses.Remove((c.x, c.y));
                         wasPositions.Add((c.x, c.y));
                     }
                     //grid.CreateNewTile(Position, whatadd);
