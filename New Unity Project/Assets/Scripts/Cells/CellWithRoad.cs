@@ -175,15 +175,35 @@ public class CellWithRoad : Cell
         {
             grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Roads/" + name));
             grid.tilemap.SetTileFlags(positioninTileMap, TileFlags.None);
-            Color color;
-            if (name != "0000")
+            Color color=new Color(0,0,0,1f);
+            Color from, to;
+            float percents = 0;
+            if (WaitTime < 4f)
             {
-                if (WaitTime < 5f) color = COLORS.ColorRoad1;
-                else if (WaitTime < 10f) color = COLORS.ColorRoad2;
-                else color = COLORS.ColorRoad3;
-                // Debug.Log(WaitTime);
-                grid.tilemap.SetColor(positioninTileMap, color);
+                from = to = COLORS.ColorRoad1;
+                percents = 0f;
             }
+            else if (WaitTime < 8f)
+            {
+                from = COLORS.ColorRoad1;
+                to = COLORS.ColorRoad2;
+                percents = (WaitTime-4f)/4f;
+            }
+            else if (WaitTime < 12f)
+            {
+                from = COLORS.ColorRoad2;
+                to = COLORS.ColorRoad3;
+                percents = (WaitTime - 8f) / 4f;
+            }
+            else
+            {
+                from = to = COLORS.ColorRoad3;
+                percents = 0f;
+            }
+            color.r = Mathf.Lerp(from.r, to.r, percents);
+            color.g = Mathf.Lerp(from.g, to.g, percents);
+            color.b = Mathf.Lerp(from.b, to.b, percents);
+            grid.tilemap.SetColor(positioninTileMap, color);
         }
     }
     public HumanFunctionality CanMove(Vector3 position)
