@@ -62,15 +62,18 @@ public class Generator : MonoBehaviour
                     {
                         continue;
                     }
-                    if (aPos == to&&Roads.Count==0&&NewRoads!=0)
+                    if (aPos == to)
                     {
-                        ok = true;
-                        if (minWay>NewRoads)
+                        if (Roads.Count == 0 && NewRoads != 0 || Roads.Count != 0)
                         {
-                            minWay = NewRoads;
-                            last = aPos;
+                            ok = true;
+                            if (minWay > NewRoads)
+                            {
+                                minWay = NewRoads;
+                                last = aPos;
+                            }
+                            continue;
                         }
-                        continue;
                     }
                     if (Roads.ContainsKey(a))
                     {

@@ -38,10 +38,12 @@ public class HouseControlles : MonoBehaviour
         HumansInHouses.Add(house, new List<HumanFunctionality>());
         if (type == ThingsInCell.HousePeople)
         {
-
+            AddHuman();
+            AddHuman();
+            AddHuman();
+            AddHuman();
             AddHuman();
         }
-        
     }
     public IEnumerator SpawnHuman()
     {

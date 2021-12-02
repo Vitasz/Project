@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using System;
+using COLORS_CONST;
 public class CellWithHouse:Cell
 {
     public ThingsInCell typeHouse;
@@ -30,8 +31,8 @@ public class CellWithHouse:Cell
         foreach (int a in housefromCellOnIndex) name += a == 0 ? '0' : '1';
         grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Houses/basetile" + name));
         grid.tilemap.SetTileFlags(positioninTileMap, TileFlags.None);;
-        if (typeHouse == ThingsInCell.HousePeople) grid.tilemap.SetColor(positioninTileMap, Color.green);
-        if (typeHouse == ThingsInCell.HouseFact) grid.tilemap.SetColor(positioninTileMap, Color.yellow);
-        if (typeHouse == ThingsInCell.HouseCom) grid.tilemap.SetColor(positioninTileMap, Color.blue);
+        if (typeHouse == ThingsInCell.HousePeople) grid.tilemap.SetColor(positioninTileMap, COLORS.ColorHousePeople);
+        if (typeHouse == ThingsInCell.HouseFact) grid.tilemap.SetColor(positioninTileMap, COLORS.ColorHouseFact);
+        if (typeHouse == ThingsInCell.HouseCom) grid.tilemap.SetColor(positioninTileMap, COLORS.ColorHouseCom);
     }
 }

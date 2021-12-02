@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 using UnityEngine.Tilemaps;
-
+using COLORS_CONST;
 public class CellWithRoad : Cell
 {
     private List<Vector3Int> roadsFromCell = new List<Vector3Int>();
@@ -11,9 +11,10 @@ public class CellWithRoad : Cell
     private int[] roadsfromCellOnIndex = new int[4];
     private string name = "0000";
     protected bool isEmpty = true;
-    List<bool> EmptyLastFrames = new List<bool>(100);
+    List<int> EmptyLastFrames = new List<int>();
     public float WaitTime = 1f;
-    HumanFunctionality HumanInCell;
+    private int humansInCelllast100frames = 0;
+    private int humansNow = 0;
     private bool todel = false;
     private bool visible = true;
     Dictionary<Vector3, HumanFunctionality> humansInCell = new Dictionary<Vector3, HumanFunctionality>();
@@ -177,9 +178,9 @@ public class CellWithRoad : Cell
             Color color;
             if (name != "0000")
             {
-                if (WaitTime < 5f) color = Color.green;
-                else if (WaitTime < 10f) color = Color.yellow;
-                else color = Color.red;
+                if (WaitTime < 5f) color = COLORS.ColorRoad1;
+                else if (WaitTime < 10f) color = COLORS.ColorRoad2;
+                else color = COLORS.ColorRoad3;
                 // Debug.Log(WaitTime);
                 grid.tilemap.SetColor(positioninTileMap, color);
             }
@@ -192,24 +193,26 @@ public class CellWithRoad : Cell
     public void MoveToThis(HumanFunctionality who, Vector3 position)
     {
         humansInCell[position] = who;
+        humansNow++;
     }
     public void MoveOutThis(HumanFunctionality who, Vector3 position)
     {
         if (who == humansInCell[position])
         {
             humansInCell[position] = null;
+            humansNow--;
         }
     }
     public void UpdateWaitTime()
     {
-        /*EmptyLastFrames.Add(isEmpty);
-        if (EmptyLastFrames.Count>15)EmptyLastFrames.RemoveAt(0);
-        int notwasEmpty = 0;
-        for (int i = 0; i < EmptyLastFrames.Count; i++)
+        EmptyLastFrames.Add(humansNow);
+        humansInCelllast100frames += humansNow;
+        if (EmptyLastFrames.Count > 15)
         {
-            if (!EmptyLastFrames[i]) notwasEmpty++;
+            humansInCelllast100frames -= EmptyLastFrames[0];
+            EmptyLastFrames.RemoveAt(0);
         }
-        WaitTime = (float)notwasEmpty;*/
+        WaitTime = (float)(humansInCelllast100frames)/10f;
         UpdateTile();
     }
     public void Remove()
