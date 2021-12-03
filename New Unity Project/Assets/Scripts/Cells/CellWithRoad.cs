@@ -11,10 +11,11 @@ public class CellWithRoad : Cell
     private int[] roadsfromCellOnIndex = new int[4];
     private string name = "0000";
     protected bool isEmpty = true;
-    List<int> EmptyLastFrames = new List<int>();
+    List<float> EmptyLastFrames = new List<float>();
     public float WaitTime = 1f;
-    private int humansInCelllast100frames = 0;
-    private int humansNow = 0;
+    private float humansInCelllast100frames = 0;
+    private float humansNow = 0;
+    private float humansPlaces = 4;
     private bool todel = false;
     private bool visible = true;
     Dictionary<Vector3, HumanFunctionality> humansInCell = new Dictionary<Vector3, HumanFunctionality>();
@@ -56,6 +57,7 @@ public class CellWithRoad : Cell
             if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to) != -1)
             {
                 roadsFromCell.Add(to);
+                humansPlaces += 2;
                 name = "";
                 roadsfromCellOnIndex[GetIndexNearCell(from, to) / 2] = 1;
                 for (int i = 0; i < 4; i++)
@@ -220,19 +222,20 @@ public class CellWithRoad : Cell
         if (who == humansInCell[position])
         {
             humansInCell[position] = null;
-            humansNow--;
         }
+        humansNow--;
     }
     public void UpdateWaitTime()
     {
-        EmptyLastFrames.Add(humansNow);
-        humansInCelllast100frames += humansNow;
+        EmptyLastFrames.Add(humansNow/humansPlaces);
+        humansInCelllast100frames += humansNow / humansPlaces;
         if (EmptyLastFrames.Count > 15)
         {
             humansInCelllast100frames -= EmptyLastFrames[0];
             EmptyLastFrames.RemoveAt(0);
         }
-        WaitTime = (float)(humansInCelllast100frames)/10f;
+        humansInCelllast100frames = Math.Max(0.00001f, humansInCelllast100frames);
+        WaitTime = (float)(humansInCelllast100frames);
         UpdateTile();
     }
     public void Remove()

@@ -64,7 +64,7 @@ public class Generator : MonoBehaviour
                     }
                     if (aPos == to)
                     {
-                        if (Roads.Count == 0 && NewRoads != 0 || Roads.Count != 0)
+                        if (Roads.Count == 0 && NewRoads != 0)
                         {
                             ok = true;
                             if (minWay > NewRoads)
