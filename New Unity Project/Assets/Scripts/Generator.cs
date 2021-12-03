@@ -62,18 +62,16 @@ public class Generator : MonoBehaviour
                     {
                         continue;
                     }
-                    if (aPos == to)
+                    if (aPos == to&&Roads.Count==0)
                     {
-                        if (Roads.Count == 0 && NewRoads != 0)
+                        ok = true;
+                        if (minWay > NewRoads)
                         {
-                            ok = true;
-                            if (minWay > NewRoads)
-                            {
-                                minWay = NewRoads;
-                                last = aPos;
-                            }
-                            continue;
+                            minWay = NewRoads;
+                            last = aPos;
                         }
+                        continue;
+
                     }
                     if (Roads.ContainsKey(a))
                     {
@@ -95,7 +93,7 @@ public class Generator : MonoBehaviour
                         {
                             Vector3Int temp = new Vector3Int(aPos.x + i, aPos.y, 0);
                             int roads = Roads.ContainsKey(temp) ? 0 : 1;
-
+                            if (temp == to && NewRoads  == 0&&Roads.Count==0) continue;
                             if (!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)
                             {
                                 if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
@@ -111,6 +109,7 @@ public class Generator : MonoBehaviour
                         {
                             Vector3Int temp = new Vector3Int(aPos.x, aPos.y + i, 0);
                             int roads = Roads.ContainsKey(temp) ? 0 : 1;
+                            if (temp == to && NewRoads  == 0 && Roads.Count == 0) continue;
                             if (!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)
                             {
                                 if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
