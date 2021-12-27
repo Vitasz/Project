@@ -28,9 +28,9 @@ public class Generator : MonoBehaviour
         Dictionary<(int, int), (int, (int, int, int))> verHouses = new Dictionary<(int, int), (int, (int, int, int))>();
         HashSet<(int, int)> canBePositions = new HashSet<(int, int)>();
         HashSet<(int, int)> wasPositions = new HashSet<(int, int)>();
-        Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
-        Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
-        List<Vector3Int> newRoads = new List<Vector3Int>();
+        Dictionary<(int,int), ThingsInCell> Houses = new Dictionary<(int, int), ThingsInCell>();
+        Dictionary<(int, int), List<(int, int)>> Roads = new Dictionary<(int, int), List<(int, int)>>();
+        List<(int, int)> newRoads = new List<(int, int)>();
         (int, int,int) GetVerForHouse(ThingsInCell type)
         {
             if (type == ThingsInCell.HousePeople) return (55, 40, 5);
@@ -38,52 +38,54 @@ public class Generator : MonoBehaviour
             else if (type == ThingsInCell.HouseFact) return (5, 5, 90);
             else return (34, 33, 33);
         }
-        bool CreateRoadsBetweenHouses(Vector3Int from, Vector3Int to)
+        bool CreateRoadsBetweenHouses((int, int) from, (int, int) to)
         {
-            Dictionary<Vector3Int, int> PositionIND0 = new Dictionary<Vector3Int, int>();
-            Dictionary<Vector3Int, int> PositionIND1 = new Dictionary<Vector3Int, int>();
-            Dictionary<Vector3Int, (Vector3Int, int)> USED = new Dictionary<Vector3Int, (Vector3Int, int)>();
+            Dictionary<(int, int), int> PositionIND0 = new Dictionary<(int, int), int>();
+            Dictionary<(int, int), int> PositionIND1 = new Dictionary<(int, int), int>();
+            Dictionary<(int, int), ((int, int), int)> USED = new Dictionary<(int, int), ((int, int), int)>();
 
             bool ok = false;
             int minWay = int.MaxValue;
-            USED.Add(from, (new Vector3Int(), 0));
+            USED.Add(from, ((0,0), 0));
             PositionIND0.Add(from, 0);
-            Vector3Int last = to;
+            (int, int) last = to;
             bool nowind = false;
             while (PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)
             {
                 if (ok && !MinimumRoads) break;
-                Dictionary<Vector3Int, int> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
-                foreach (Vector3Int a in nowPosition.Keys)
+                Dictionary<(int, int), int> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
+                foreach ((int, int) a in nowPosition.Keys)
                 {
-                    Vector3Int aPos = a;
                     int NewRoads = nowPosition[a];
                     if (NewRoads > minWay)
                     {
                         continue;
                     }
-                    if (aPos == to&&Roads.Count==0)
+                    if (a == to&&NewRoads!=0&&Roads.Count==0)
                     {
                         ok = true;
                         if (minWay > NewRoads)
                         {
                             minWay = NewRoads;
-                            last = aPos;
+                            last = a;
                         }
-                        continue;
+                        newPosition.Clear();
+                        break;
 
                     }
                     if (Roads.ContainsKey(a))
                     {
                         ok = true;
+                        
                         if (minWay > NewRoads)
                         {
                             minWay = NewRoads;
-                            last = aPos;
+                            last = a;
                         }
-                        continue;
+                        newPosition.Clear();
+                        break;
                     }
-                    if (Houses.ContainsKey(aPos) && aPos != from)
+                    if (Houses.ContainsKey(a) && a != from)
                     {
                         continue;
                     }
@@ -91,34 +93,32 @@ public class Generator : MonoBehaviour
                     {
                         for (int i = -1; i < 2; i += 2)
                         {
-                            Vector3Int temp = new Vector3Int(aPos.x + i, aPos.y, 0);
-                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
-                            if (temp == to && NewRoads  == 0&&Roads.Count==0) continue;
-                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)
+                            (int, int) temp = (a.Item1 + i, a.Item2);
+                            int roads = Roads.ContainsKey(temp) || Houses.ContainsKey(temp) ? 0 : 1;
+                            if ((!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)&&!Houses.ContainsKey(temp) || temp == to)
                             {
                                 if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
                                 else newPosition[temp] = NewRoads + roads;
                                 if (USED.ContainsKey(temp))
                                 {
-                                    USED[temp] = (aPos, NewRoads + roads);
+                                    USED[temp] = (a, NewRoads + roads);
                                 }
-                                else USED.Add(temp, (aPos, NewRoads));
+                                else USED.Add(temp, (a, NewRoads));
                             }
                         }
                         for (int i = -1; i < 2; i += 2)
                         {
-                            Vector3Int temp = new Vector3Int(aPos.x, aPos.y + i, 0);
-                            int roads = Roads.ContainsKey(temp) ? 0 : 1;
-                            if (temp == to && NewRoads  == 0 && Roads.Count == 0) continue;
-                            if (!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)
+                            (int, int) temp = (a.Item1, a.Item2+i);
+                            int roads = Roads.ContainsKey(temp)||Houses.ContainsKey(temp) ? 0 : 1;
+                            if ((!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads) && !Houses.ContainsKey(temp) || temp == to)
                             {
                                 if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
                                 else newPosition[temp] = NewRoads + roads;
                                 if (USED.ContainsKey(temp))
                                 {
-                                    USED[temp] = (aPos, NewRoads + roads);
+                                    USED[temp] = (a, NewRoads + roads);
                                 }
-                                else USED.Add(temp, (aPos, NewRoads));
+                                else USED.Add(temp, (a, NewRoads));
                             }
                         }
                     }
@@ -133,47 +133,52 @@ public class Generator : MonoBehaviour
             }
             else
             {
-                Vector3Int tosave = to;
+                if (USED[last].Item2 == 0) return true;
+                (int, int) tosave = to;
                 to = last;
-                Vector3Int nowpos = USED[last].Item1;
+
+                (int, int) nowpos = USED[last].Item1;
                 while (nowpos != from)
                 {
+                    
+                    if (Roads.ContainsKey(nowpos))
+                    {
+                        if (to!=tosave)
+                            Roads[nowpos].Add(to);
+                    }
+                    else
+                    {
+                        Roads.Add(nowpos, new List<(int,int)>());
+                        if (to != tosave) Roads[nowpos].Add(to);
+                        if (!newRoads.Contains(nowpos))newRoads.Add(nowpos);
+                    }
                     if (to != tosave)
                     {
-                         if (Roads.ContainsKey(nowpos))
-                         {
-                            Roads[nowpos].Add(to);
-                         }
-                         else
-                         {
-                            Roads.Add(nowpos, new List<Vector3Int>() { to });
-                            if (!newRoads.Contains(nowpos))newRoads.Add(nowpos);
-                         }
-                         if (Roads.ContainsKey(to))
-                         {
-                             Roads[to].Add(nowpos);
-                         }
-                         else
-                         {
-                            Roads.Add(to, new List<Vector3Int>() { nowpos });
+                        if (Roads.ContainsKey(to))
+                        {
+                            Roads[to].Add(nowpos);
+                        }
+                        else
+                        {
+                            Roads.Add(to, new List<(int, int)>() { nowpos });
                             if (!newRoads.Contains(to)) newRoads.Add(to);
-                         }
+                        }
                     }
+                    
                     to = nowpos;
-                    if (!USED.ContainsKey(to)) break;
                     nowpos = USED[to].Item1;
                 }
                 return true;
             }
         }
 
-        void GetBonusPositions(Vector3Int position)
+        void GetBonusPositions((int, int) position)
         {
             for (int i = -r; i <= r; i++)
             {
                 for (int j = -r; j <= r; j++)
                 {
-                    (int, int) NowPosition = (position.x + i, position.y + j);
+                    (int, int) NowPosition = (position.Item1 + i, position.Item2 + j);
                     if (!wasPositions.Contains(NowPosition))
                     {
                         if (!verHouses.ContainsKey(NowPosition))
@@ -194,13 +199,13 @@ public class Generator : MonoBehaviour
                 }
             }
         }
-        void GetBonusPositionsForRoad(Vector3Int position)
+        void GetBonusPositionsForRoad((int, int) position)
         {
             for (int i = -1; i <= 1; i+=2)
             {
                 for (int j = -1; j <= 1; j+=2)
                 {
-                    (int,int) NowPosition = (position.x + i, position.y + j);
+                    (int,int) NowPosition = (position.Item1 + i, position.Item2 + j);
                     if (!wasPositions.Contains(NowPosition))
                     {
                         if (!verHouses.ContainsKey(NowPosition))
@@ -222,10 +227,10 @@ public class Generator : MonoBehaviour
             }
         }
         int cntHousePeople = 1, cntHouseCom = 0, cntHouseFact = 0;
-        Houses.Add(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople);
+        Houses.Add((0,0), ThingsInCell.HousePeople);
         wasPositions.Add((0, 0));
         //grid.CreateNewTile(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople);
-        GetBonusPositions(new Vector3Int(0, 0, 0));
+        GetBonusPositions((0,0));
         long totalct = 0;
         while (Houses.Count != Count)
         {
@@ -281,14 +286,14 @@ public class Generator : MonoBehaviour
                     int rndNum = UnityEngine.Random.Range(0, nowsum);
                     positionpair = nowhouses.Where(p => (rndNum <= p.Key)).First().Value;
                 }
-                Vector3Int Position = new Vector3Int(positionpair.Item1, positionpair.Item2, 0);
+                (int, int) Position = positionpair;
                 
                 canBePositions.Remove(positionpair);
                 verHouses.Remove(positionpair);
                 wasPositions.Add(positionpair);
                 Stopwatch createtime = new Stopwatch();
                 createtime.Start();
-                bool ok = CreateRoadsBetweenHouses(Position, new Vector3Int(0, 0, 0));
+                bool ok = CreateRoadsBetweenHouses(Position, (0, 0));
                 createtime.Stop();
                 totalct += createtime.ElapsedMilliseconds;
                 if (ok)
@@ -307,19 +312,17 @@ public class Generator : MonoBehaviour
                     }
                     Houses.Add(Position, whatadd);
                     GetBonusPositions(Position);
-                    foreach (Vector3Int c in newRoads)
+                    foreach ((int, int) c in newRoads)
                     {
                         GetBonusPositionsForRoad(c);
-                        canBePositions.Remove((c.x, c.y));
-                        verHouses.Remove((c.x, c.y));
-                        wasPositions.Add((c.x, c.y));
+                        canBePositions.Remove(c);
+                        verHouses.Remove(c);
+                        wasPositions.Add(c);
                     }
-                    //grid.CreateNewTile(Position, whatadd);
-                    //yield return new WaitForEndOfFrame();
                 }
                 else
                 {
-                    foreach (Vector3Int a in newRoads) Roads.Remove(a);
+                    foreach ((int, int) a in newRoads) Roads.Remove(a);
                 }
                 newRoads.Clear();
                 
@@ -336,19 +339,20 @@ public class Generator : MonoBehaviour
         UnityEngine.Debug.Log(timer.ElapsedMilliseconds);
         Stopwatch timeVisible = new Stopwatch();
         timeVisible.Start();
-        foreach(Vector3Int a in Houses.Keys)
-        {
-            grid.CreateNewTile(a, Houses[a]);
-        }
-        foreach (Vector3Int a in Roads.Keys)
+        foreach ((int, int) a in Roads.Keys)
         {
             grid.CreateNewTile(a, ThingsInCell.RoadForCars);
         }
-        foreach (Vector3Int a in Roads.Keys)
+        foreach ((int, int) a in Roads.Keys)
         {
-            List<Vector3Int> RoadsCell = Roads[a];
+            List<(int, int)> RoadsCell = Roads[a];
             grid.UniteTiles(a, RoadsCell);
         }
+        foreach ((int, int) a in Houses.Keys)
+        {
+            grid.CreateNewTile(a, Houses[a]);
+        }
+        
         timeVisible.Stop();
         UnityEngine.Debug.Log("TIME DRAW: " + Convert.ToString(timeVisible.ElapsedMilliseconds));
         yield return null;

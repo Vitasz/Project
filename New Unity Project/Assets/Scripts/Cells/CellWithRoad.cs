@@ -6,7 +6,7 @@ using UnityEngine.Tilemaps;
 using COLORS_CONST;
 public class CellWithRoad : Cell
 {
-    private List<Vector3Int> roadsFromCell = new List<Vector3Int>();
+    private List<(int, int)> roadsFromCell = new List<(int, int)>();
     //private List<Vector3Int> CanMoveTo = new List<Vector3Int>();
     private int[] roadsfromCellOnIndex = new int[4];
     private string name = "0000";
@@ -19,14 +19,14 @@ public class CellWithRoad : Cell
     private bool todel = false;
     private bool visible = true;
     Dictionary<Vector3, HumanFunctionality> humansInCell = new Dictionary<Vector3, HumanFunctionality>();
-    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, Vector3Int position,ThingsInCell type) : base(grid, houseControlles, position, type) {
-        grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, 0), Resources.Load<Tile>("Tiles/Roads/0000"));
-        Vector3 Cellposition = GetCellPosition();
+    public CellWithRoad(GridFunc grid, HouseControlles houseControlles, (int,int) position,ThingsInCell type) : base(grid, houseControlles, position, type) {
+        grid.tilemap.SetTile(new Vector3Int(positioninTileMap.Item1, positioninTileMap.Item2, 0), Resources.Load<Tile>("Tiles/Roads/0000"));
+        (int, int) Cellposition = GetCellPosition();
         for (int i = 0; i < 4; i++)
         {
             for (int j = 0; j < 4; j++)
             {
-                humansInCell.Add(new Vector3(Cellposition.x + 0.25f * j +0.1f, Cellposition.y - 0.25f * i + 0.9f, 0), null);
+                humansInCell.Add(new Vector3(Cellposition.Item1 + 0.25f * j +0.1f, Cellposition.Item2 - 0.25f * i + 0.9f, 0), null);
             }
         }
     }
@@ -50,9 +50,9 @@ public class CellWithRoad : Cell
             UpdateTile();
         }
     }*/
-    public void AddRoad(Vector3Int from, List<Vector3Int> roads)
+    public void AddRoad((int, int) from, List<(int, int)> roads)
     {
-        foreach (Vector3Int to in roads)
+        foreach ((int, int) to in roads)
         {
             if (!roadsFromCell.Contains(to) && from != to && GetIndexNearCell(from, to) != -1)
             {
@@ -69,17 +69,17 @@ public class CellWithRoad : Cell
         }
         UpdateTile();
     }
-    public List<Vector3> GetWayInTheCell(Vector3Int from, Vector3Int to)
+    public List<Vector3> GetWayInTheCell((int, int) from, (int, int) to)
     {
         int fromInd = GetIndexNearCell(positioninTileMap, from)/2, toInd = GetIndexNearCell(positioninTileMap, to)/2;
         List<List<Vector3>> Allpositions = new List<List<Vector3>>();
-        Vector3Int Cellposition = GetCellPosition();
+        (int, int) Cellposition = GetCellPosition();
         for (int i = 0; i < 4; i++)
         {
             Allpositions.Add(new List<Vector3>());
             for (int j = 0; j < 4; j++)
             {
-                Allpositions[Allpositions.Count - 1].Add(new Vector3(Cellposition.x + 0.25f * j + 0.1f, Cellposition.y - 0.25f * i + 0.9f, 0));
+                Allpositions[Allpositions.Count - 1].Add(new Vector3(Cellposition.Item1 + 0.25f * j + 0.1f, Cellposition.Item2 - 0.25f * i + 0.9f, 0));
             }
         }
         if (fromInd == 0)
@@ -164,10 +164,10 @@ public class CellWithRoad : Cell
     {
         //SetTile();
     }
-    public List<Vector3Int> GetNearRoadsWays()
+    public List<(int,int)> GetNearRoadsWays()
     {
-        List<Vector3Int> ans = new List<Vector3Int>();
-        foreach (Vector3Int a in roadsFromCell) ans.Add(a);
+        List<(int, int)> ans = new List<(int, int)>();
+        foreach ((int, int) a in roadsFromCell) ans.Add(a);
         return ans;
     }
     protected override void UpdateTile()
@@ -175,8 +175,9 @@ public class CellWithRoad : Cell
         // Debug.Log(name);
         if (!todel&&visible)
         {
-            grid.tilemap.SetTile(positioninTileMap, Resources.Load<Tile>("Tiles/Roads/" + name));
-            grid.tilemap.SetTileFlags(positioninTileMap, TileFlags.None);
+            Vector3Int tmp = new Vector3Int(positioninTileMap.Item1, positioninTileMap.Item2, 1);
+            grid.tilemap.SetTile(tmp, Resources.Load<Tile>("Tiles/Roads/" + name));
+            grid.tilemap.SetTileFlags(tmp, TileFlags.None);
             Color color=new Color(0,0,0,1f);
             Color from, to;
             float percents = 0;
@@ -205,7 +206,7 @@ public class CellWithRoad : Cell
             color.r = Mathf.Lerp(from.r, to.r, percents);
             color.g = Mathf.Lerp(from.g, to.g, percents);
             color.b = Mathf.Lerp(from.b, to.b, percents);
-            grid.tilemap.SetColor(positioninTileMap, color);
+            grid.tilemap.SetColor(tmp, color);
         }
     }
     public HumanFunctionality CanMove(Vector3 position)

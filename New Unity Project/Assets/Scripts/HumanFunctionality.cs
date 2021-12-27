@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class HumanFunctionality : MonoBehaviour
 {
-    public List<Vector3Int> way;
+    public List<(int, int)> way;
     CellWithHouse end;
     public GridFunc grid;
     public int nowposition = 0;
     public HouseControlles houseControlles;
     List<Vector3> wayInCell = new List<Vector3>();
     int positionInCell = 0;
-    public void StartGo(List<Vector3Int> waytogo, CellWithHouse EndHouse)
+    public void StartGo(List<(int, int)> waytogo, CellWithHouse EndHouse)
     {
         nowposition = 0;
         positionInCell = -1;
@@ -51,9 +51,9 @@ public class HumanFunctionality : MonoBehaviour
             else
             {
                 wayInCell = new List<Vector3>();
-                Vector3Int housePosition= grid.GetCell(way[nowposition]).GetCellPosition();
+                (int, int) housePosition = grid.GetCell(way[nowposition]).GetCellPosition();
 
-                to = new Vector3(housePosition.x + 0.5f, housePosition.y + 0.5f, 0); ;
+                to = new Vector3(housePosition.Item1 + 0.5f, housePosition.Item2 + 0.5f, 0); ;
             }
             return false;
         }

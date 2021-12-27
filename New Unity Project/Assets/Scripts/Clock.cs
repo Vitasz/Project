@@ -34,7 +34,7 @@ public class Clock : MonoBehaviour
     }
     public void UpdateWaitTime()
     {
-        foreach(CellWithRoad a in grid.Roads)
+        foreach(CellWithRoad a in grid.Roads.Values)
         {
             a.UpdateWaitTime();
         }

@@ -20,18 +20,14 @@ public class HouseControlles : MonoBehaviour
     {
         StartCoroutine("SpawnHuman");
     }
-    public void AddHouse(Vector3Int Position, ThingsInCell type, CellWithHouse house)
+    public void AddHouse(ThingsInCell type, CellWithHouse house)
     {
-        //if (!HousesTypes.ContainsKey(type)) HousesTypes.Add(type, new List<Vector3Int>());
-        //if (!HousesTypes[type].Contains(Position)) {
-          //  HousesTypes[type].Add(Position);
-        //}
         void AddHuman()
         {
             HumanFunctionality human = Instantiate(HumanPrefab, transform).GetComponent<HumanFunctionality>();
             human.houseControlles = this;
             human.grid = Grid;
-            human.transform.localPosition = new Vector3(house.GetCellPosition().x+0.5f, house.GetCellPosition().y+0.5f, 0);
+            human.transform.localPosition = new Vector3(house.GetCellPosition().Item1+0.5f, house.GetCellPosition().Item2+0.5f, 0);
             HumansInHouses[house].Add(human);
         }
         CellsWithHouses.Add(house);
@@ -49,7 +45,8 @@ public class HouseControlles : MonoBehaviour
     {
         while (true)
         {
-           // Debug.Log(CellsWithHumans.Count);
+            Stopwatch totalTime = new Stopwatch();
+            totalTime.Start();
             if (CellsWithHumans.Count>=1)
             {
                 CellWithHouse HouseFrom = CellsWithHumans[UnityEngine.Random.Range(0, CellsWithHumans.Count)];
@@ -65,22 +62,7 @@ public class HouseControlles : MonoBehaviour
                     CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
                     if (HouseTo != null)
                     {
-                        Stopwatch wayfind = new Stopwatch();
-                        wayfind.Start();
-                        List<Vector3Int> way = new List<Vector3Int>() ;
-                        bool threadwork = true;
-                        Thread _thread = new Thread(
-                            ()=>
-                            {
-                                way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
-                                threadwork = false;
-                            });
-                        _thread.Start();
-                        while (threadwork)
-                        {
-                            yield return new WaitForEndOfFrame();
-                        }
-                        wayfind.Stop();
+                        List<(int,int)> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
                         if (way != null)
                         {
                             way.Insert(0, HouseFrom.GetCellPosition());
@@ -98,7 +80,8 @@ public class HouseControlles : MonoBehaviour
                     }
                 }
             }
-             yield return new WaitForEndOfFrame();
+            totalTime.Stop();
+            yield return new WaitForEndOfFrame();
         }
     }
     public void AddCellWithHumans(CellWithHouse temp) => CellsWithHumans.Add(temp);

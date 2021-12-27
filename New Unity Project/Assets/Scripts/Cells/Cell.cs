@@ -17,9 +17,9 @@ public class Cell
 {
     protected GridFunc grid;
     protected HouseControlles houseControlles;
-    protected Vector3Int positioninTileMap;
+    protected (int, int) positioninTileMap;
     ThingsInCell typeCell;
-    public Cell(GridFunc Grid, HouseControlles HouseControlles, Vector3Int PositionCell, ThingsInCell type)
+    public Cell(GridFunc Grid, HouseControlles HouseControlles, (int, int) PositionCell, ThingsInCell type)
     {
         grid = Grid;
         houseControlles = HouseControlles;
@@ -27,29 +27,29 @@ public class Cell
         typeCell = type;
     }
     protected virtual void UpdateTileWithNewNeighboors() { }
-    public int GetIndexNearCell(Vector3Int from, Vector3Int to)
+    public int GetIndexNearCell((int, int) from, (int, int) to)
     {
-        if (from.x - 1 == to.x && from.y + 1 == to.y) return 0;
-        if (from.x == to.x && from.y + 1 == to.y) return 1;
-        if (from.x + 1 == to.x && from.y + 1 == to.y) return 2;
-        if (from.x + 1 == to.x && from.y == to.y) return 3;
-        if (from.x + 1 == to.x && from.y - 1 == to.y) return 4;
-        if (from.x == to.x && from.y - 1 == to.y) return 5;
-        if (from.x - 1 == to.x && from.y - 1 == to.y) return 6;
-        if (from.x-1==to.x && from.y==to.y) return 7;
+        if (from.Item1 - 1 == to.Item1 && from.Item2 + 1 == to.Item2) return 0;
+        if (from.Item1 == to.Item1 && from.Item2 + 1 == to.Item2) return 1;
+        if (from.Item1 + 1 == to.Item1 && from.Item2 + 1 == to.Item2) return 2;
+        if (from.Item1 + 1 == to.Item1 && from.Item2 == to.Item2) return 3;
+        if (from.Item1 + 1 == to.Item1 && from.Item2 - 1 == to.Item2) return 4;
+        if (from.Item1 == to.Item1 && from.Item2 - 1 == to.Item2) return 5;
+        if (from.Item1 - 1 == to.Item1 && from.Item2 - 1 == to.Item2) return 6;
+        if (from.Item1 - 1==to.Item1 && from.Item2 == to.Item2) return 7;
         return -1;
     }
-    public Vector3Int GetPositionNearCell(Vector3Int from, int index)
+    public (int, int) GetPositionNearCell((int, int) from, int index)
     {
-        if (index == 0) return new Vector3Int(from.x - 1, from.y + 1,0);
-        if (index == 1) return new Vector3Int(from.x, from.y + 1, 0);
-        if (index == 2) return new Vector3Int(from.x + 1, from.y + 1, 0);
-        if (index == 3) return new Vector3Int(from.x + 1, from.y, 0);
-        if (index == 4) return new Vector3Int(from.x + 1, from.y - 1, 0);
-        if (index == 5) return new Vector3Int(from.x, from.y -1, 0);
-        if (index == 6) return new Vector3Int(from.x - 1, from.y - 1, 0);
-        if (index == 7) return new Vector3Int(from.x - 1, from.y, 0);
-        return new Vector3Int();
+        if (index == 0) return (from.Item1 - 1, from.Item2 + 1);
+        if (index == 1) return (from.Item1, from.Item2 + 1);
+        if (index == 2) return (from.Item1 + 1, from.Item2 + 1);
+        if (index == 3) return (from.Item1 + 1, from.Item2);
+        if (index == 4) return (from.Item1 + 1, from.Item2 - 1);
+        if (index == 5) return (from.Item1, from.Item2 - 1);
+        if (index == 6) return (from.Item1 - 1, from.Item2 - 1);
+        if (index == 7) return (from.Item1 - 1, from.Item2);
+        return (0,0);
     }
     protected virtual void UpdateTile()
     {
@@ -64,17 +64,17 @@ public class Cell
     {
         return typeCell;
     }
-    public List<Vector3Int> GetNearTiles()
+    public List<(int,int)> GetNearTiles()
     {
-        List<Vector3Int> ans = new List<Vector3Int>();
+        List<(int, int)> ans = new List<(int, int)>();
         for (int i = -1; i < 2; i++)
         {
             for (int j = -1; j < 2; j++)
             {
-                if ((i != 0 || j != 0)&&Math.Abs(i)+Math.Abs(j)<=1) ans.Add(new Vector3Int(positioninTileMap.x + i, positioninTileMap.y + j, positioninTileMap.z));
+                if ((i != 0 || j != 0)&&Math.Abs(i)+Math.Abs(j)<=1) ans.Add((positioninTileMap.Item1 + i, positioninTileMap.Item2 + j));
             }
         }
         return ans;
     }
-    public Vector3Int GetCellPosition() => positioninTileMap;
+    public (int,int) GetCellPosition() => positioninTileMap;
 }
