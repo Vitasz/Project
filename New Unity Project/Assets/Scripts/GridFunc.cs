@@ -23,9 +23,7 @@ public class GridFunc : MonoBehaviour
     //public Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
     private Dictionary<(int, int), List<(int, int)>> waysFromRoads = new Dictionary<(int, int), List<(int, int)>>();
     //FOR OPTIMIZATION
-    public Dictionary<((int, int), (int, int)), List<(int, int)>> WaysFromTo = new Dictionary<((int, int), (int, int)), List<(int, int)>>();
-    private List<(int, int)> WaitList = new List<(int, int)>();
-    
+    public Dictionary<(int, int), Dictionary<(int, int), ((int, int),int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
     //
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
@@ -143,14 +141,14 @@ public class GridFunc : MonoBehaviour
         if (type == ThingsInCell.HousePeople || type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact)
         {
             Map.Add(Position, new CellWithHouse(this, houseControlles, Position, type));
-            AddHouseToTime(Position);
+            AddWaysFromHouse(Position);
         }
         else if (type == ThingsInCell.RoadForCars)
         {
             Map.Add(Position, new CellWithRoad(this, houseControlles, Position, type));
             Roads.Add(Position, Map[Position] as CellWithRoad);
             waysFromRoads.Add(Position, new List<(int, int)>());
-            AddRoadToTime(Position);
+            AddWaysFromRoad(Position);
         }
        
     }
@@ -160,6 +158,7 @@ public class GridFunc : MonoBehaviour
         {
             Roads[PositionFrom].AddRoad(PositionFrom, PositionTo);
             waysFromRoads[PositionFrom] = Roads[PositionFrom].GetNearRoadsWays();
+            AddWaysFromRoad(PositionFrom);
             //(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
             //UpdateSystem();
         }
@@ -170,67 +169,36 @@ public class GridFunc : MonoBehaviour
         }*/
     }
 
-    private void AddHouseToTime((int, int) position)
+    private void AddWaysFromHouse((int, int) position)
     {
-        HashSet<(int, int)> nowpos = new HashSet<(int, int)>(), newpos = new HashSet<(int, int)>(), startpos = new HashSet<(int, int)>();
-        foreach((int,int) a in Map[position].GetNearTiles())
+        HashSet<(int, int)> nowpos = new HashSet<(int, int)>(), newpos = new HashSet<(int, int)>();
+        HashSet<(int, int)> usedRoads = new HashSet<(int, int)>();
+        int timer = 1;
+        foreach ((int,int) a in Map[position].GetNearTiles())
         {
             if (Roads.ContainsKey(a))
             {
-                startpos.Add(a);
                 nowpos.Add(a);
+                if (!WaysFromRoadsToHouses.ContainsKey(a)) WaysFromRoadsToHouses.Add(a, new Dictionary<(int, int), ((int, int), int)>());
+                WaysFromRoadsToHouses[a][position] = (position, 1);
+                usedRoads.Add(a);
             }
         }
-        Dictionary<(int, int), (int, int)> usedRoads = new Dictionary<(int, int), (int, int)>();
-        Dictionary<(int, int), List<(int, int)>> HousesAround = new Dictionary<(int, int), List<(int, int)>>();
-        HashSet<(int, int)> housesreached = new HashSet<(int, int)>();
-        foreach((int,int) a in Map.Keys)
-        {
-            if (!Roads.ContainsKey(a))
-            {
-                foreach((int,int) b in Map[a].GetNearTiles())
-                {
-                    if (Roads.ContainsKey(b))
-                    {
-                        if (!HousesAround.ContainsKey(b)) HousesAround.Add(b, new List<(int, int)>());
-                        HousesAround[b].Add(a);
-                    }
-                }
-            }
-        }
+        
         while (nowpos.Count != 0)
         {
+            timer++;
             foreach((int,int) a in nowpos)
             {
-                if (HousesAround.ContainsKey(a))
-                {
-                    //Добрались до дома
-                    foreach((int,int) b in HousesAround[a])
-                    {
-                        if (b != position&& !housesreached.Contains(b))
-                        {
-                            housesreached.Add(b);
-                            List<(int, int)> tmpway = new List<(int, int)>();
-                            (int, int) last = a;
-                            while (!startpos.Contains(last))
-                            {
-                                tmpway.Add(last);
-                                last = usedRoads[last];
-                            }
-                            tmpway.Add(last);
-                            WaysFromTo.Add((b, position), tmpway);
-                            tmpway.Reverse();
-                            WaysFromTo.Add((position, b), tmpway);
-                        }
-                    }
-                    
-                }
                 //Продолжили движение по дороге
-                foreach ((int, int) b in Roads[a].GetNearRoadsWays())
+                foreach ((int, int) b in waysFromRoads[a])
                 {
-                    if (!usedRoads.ContainsKey(b))
+                    if (!usedRoads.Contains(b))
                     {
-                        usedRoads.Add(b, a);
+                        if (!WaysFromRoadsToHouses.ContainsKey(b))
+                            WaysFromRoadsToHouses.Add(b, new Dictionary<(int, int), ((int, int), int)>());
+                        WaysFromRoadsToHouses[b][position] = (a, timer);
+                        usedRoads.Add(b);
                         newpos.Add(b);
                     }
                 }
@@ -240,113 +208,80 @@ public class GridFunc : MonoBehaviour
             newpos.Clear();
         }
     }
-    private void AddRoadToTime((int, int) position)
+    private void AddWaysFromRoad((int, int) position)
     {
-        HashSet<(int, int)> nowpos = new HashSet<(int, int)>(), newpos = new HashSet<(int, int)>();
-        nowpos.Add(position);
-        Dictionary<(int, int), (int, (int, int))> usedRoads = new Dictionary<(int, int), (int, (int, int))>();
-        Dictionary<(int, int), List<(int, int)>> RoadsAround = new Dictionary<(int, int), List<(int, int)>>();
-        foreach ((int, int) a in Map.Keys)
+        //ДОМА ВОКРУГ ДОРОГИ
+        Dictionary<(int, int), ((int, int), int)> dictposition;
+        if (!WaysFromRoadsToHouses.ContainsKey(position))
         {
-            if (!Roads.ContainsKey(a))
+            dictposition = new Dictionary<(int, int), ((int, int), int)>();
+            WaysFromRoadsToHouses.Add(position, dictposition);
+        }
+        else dictposition = WaysFromRoadsToHouses[position];
+        foreach ((int,int) a in Map[position].GetNearTiles())
+        {
+            if (Map.ContainsKey(a) && !Roads.ContainsKey(a))
             {
-                foreach ((int, int) b in Map[a].GetNearTiles())
+                dictposition[a] = (a, 1);
+            }
+        }
+
+        //ДОРОГИ ВОКРУГ ТАЙЛА
+        //Перезаписываем все дома в этот тайл
+        foreach ((int, int) b in waysFromRoads[position])
+        {
+            Dictionary<(int, int), ((int, int), int)> dictb = WaysFromRoadsToHouses[b];
+            foreach ((int, int) c in dictb.Keys)
+            {
+                if (!dictposition.ContainsKey(c))
                 {
-                    if (Roads.ContainsKey(b))
-                    {
-                        if (!RoadsAround.ContainsKey(a)) RoadsAround.Add(a, new List<(int, int)>());
-                        RoadsAround[a].Add(b);
-                    }
+                    dictposition.Add(c, (b, dictb[c].Item2 + 1));
+                }
+                else if (dictposition[c].Item2 > dictb[c].Item2 + 1)
+                {
+                    dictposition[c] = (b, dictb[c].Item2 + 1);
                 }
             }
         }
-        int timer = 1;
-        while (nowpos.Count != 0)
+        foreach ((int,int) a in waysFromRoads[position])
         {
-            foreach ((int, int) a in nowpos)
+            Dictionary<(int, int), ((int, int), int)> dicta = WaysFromRoadsToHouses[a];
+            List<((int, int),int)> housesneedtochange = new List<((int, int), int)>();//Дома, которые надо перезаписать, при помощи поиска в глубину
+            foreach((int,int) house in dictposition.Keys)
             {
-                //Продолжили движение по дороге
-                foreach ((int, int) b in Roads[a].GetNearRoadsWays())
+                if (!dicta.ContainsKey(house) || dicta[house].Item2 > dictposition[house].Item2 + 1)
                 {
-                    if (!usedRoads.ContainsKey(b))
-                    {
-                        usedRoads.Add(b, (timer,a));
-                        newpos.Add(b);
-                    }
+                    housesneedtochange.Add((house, dictposition[house].Item2 + 1));
                 }
             }
-            nowpos.Clear();
-            foreach ((int, int) b in newpos) nowpos.Add(b);
-            newpos.Clear();
-            timer++;
-        }
-        foreach((int,int) a in RoadsAround.Keys)
-        {
-            foreach ((int, int) b in RoadsAround.Keys)
+            //Запускаем обход в глубину, перезаписывая те дома, которые необходимо
+            if (housesneedtochange.Count != 0)
             {
-                if (a != b)
+                for (int i = 0; i < housesneedtochange.Count; i++)
                 {
-                    int min1 = int.MaxValue, min2=int.MaxValue;
-                    (int,int) posa=(0,0), posb=(0,0);
-                    foreach((int,int) c in RoadsAround[a])
+                    (int, int) nowhouse = housesneedtochange[i].Item1;
+                    HashSet<(int, int)> nowpositions = new HashSet<(int, int)>(), nextpositions = new HashSet<(int, int)>();
+                    nowpositions.Add(position);
+                    int timer = dictposition[nowhouse].Item2;
+                    while (nowpositions.Count != 0)
                     {
-                        if (usedRoads.ContainsKey(c))
+                        timer++;
+                        foreach((int,int) f in nowpositions)
                         {
-                            if (min1 > usedRoads[c].Item1)
+                            foreach((int,int) m in waysFromRoads[f])
                             {
-                                posa = c;
-                                min1 = usedRoads[c].Item1;
-                            }
-                        }
-                    }
-                    foreach ((int, int) c in RoadsAround[b])
-                    {
-                        if (usedRoads.ContainsKey(c))
-                        {
-                            if (min2 > usedRoads[c].Item1)
-                            {
-                                posb = c;
-                                min2 = usedRoads[c].Item1;
-                            }
-                        }
-                    }
-                    if (!WaysFromTo.ContainsKey((a, b)) || min1+min2+1 < WaysFromTo[(a, b)].Count&&min1!=int.MaxValue&&min2!=int.MaxValue)
-                    {
-                        HashSet<(int, int)> nowposition = new HashSet<(int, int)>(), newpositions = new HashSet<(int, int)>();
-                        nowposition.Add(posa);
-                        Dictionary<(int, int), (int, int)> USED2 = new Dictionary<(int, int), (int, int)>();
-                        while (nowposition.Count != 0)
-                        {
-                            foreach((int,int) f in nowposition)
-                            {
-                                if (f == posb)
+                                Dictionary<(int, int), ((int, int), int)> dictm = WaysFromRoadsToHouses[m];
+                                if (!dictm.ContainsKey(nowhouse) || dictm[nowhouse].Item2 > timer)
                                 {
-                                    break;
-                                }
-                                foreach((int,int) c in Roads[f].GetNearRoadsWays())
-                                {
-                                    if (!USED2.ContainsKey(c))
-                                    {
-                                        newpositions.Add(c);
-                                        USED2.Add(c, f);
-                                    }
+                                    nextpositions.Add(m);
+                                    if (!dictm.ContainsKey(nowhouse)) dictm.Add(nowhouse, (f, timer));
+                                    else dictm[nowhouse] = (f, timer);
                                 }
                             }
-                            nowposition.Clear();
-                            foreach ((int, int) m in newpositions) nowposition.Add(m);
-                            newpositions.Clear();
                         }
-                        List<(int, int)> tmpway = new List<(int, int)>();
-                        (int, int) last = posb;
-                        while (last!=posa)
-                        {
-                            tmpway.Add(last);
-                            last = USED2[last];
-                        }
-                        tmpway.Add(posa);
-                        WaysFromTo.Add((b, a), tmpway);
-                        tmpway.Reverse();
-                        WaysFromTo.Add((a, b), tmpway);
+                        nowpositions.Clear();
+                        foreach ((int, int) f in nextpositions) nowpositions.Add(f);
+                        nextpositions.Clear();
                     }
                 }
             }

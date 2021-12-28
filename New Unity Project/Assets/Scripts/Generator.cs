@@ -339,6 +339,11 @@ public class Generator : MonoBehaviour
         UnityEngine.Debug.Log(timer.ElapsedMilliseconds);
         Stopwatch timeVisible = new Stopwatch();
         timeVisible.Start();
+        
+        foreach ((int, int) a in Houses.Keys)
+        {
+            grid.CreateNewTile(a, Houses[a]);
+        }
         foreach ((int, int) a in Roads.Keys)
         {
             grid.CreateNewTile(a, ThingsInCell.RoadForCars);
@@ -348,11 +353,6 @@ public class Generator : MonoBehaviour
             List<(int, int)> RoadsCell = Roads[a];
             grid.UniteTiles(a, RoadsCell);
         }
-        foreach ((int, int) a in Houses.Keys)
-        {
-            grid.CreateNewTile(a, Houses[a]);
-        }
-        
         timeVisible.Stop();
         UnityEngine.Debug.Log("TIME DRAW: " + Convert.ToString(timeVisible.ElapsedMilliseconds));
         yield return null;
