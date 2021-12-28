@@ -90,8 +90,6 @@ public class OptimizationAlgorithm : MonoBehaviour
             cntRoads = Roads.Count;
             Dictionary<ThingsInCell, List<(int, int)>> Positions = new Dictionary<ThingsInCell, List<(int, int)>>();
             Positions.Add(ThingsInCell.HousePeople, new List<(int, int)>());
-            Positions.Add(ThingsInCell.HouseCom, new List<(int, int)>());
-            Positions.Add(ThingsInCell.HouseFact, new List<(int, int)>());
             Positions.Add(ThingsInCell.RoadForCars, new List<(int, int)>());
             foreach((int,int) a in Grans)
             {
@@ -100,8 +98,6 @@ public class OptimizationAlgorithm : MonoBehaviour
                     if (!Positions[ThingsInCell.HousePeople].Contains(b))
                     {
                         Positions[ThingsInCell.HousePeople].Add(b);
-                        Positions[ThingsInCell.HouseCom].Add(b);
-                        Positions[ThingsInCell.HouseFact].Add(b);
                         Positions[ThingsInCell.RoadForCars].Add(b);
                     }
                 }
@@ -109,8 +105,6 @@ public class OptimizationAlgorithm : MonoBehaviour
             
             Dictionary<ThingsInCell, int> Indexs = new Dictionary<ThingsInCell, int>();
             Indexs.Add(ThingsInCell.HousePeople, 0);
-            Indexs.Add(ThingsInCell.HouseCom, 0);
-            Indexs.Add(ThingsInCell.HouseFact, 0);
             Indexs.Add(ThingsInCell.RoadForCars, 0);
             Stopwatch hodtime = new Stopwatch();
             hodtime.Start();
@@ -165,11 +159,17 @@ public class OptimizationAlgorithm : MonoBehaviour
             if (bestvar!=-1)
             {
                 variants[bestvar].Item2.RemoveRange(toadd, Deep-toadd);
+                
                 foreach (((int, int), ThingsInCell, List<(int, int)>) a in variants[bestvar].Item2)
                 {
-                    grid.CreateNewTile(a.Item1, a.Item2);
-                    MapCopy.Add(a.Item1, a.Item2);
-                    if (a.Item2 == ThingsInCell.RoadForCars)
+                    ThingsInCell whatadd;
+                    if (cntRoads < (cntHouseCom + cntHousePeople + cntHouseFact)) whatadd = ThingsInCell.RoadForCars;
+                    else if (cntHouseFact <= cntHouseCom && cntHouseFact <= cntHousePeople) whatadd = ThingsInCell.HouseFact;
+                    else if (cntHouseCom <= cntHouseFact && cntHouseCom <= cntHousePeople) whatadd = ThingsInCell.HouseCom;
+                    else whatadd = ThingsInCell.HousePeople;
+                    grid.CreateNewTile(a.Item1, whatadd);
+                    MapCopy.Add(a.Item1, whatadd);
+                    if (whatadd == ThingsInCell.RoadForCars)
                     {
                         grid.UniteTiles(a.Item1, a.Item3);
                         foreach ((int, int) b in a.Item3)
@@ -182,10 +182,10 @@ public class OptimizationAlgorithm : MonoBehaviour
                     }
                     else
                     {
-                        Houses.Add(a.Item1, a.Item2);
-                        if (a.Item2 == ThingsInCell.HouseCom) cntHouseCom++;
-                        if (a.Item2 == ThingsInCell.HouseFact) cntHouseFact++;
-                        if (a.Item2 == ThingsInCell.HousePeople) cntHousePeople++;
+                        Houses.Add(a.Item1, whatadd);
+                        if (whatadd == ThingsInCell.HouseCom) cntHouseCom++;
+                        if (whatadd == ThingsInCell.HouseFact) cntHouseFact++;
+                        if (whatadd == ThingsInCell.HousePeople) cntHousePeople++;
                     }
                 }
                 foreach (((int, int), ThingsInCell, List<(int, int)>) a in variants[bestvar].Item2)
@@ -257,8 +257,8 @@ public class OptimizationAlgorithm : MonoBehaviour
         }
         ThingsInCell whatadd;
         if (cntroads < (cnthouseCom + cnthousePeople + cnthouseFact)) whatadd = ThingsInCell.RoadForCars;
-        else if (cnthouseFact <= cnthouseCom && cnthouseFact <= cnthousePeople) whatadd = ThingsInCell.HouseFact;
-        else if (cnthouseCom <= cnthouseFact && cnthouseCom <= cnthousePeople) whatadd = ThingsInCell.HouseCom;
+        //else if (cnthouseFact <= cnthouseCom && cnthouseFact <= cnthousePeople) whatadd = ThingsInCell.HouseFact;
+        //else if (cnthouseCom <= cnthouseFact && cnthouseCom <= cnthousePeople) whatadd = ThingsInCell.HouseCom;
         else  whatadd = ThingsInCell.HousePeople;
 
         List<(int,int)> GetEmptyTiles((int, int)pos){
@@ -365,8 +365,6 @@ public class OptimizationAlgorithm : MonoBehaviour
                     if (!Positions[ThingsInCell.HousePeople].Contains(b))
                     {
                         Positions[ThingsInCell.HousePeople].Add(b);
-                        Positions[ThingsInCell.HouseCom].Add(b);
-                        Positions[ThingsInCell.HouseFact].Add(b);
                         Positions[ThingsInCell.RoadForCars].Add(b);
                         cnt++;
                     }
@@ -383,8 +381,6 @@ public class OptimizationAlgorithm : MonoBehaviour
                 for (int j = 0; j < cnt; j++)
                 {
                     Positions[ThingsInCell.HousePeople].RemoveAt(Positions[ThingsInCell.HousePeople].Count - 1);
-                    Positions[ThingsInCell.HouseCom].RemoveAt(Positions[ThingsInCell.HouseCom].Count - 1);
-                    Positions[ThingsInCell.HouseFact].RemoveAt(Positions[ThingsInCell.HouseFact].Count - 1);
                     Positions[ThingsInCell.RoadForCars].RemoveAt(Positions[ThingsInCell.RoadForCars].Count - 1);
                 }
             }
