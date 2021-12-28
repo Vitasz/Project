@@ -455,6 +455,7 @@ public class OptimizationAlgorithm : MonoBehaviour
         HashSet<(int, int)> usedRoads = new HashSet<(int, int)>();
         
         int timer = 1;
+        int ans = 0;
         foreach ((int, int) a in GetNearTiles(position))
         {
             if (Roads.ContainsKey(a)||newRoads.ContainsKey(a))
@@ -462,9 +463,11 @@ public class OptimizationAlgorithm : MonoBehaviour
                 nowpos.Add(a);
                 if (!newWaysFromRoadsToHouses.ContainsKey(a)) newWaysFromRoadsToHouses.Add(a, new Dictionary<(int, int), ((int, int), int)>());
                 newWaysFromRoadsToHouses[a][position] = (position, 1);
+                ans++;
                 usedRoads.Add(a);
             }
         }
+        
         while (nowpos.Count != 0)
         {
             timer++;
@@ -496,6 +499,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                             newWaysFromRoadsToHouses[b][position] = (a, timer);
                             usedRoads.Add(b);
                             newpos.Add(b);
+                            ans += timer;
                         }
                     }
                 }
@@ -504,7 +508,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             foreach ((int, int) b in newpos) nowpos.Add(b);
             newpos.Clear();
         }
-        return timer;
+        return ans;
     }
     /// <summary>
     /// Добавляет новую дорогу в граф
