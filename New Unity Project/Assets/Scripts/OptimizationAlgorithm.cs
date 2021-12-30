@@ -468,7 +468,8 @@ public class OptimizationAlgorithm : MonoBehaviour
         }
         if (roadtoremove.Item1 != int.MaxValue)
         {
-            if (!RemoveRoad(roadtoremove, newroads, newWays, housetoremove))return;
+            newwaymax = RemoveRoad(roadtoremove, newroads, newWays, housetoremove);
+            if (newwaymax==-1)return;
         }
         int cntnewroads = 0;
         foreach (((int, int), ThingsInCell, List<(int, int)>) b in TilesToAdd)
@@ -774,7 +775,7 @@ public class OptimizationAlgorithm : MonoBehaviour
         }
         return ans;
     }
-    private bool RemoveRoad((int,int) position, Dictionary<(int, int), HashSet<(int, int)>> newRoads, Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWaysFromRoadsToHouses, (int, int) housetoremove)
+    private int RemoveRoad((int,int) position, Dictionary<(int, int), HashSet<(int, int)>> newRoads, Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWaysFromRoadsToHouses, (int, int) housetoremove)
     {
         HashSet<(int, int)> housesneedtorec = new HashSet<(int, int)>();
         foreach ((int, int) a in Roads[position])
@@ -784,12 +785,14 @@ public class OptimizationAlgorithm : MonoBehaviour
                 if (b!=housetoremove&&WaysFromRoadsToHouses[a][b].Item1 == position) housesneedtorec.Add(b);
             }
         }
+        int ans = 0;
         foreach ((int, int) z in housesneedtorec)
         {
             int t = AddWaysFromHouse(z, newRoads, newWaysFromRoadsToHouses, position, 0);
-            if (t == -1) return false;
+            if (t == -1) return -1;
+            ans += t;
         }
-        return true;
+        return ans;
     }
     private bool checkSystem(List<(int, int)> newHouses, Dictionary<(int, int), HashSet<(int, int)>> newRoads, (int, int) housetoremove, (int,int)roadtoremove)
     {
