@@ -51,9 +51,18 @@ public class HumanFunctionality : MonoBehaviour
             else
             {
                 wayInCell = new List<Vector3>();
-                (int, int) housePosition = grid.GetCell(way[nowposition]).GetCellPosition();
+                if (grid.GetCell(way[nowposition]) != null)
+                {
+                    (int, int) housePosition = grid.GetCell(way[nowposition]).GetCellPosition();
 
-                to = new Vector3(housePosition.Item1 + 0.5f, housePosition.Item2 + 0.5f, 0); ;
+                    to = new Vector3(housePosition.Item1 + 0.5f, housePosition.Item2 + 0.5f, 0); ;
+                }
+                else
+                {
+                    from = new Vector3();
+                    to = new Vector3();
+                    return true;
+                }
             }
             return false;
         }

@@ -18,7 +18,7 @@ public class HouseControlles : MonoBehaviour
     Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
     private void Start()
     {
-        StartCoroutine("SpawnHuman");
+       //StartCoroutine("SpawnHuman");
     }
     public void AddHouse(ThingsInCell type, CellWithHouse house)
     {
@@ -88,6 +88,10 @@ public class HouseControlles : MonoBehaviour
     public void RemoveHouse(CellWithHouse what)
     {
         CellsWithHouses.Remove(what);
+        foreach (HumanFunctionality a in HumansInHouses[what])
+        {
+            Destroy(a.gameObject);
+        }
     }
     public void AddHumanToHouse(HumanFunctionality human, CellWithHouse where)
     {

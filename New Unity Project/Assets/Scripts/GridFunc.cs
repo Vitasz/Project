@@ -21,7 +21,7 @@ public class GridFunc : MonoBehaviour
     public List<GameObject> Humans = new List<GameObject>();
     public OptimizationAlgorithm a;
     //public Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
-    private Dictionary<(int, int), List<(int, int)>> waysFromRoads = new Dictionary<(int, int), List<(int, int)>>();
+    private readonly Dictionary<(int, int), List<(int, int)>> waysFromRoads = new Dictionary<(int, int), List<(int, int)>>();
     //FOR OPTIMIZATION
     public Dictionary<(int, int), Dictionary<(int, int), ((int, int),int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
     //
@@ -291,51 +291,38 @@ public class GridFunc : MonoBehaviour
     {
         a.Optimization(this);
     }
-    public void RemoveTileAt((int,int) position)
+    public void RemoveHouseAt((int,int) position)
     {
-        if (Map[position] is CellWithHouse)
-        {
-            tilemap.SetTile(new Vector3Int(position.Item1, position.Item2, -1), null);
-            houseControlles.RemoveHouse(Map[position] as CellWithHouse);
-            Map.Remove(position);
-        }
-        else if (Map[position] is CellWithRoad)
-        {
-            (Map[position] as CellWithRoad).Remove();
-            tilemap.SetTile(new Vector3Int(position.Item1, position.Item2, -1), null);
-            tilemap.SetTile(new Vector3Int(position.Item1, position.Item2, -1), null);
-            Map.Remove(position);
-            for (int i = -1; i < 2; i++)
-            {
-                for (int j = -1; j < 2; j++)
-                {
-                    if (Math.Abs(i) + Math.Abs(j) <= 1 && Map.ContainsKey((position.Item1 + i, position.Item2 + j)))
-                    {
-                        if (Map[(position.Item1 + i, position.Item2 + j)] as CellWithRoad != null)
-                        {
-                            //(Map[new Vector3Int(position.x + i, position.y + j, 0)] as CellWithRoad).RemoveRoad(new Vector3Int(position.x + i, position.y + j, 0), position);
-                        }
-                    }
-                }
-            }
-        }
+        tilemap.SetTile(new Vector3Int(position.Item1, position.Item2, 1), null);
+        houseControlles.RemoveHouse(Map[position] as CellWithHouse);
+        Map.Remove(position);
+        foreach ((int, int) a in WaysFromRoadsToHouses.Keys) WaysFromRoadsToHouses[a].Remove(position);
     }
-    public List<(int, int)> PositionsRoadAround((int,int) position)
+    public void RemoveRoadAt((int, int) position)
     {
-        List<(int,int)> ans = new List<(int, int)>();
-        for (int i = -1; i < 2; i++)
+        tilemap.SetTile(new Vector3Int(position.Item1, position.Item2, 1), null);
+        Roads.Remove(position);
+        
+        Map.Remove(position);
+        HashSet<(int, int)> housesneedtorec = new HashSet<(int, int)>();
+        foreach((int,int) a in waysFromRoads[position])
         {
-            for (int j = -1; j < 2; j++)
+            Roads[a].RemoveRoad(a, position);
+            foreach((int,int) b in WaysFromRoadsToHouses[a].Keys)
             {
-                if (Math.Abs(i) + Math.Abs(j) <= 1 && Map.ContainsKey((position.Item1 + i, position.Item2 + j)))
-                {
-                    if (Map[(position.Item1 + i, position.Item2 + j)] as CellWithRoad != null)
-                    {
-                        ans.Add((position.Item1 + i, position.Item2 + j));
-                    }
-                }
+                if (WaysFromRoadsToHouses[a][b].Item1 == position) housesneedtorec.Add(b);
+            }
+            waysFromRoads[a] = Roads[a].GetNearRoadsWays();
+        }
+        waysFromRoads.Remove(position);
+        WaysFromRoadsToHouses.Remove(position);
+        foreach((int,int) a in WaysFromRoadsToHouses.Keys)
+        {
+            foreach((int,int) c in housesneedtorec)
+            {
+                WaysFromRoadsToHouses[a].Remove(c);
             }
         }
-        return ans;
+        foreach ((int, int) z in housesneedtorec) AddWaysFromHouse(z);
     }
 }

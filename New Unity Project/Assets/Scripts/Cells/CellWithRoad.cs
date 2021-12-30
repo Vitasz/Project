@@ -20,7 +20,7 @@ public class CellWithRoad : Cell
     private bool visible = true;
     Dictionary<Vector3, HumanFunctionality> humansInCell = new Dictionary<Vector3, HumanFunctionality>();
     public CellWithRoad(GridFunc grid, HouseControlles houseControlles, (int,int) position,ThingsInCell type) : base(grid, houseControlles, position, type) {
-        grid.tilemap.SetTile(new Vector3Int(positioninTileMap.Item1, positioninTileMap.Item2, 0), Resources.Load<Tile>("Tiles/Roads/0000"));
+        //grid.tilemap.SetTile(new Vector3Int(positioninTileMap.Item1, positioninTileMap.Item2, 0), Resources.Load<Tile>("Tiles/Roads/0000"));
         (int, int) Cellposition = GetCellPosition();
         for (int i = 0; i < 4; i++)
         {
@@ -30,26 +30,21 @@ public class CellWithRoad : Cell
             }
         }
     }
-    /*public void RemoveRoad(Vector3Int from, Vector3Int to)
+    public void RemoveRoad((int,int) from, (int, int) to)
     {
         if (roadsFromCell.Contains(to))
         {
             roadsFromCell.Remove(to);
-            roadsfromCellOnIndex[GetIndexNearCell(from, to)] = 0;
-            name = name.Substring(0, 4);
+            roadsfromCellOnIndex[GetIndexNearCell(from, to)/2] = 0;
+            name = "";
             for (int i = 0; i < 4; i++)
             {
                 if (roadsfromCellOnIndex[i] == 1) name += '1';
                 else name += '0';
             }
-            UpdateTile();
         }
-        else
-        {
-            name = name.Substring(0, GetIndexNearCell(from, to)) + '0' + name.Substring(GetIndexNearCell(from, to) + 1);
-            UpdateTile();
-        }
-    }*/
+        UpdateTile();
+    }
     public void AddRoad((int, int) from, List<(int, int)> roads)
     {
         foreach ((int, int) to in roads)
