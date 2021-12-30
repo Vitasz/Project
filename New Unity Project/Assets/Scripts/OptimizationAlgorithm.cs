@@ -789,8 +789,10 @@ public class OptimizationAlgorithm : MonoBehaviour
         foreach ((int, int) z in housesneedtorec)
         {
             int t = AddWaysFromHouse(z, newRoads, newWaysFromRoadsToHouses, position, 0);
+            
             if (t == -1) return -1;
-            ans += t;
+            foreach ((int, int) a in Roads.Keys) ans += WaysFromRoadsToHouses[a][z].Item2;
+            ans -= t;
         }
         return ans;
     }
