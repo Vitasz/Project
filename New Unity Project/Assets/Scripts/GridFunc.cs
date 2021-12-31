@@ -8,23 +8,19 @@ using UnityEngine.Tilemaps;
 using System.Diagnostics;
 public class GridFunc : MonoBehaviour
 {
-    public EventSystem EventSystemManager;
     public HouseControlles houseControlles;
     public GameControlls GameController;
-    public Material MaterialForLines;
     public Camera nowCamera;
     public Tilemap tilemap;
     public Clock clock;
     public HumanController HumanControlles;
     public Dictionary<(int,int), Cell> Map = new Dictionary<(int, int), Cell>();
     public Dictionary<(int, int), CellWithRoad> Roads = new Dictionary<(int, int), CellWithRoad>();
-    public List<GameObject> Humans = new List<GameObject>();
     public OptimizationAlgorithm a;
-    //public Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
     private readonly Dictionary<(int, int), List<(int, int)>> waysFromRoads = new Dictionary<(int, int), List<(int, int)>>();
     //FOR OPTIMIZATION
     public Dictionary<(int, int), Dictionary<(int, int), ((int, int),int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
-    //
+
     private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
@@ -145,7 +141,7 @@ public class GridFunc : MonoBehaviour
         }
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, houseControlles, Position, type));
+            Map.Add(Position, new CellWithRoad(this, Position, type));
             Roads.Add(Position, Map[Position] as CellWithRoad);
             waysFromRoads.Add(Position, new List<(int, int)>());
             AddWaysFromRoad(Position);
@@ -156,7 +152,7 @@ public class GridFunc : MonoBehaviour
     {
         if (Roads.ContainsKey(PositionFrom))
         {
-            Roads[PositionFrom].AddRoad(PositionFrom, PositionTo);
+            Roads[PositionFrom].AddRoad(PositionTo);
             waysFromRoads[PositionFrom] = Roads[PositionFrom].GetNearRoadsWays();
             AddWaysFromRoad(PositionFrom);
             //(Map[PositionTo] as CellWithRoad).AddRoad(PositionTo, PositionFrom, false);
@@ -307,7 +303,7 @@ public class GridFunc : MonoBehaviour
         HashSet<(int, int)> housesneedtorec = new HashSet<(int, int)>();
         foreach((int,int) a in waysFromRoads[position])
         {
-            Roads[a].RemoveRoad(a, position);
+            Roads[a].RemoveRoad(position);
             foreach((int,int) b in WaysFromRoadsToHouses[a].Keys)
             {
                 if (WaysFromRoadsToHouses[a][b].Item1 == position) housesneedtorec.Add(b);

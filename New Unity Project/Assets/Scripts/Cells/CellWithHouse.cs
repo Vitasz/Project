@@ -10,7 +10,7 @@ public class CellWithHouse:Cell
     //public int HumanInCellHouse = 0;
     private int[] housefromCellOnIndex = new int[8];
     //private List<Vector3Int> thisHouse = new List<Vector3Int>();
-    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, (int, int) position, ThingsInCell type) : base(grid, houseControlles, position,type) {
+    public CellWithHouse(GridFunc grid, HouseControlles houseControlles, (int, int) position, ThingsInCell type) : base(grid, position,type) {
         houseControlles.AddHouse(type, this);
         typeHouse = type;
         UpdateTile();
@@ -20,10 +20,6 @@ public class CellWithHouse:Cell
             houseControlles.AddCellWithHumans(this);
             //Debug.Log("add");
         }
-    }
-    public void UniteHouse(Vector3Int from, Vector3Int to, bool fromthis)
-    {
-
     }
     protected override void UpdateTile()
     {

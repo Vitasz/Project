@@ -10,7 +10,7 @@ public class CameraFunc : MonoBehaviour
     private float cameraSpeed = 3f, progressMove = 0;
     private float zoomSpeed = 5f, zoomMultiplayer = 10, progressZoom;
     private float zoomInCellRedactor = 5f;
-    [Range(15f, 100f)]
+    [Range(2f, 100f)]
     private float nowZoom = 50, startZoom = 50;
     public GameControlls gameController;
     public Camera thisCamera;
@@ -38,7 +38,7 @@ public class CameraFunc : MonoBehaviour
             startZoom = thisCamera.orthographicSize;
             progressZoom = 0;
         }
-        nowZoom = Mathf.Max(nowZoom, 5f); nowZoom = Mathf.Min(100, nowZoom);
+        nowZoom = Mathf.Max(nowZoom, 2f); nowZoom = Mathf.Min(100, nowZoom);
         if (thisCamera.orthographicSize != nowZoom)
         {
             progressZoom += Time.deltaTime * zoomSpeed;

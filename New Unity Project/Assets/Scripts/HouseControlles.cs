@@ -8,9 +8,7 @@ using System.Threading;
 public class HouseControlles : MonoBehaviour
 {
     public GridFunc Grid;
-    public GameObject HousePrefab, HumanPrefab;
-    public RoadsControlles RoadsController;
-   // public Dictionary<ThingsInCell, List<Vector3Int>> HousesTypes = new Dictionary<ThingsInCell, List<Vector3Int>>();
+    public GameObject HumanPrefab;
     public Clock clock;
     private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
     private List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
@@ -18,7 +16,7 @@ public class HouseControlles : MonoBehaviour
     Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
     private void Start()
     {
-       //StartCoroutine("SpawnHuman");
+       StartCoroutine("SpawnHuman");
     }
     public void AddHouse(ThingsInCell type, CellWithHouse house)
     {
@@ -34,11 +32,10 @@ public class HouseControlles : MonoBehaviour
         HumansInHouses.Add(house, new List<HumanFunctionality>());
         if (type == ThingsInCell.HousePeople)
         {
-            AddHuman();
-            AddHuman();
-            AddHuman();
-            AddHuman();
-            AddHuman();
+            for (int i = 0; i < 250; i++)
+            {
+                AddHuman();
+            }
         }
     }
     public IEnumerator SpawnHuman()
