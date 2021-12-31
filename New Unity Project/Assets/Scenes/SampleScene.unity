@@ -437,7 +437,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 1591633984}
   r: 1
-  N: 10
+  N: 100
   MinimumRoads: 1
 --- !u!4 &290494461
 Transform:
@@ -1873,9 +1873,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Grid: {fileID: 1591633984}
-  HousePrefab: {fileID: 7545872404278961229, guid: 3f0ade09faaa3f0428278a9e50779c4d, type: 3}
   HumanPrefab: {fileID: 11567934722639218, guid: 1e7de2f36331d044cb8abf1bc99fcaee, type: 3}
-  RoadsController: {fileID: 1921036910}
   clock: {fileID: 1573902187}
   humanController: {fileID: 1916703569}
 --- !u!1 &1485377702
@@ -2102,15 +2100,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf9de80397bc3bd4aab8b6d2da665752, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  EventSystemManager: {fileID: 0}
   houseControlles: {fileID: 1414301251}
   GameController: {fileID: 1053592891}
-  MaterialForLines: {fileID: 0}
   nowCamera: {fileID: 519420031}
   tilemap: {fileID: 1591633986}
   clock: {fileID: 1573902187}
   HumanControlles: {fileID: 1916703569}
-  Humans: []
   a: {fileID: 1809316477}
 --- !u!483693784 &1591633985
 TilemapRenderer:

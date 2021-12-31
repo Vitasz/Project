@@ -27,14 +27,12 @@ public class CellWithRoad : Cell
     {
         this.throughput = throughput;
         RoadsInCell.Clear();
-        float min = 0.25f, max = 0.75f;
         List<float> roadspositions = new List<float>();
-        float delta = (max - min) / (2 * throughput);
-        float now = 0;
-        for (int i = 0; now<1f; i++)
+        float delta = 0.5f / (2 * throughput);
+        for (int i = 0; i< 4*throughput; i++)
         {
-            roadspositions.Add(now + delta / 2);
-            now += delta;
+            roadspositions.Add(delta*i+ delta / 2);
+           
         }
         //Горизонтальное направление
         //НАЛЕВО
@@ -111,7 +109,7 @@ public class CellWithRoad : Cell
         humansInCell.Clear();
         foreach((float,float) a in RoadsInCell.Keys)
         {
-            humansInCell.Add((a.Item1 + positioninTileMap.Item1, a.Item2 + positioninTileMap.Item2), null);
+            humansInCell.Add(a, null);
         }
     }
     public void RemoveRoad((int, int) to)
@@ -147,61 +145,67 @@ public class CellWithRoad : Cell
         }
         UpdateTile();
     }
-    public List<Vector3> GetWayInTheCell((int,int) from, (int, int) to)
+    public List<(float, float)> GetWayInTheCell((int,int) from, (int, int) to)
     {
         HashSet<(float, float)>CanBePositions(int index, bool start)
         {
             HashSet<(float, float)> ans = new HashSet<(float, float)>();
+            List<float> roadspositions = new List<float>();
             float delta = 0.5f / (2 * throughput);
+            for (int i = 0; i < 4 * throughput; i++)
+            {
+                roadspositions.Add(delta * i + delta / 2);
+
+            }
             if (index == 0)
             {
                 if (start) {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.25f + delta / 2 + delta * (i - 1), 1f - delta / 2));
+                    for (int i = throughput; i < 2*throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count - 1]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.5f + delta / 2 + delta * (i - 1), 1f - delta / 2));
+                    for (int i = 2*throughput; i < 3*throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count-1]));
                 }
             }
             else if (index == 1)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((1f - delta / 2, 0.5f + delta / 2 + delta * (i - 1) ));
+                    for (int i = 2*throughput; i < 3*throughput; i++)
+                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((1f - delta / 2, 0.25f + delta / 2 + delta * (i - 1)));
+                    for (int i = throughput; i < 2*throughput; i++)
+                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
                 }
             }
             else if (index == 2)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.5f + delta / 2+delta*(i-1), delta / 2));
+                    for (int i = 2*throughput; i < 3*throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[0]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.25f + delta / 2 + delta * (i - 1), delta / 2));
+                    for (int i = throughput; i < 2*throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[0]));
                 }
             }
             else if (index == 3)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((delta / 2, 0.25f + +delta / 2 + delta * (i - 1)));
+                    for (int i = throughput; i < 2*throughput; i++)
+                        ans.Add((roadspositions[0], roadspositions[i]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((delta / 2, 0.5f + delta / 2 + delta * (i - 1)));
+                    for (int i = 2*throughput; i < 3*throughput; i++)
+                        ans.Add((roadspositions[0], roadspositions[i]));
                 }
             }
             return ans;
@@ -215,11 +219,9 @@ public class CellWithRoad : Cell
         {
 
             usedpositions.Add(a, (-1f, -1f));
-            if (humansInCell[(a.Item1+positioninTileMap.Item1, a.Item2+positioninTileMap.Item2)]==null) nowpositions.Add(a);
-            //Debug.Log(a);
+            if (humansInCell[a]==null) nowpositions.Add(a);
         }
         if (nowpositions.Count == 0) nowpositions.Add(CanBeStart.First());
-        //foreach ((float, float) a in CanBeEnd) Debug.Log(end0)
         (float, float) end = (-1f, -1f);
         while (nowpositions.Count != 0)
         {
@@ -237,7 +239,7 @@ public class CellWithRoad : Cell
                     if (!usedpositions.ContainsKey(b)&&b!=(-1f, -1f))
                     {
                         usedpositions.Add(b, a);
-                        if (humansInCell[(b.Item1+positioninTileMap.Item1, b.Item2 + positioninTileMap.Item2)]==null)newpositionsPriority.Add(b);
+                        if (humansInCell[b]==null)newpositionsPriority.Add(b);
                         else newpositionsNoPriority.Add(b);
                     }
                 }
@@ -249,72 +251,78 @@ public class CellWithRoad : Cell
             newpositionsNoPriority.Clear();
         }
         //Debug.Log(end);
-        List<Vector3> ans = new List<Vector3>();
+        List<(float, float)> ans = new List<(float, float)>();
         while (!CanBeStart.Contains(end))
         {
-            ans.Add(new Vector3(positioninTileMap.Item1+end.Item1, positioninTileMap.Item2+end.Item2, 0));
+            ans.Add(end);
             end = usedpositions[end];
         }
-        ans.Add(new Vector3(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2, 0));
+        ans.Add(end);
         ans.Reverse();
         return ans;
     }
-    public List<Vector3> GetWayFromPositionInTheCell((float, float)from, (int, int) to)
+    public List<(float, float)> GetWayFromPositionInTheCell((float, float)from, (int, int) to)
     {
         HashSet<(float, float)> CanBePositions(int index, bool start)
         {
             HashSet<(float, float)> ans = new HashSet<(float, float)>();
+            List<float> roadspositions = new List<float>();
             float delta = 0.5f / (2 * throughput);
+            for (int i = 0; i < 4 * throughput; i++)
+            {
+                roadspositions.Add(delta * i + delta / 2);
+
+            }
             if (index == 0)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.25f + delta / 2 + delta * (i - 1), 1f - delta / 2));
+                    for (int i = throughput; i < 2 * throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count - 1]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.5f + delta / 2 + delta * (i - 1), 1f - delta / 2));
+                    for (int i = 2 * throughput; i < 3 * throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count - 1]));
                 }
             }
             else if (index == 1)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((1f - delta / 2, 0.5f + delta / 2 + delta * (i - 1)));
+                    for (int i = 2 * throughput; i < 3 * throughput; i++)
+                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((1f - delta / 2, 0.25f + delta / 2 + delta * (i - 1)));
+                    for (int i = throughput; i < 2 * throughput; i++)
+                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
                 }
             }
             else if (index == 2)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.5f + delta / 2 + delta * (i - 1), delta / 2));
+                    for (int i = 2 * throughput; i < 3 * throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[0]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((0.25f + delta / 2 + delta * (i - 1), delta / 2));
+                    for (int i = throughput; i < 2 * throughput; i++)
+                        ans.Add((roadspositions[i], roadspositions[0]));
                 }
             }
             else if (index == 3)
             {
                 if (start)
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((delta / 2, 0.25f + +delta / 2 + delta * (i - 1)));
+                    for (int i = throughput; i < 2 * throughput; i++)
+                        ans.Add((roadspositions[0], roadspositions[i]));
                 }
                 else
                 {
-                    for (int i = 1; i <= throughput; i++)
-                        ans.Add((delta / 2, 0.5f + delta / 2 + delta * (i - 1)));
+                    for (int i = 2 * throughput; i < 3 * throughput; i++)
+                        ans.Add((roadspositions[0], roadspositions[i]));
                 }
             }
             return ans;
@@ -324,11 +332,11 @@ public class CellWithRoad : Cell
         HashSet<(float, float)> CanBeEnd = CanBePositions(endindex, false);
         Dictionary<(float, float), (float, float)> usedpositions = new Dictionary<(float, float), (float, float)>();
         HashSet<(float, float)> nowpositions = new HashSet<(float, float)>(), newpositionsPriority = new HashSet<(float, float)>(), newpositionsNoPriority = new HashSet<(float, float)>();
-        foreach ((float, float) a in RoadsInCell[(from.Item1 - positioninTileMap.Item1, from.Item2 - positioninTileMap.Item2)]) if (a!=(-1f,-1f))CanBeStart.Add(a);
+        foreach ((float, float) a in RoadsInCell[from]) if (a!=(-1f,-1f))CanBeStart.Add(a);
         foreach ((float, float) a in CanBeStart)
         {
             usedpositions.Add(a, (-1f, -1f));
-            if (humansInCell[(a.Item1 + positioninTileMap.Item1, a.Item2 + positioninTileMap.Item2)] == null) nowpositions.Add(a);
+            if (humansInCell[a] == null) nowpositions.Add(a);
             //Debug.Log(a);
         }
         if (nowpositions.Count == 0) return null;
@@ -352,7 +360,7 @@ public class CellWithRoad : Cell
                     if (!usedpositions.ContainsKey(b) && b != (-1f, -1f))
                     {
                         usedpositions.Add(b, a);
-                        if (humansInCell[(b.Item1 + positioninTileMap.Item1, b.Item2 + positioninTileMap.Item2)] == null)
+                        if (humansInCell[b] == null)
                         {
                             newpositionsPriority.Add(b);
                             free++;
@@ -369,14 +377,14 @@ public class CellWithRoad : Cell
             newpositionsNoPriority.Clear();
         }
         if (end == (-1f, -1f)) return null;
-        List<Vector3> ans = new List<Vector3>();
+        List<(float, float)> ans = new List<(float, float)>();
         while (!CanBeStart.Contains(end))
         {
-            ans.Add(new Vector3(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2, 0));
+            ans.Add(end);
             end = usedpositions[end];
         }
-        ans.Add(new Vector3(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2, 0));
-        ans.Add(new Vector3(from.Item1, from.Item2, 0));
+        ans.Add(end);
+        ans.Add(from);
         ans.Reverse();
         return ans;
     }
