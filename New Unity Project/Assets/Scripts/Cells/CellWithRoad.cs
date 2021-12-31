@@ -21,7 +21,7 @@ public class CellWithRoad : Cell
     public CellWithRoad(GridFunc grid, (int, int) position, ThingsInCell type) : base(grid, position, type) {
 
         GetCellPosition();
-        UpdateThroughPut(4);
+        UpdateThroughPut(2);
     }
     private void UpdateThroughPut(int throughput)
     {
@@ -50,8 +50,8 @@ public class CellWithRoad : Cell
                 //ПЕРЕМЕЩЕНИЕ СПРАВА НАЛЕВО
                 RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i-1], roadspositions[j]));
                 //ПЕРЕМЕЩЕНИЕ МЕЖДУ ПОЛОСАМИ
-                if (j!=2*throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i], roadspositions[j-1]));
-                if (j+1!=3*throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i], roadspositions[j+1]));
+                if (j!=2*throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i-1], roadspositions[j-1]));
+                if (j+1!=3*throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i-1], roadspositions[j+1]));
             }
 
         }
@@ -68,8 +68,8 @@ public class CellWithRoad : Cell
                 //ПЕРЕМЕЩЕНИЕ СЛЕВА НАПРАВО
                 RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i + 1], roadspositions[j]));
                 //ПЕРЕМЕЩЕНИЕ МЕЖДУ ПОЛОСАМИ
-                if (j != throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i], roadspositions[j-1]));
-                if (j + 1 != 2 * throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i ], roadspositions[j+1]));
+                if (j != throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i+1], roadspositions[j-1]));
+                if (j + 1 != 2 * throughput) RoadsInCell[(roadspositions[i], roadspositions[j])].Add((roadspositions[i+1], roadspositions[j+1]));
             }
         }
         //Вертикальное направление
@@ -86,8 +86,8 @@ public class CellWithRoad : Cell
                 //ПЕРЕМЕЩЕНИЕ СНИЗУ ВВЕРХ
                 RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j], roadspositions[i+1]));
                 //ПЕРЕМЕЩЕНИЕ МЕЖДУ ПОЛОСАМИ
-                if (j != 2 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j-1], roadspositions[i]));
-                if (j + 1 != 3 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j+1], roadspositions[i]));
+                if (j != 2 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j-1], roadspositions[i+1]));
+                if (j + 1 != 3 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j+1], roadspositions[i+1]));
             }
 
         }
@@ -104,14 +104,13 @@ public class CellWithRoad : Cell
                 //ПЕРЕМЕЩЕНИЕ СЛЕВА НАПРАВО
                 RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j], roadspositions[i-1]));
                 //ПЕРЕМЕЩЕНИЕ МЕЖДУ ПОЛОСАМИ
-                if (j != throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j-1], roadspositions[i]));
-                if (j + 1 != 2 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j+1], roadspositions[i]));
+                if (j != throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j-1], roadspositions[i-1]));
+                if (j + 1 != 2 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j+1], roadspositions[i-1]));
             }
         }
         humansInCell.Clear();
         foreach((float,float) a in RoadsInCell.Keys)
         {
-            
             humansInCell.Add((a.Item1 + positioninTileMap.Item1, a.Item2 + positioninTileMap.Item2), null);
         }
     }
@@ -335,8 +334,10 @@ public class CellWithRoad : Cell
         if (nowpositions.Count == 0) return null;
         //foreach ((float, float) a in CanBeEnd) Debug.Log(end0)
         (float, float) end = (-1f, -1f);
+        int free=0;
         while (nowpositions.Count != 0)
         {
+           
             foreach ((float, float) a in nowpositions)
             {
                 if (CanBeEnd.Contains(a))
@@ -351,11 +352,16 @@ public class CellWithRoad : Cell
                     if (!usedpositions.ContainsKey(b) && b != (-1f, -1f))
                     {
                         usedpositions.Add(b, a);
-                        if (humansInCell[(b.Item1 + positioninTileMap.Item1, b.Item2 + positioninTileMap.Item2)] == null) newpositionsPriority.Add(b);
+                        if (humansInCell[(b.Item1 + positioninTileMap.Item1, b.Item2 + positioninTileMap.Item2)] == null)
+                        {
+                            newpositionsPriority.Add(b);
+                            free++;
+                        }
                         else newpositionsNoPriority.Add(b);
                     }
                 }
             }
+            if (free == 0) return null;
             nowpositions.Clear();
             foreach ((float, float) a in newpositionsPriority) nowpositions.Add(a);
             foreach ((float, float) a in newpositionsNoPriority) nowpositions.Add(a);
@@ -364,17 +370,13 @@ public class CellWithRoad : Cell
         }
         if (end == (-1f, -1f)) return null;
         List<Vector3> ans = new List<Vector3>();
-        int free = 0;
         while (!CanBeStart.Contains(end))
         {
             ans.Add(new Vector3(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2, 0));
-            if (humansInCell[(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2)] == null) free++;
             end = usedpositions[end];
         }
         ans.Add(new Vector3(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2, 0));
-        if (humansInCell[(positioninTileMap.Item1 + end.Item1, positioninTileMap.Item2 + end.Item2)] == null) free++;
         ans.Add(new Vector3(from.Item1, from.Item2, 0));
-        if (free < 3) return null;
         ans.Reverse();
         return ans;
     }

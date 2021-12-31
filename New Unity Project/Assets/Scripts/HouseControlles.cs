@@ -27,12 +27,13 @@ public class HouseControlles : MonoBehaviour
             human.grid = Grid;
             human.transform.localPosition = new Vector3(house.GetCellPosition().Item1+0.5f, house.GetCellPosition().Item2+0.5f, 0);
             HumansInHouses[house].Add(human);
+            human.transform.gameObject.SetActive(false);
         }
         CellsWithHouses.Add(house);
         HumansInHouses.Add(house, new List<HumanFunctionality>());
         if (type == ThingsInCell.HousePeople)
         {
-            for (int i = 0; i < 250; i++)
+            for (int i = 0; i < 20; i++)
             {
                 AddHuman();
             }

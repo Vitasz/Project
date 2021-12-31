@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using COLORS_CONST;
 public class HumanFunctionality : MonoBehaviour
 {
     public List<(int, int)> way;
@@ -17,11 +17,16 @@ public class HumanFunctionality : MonoBehaviour
         positionInCell = -1;
         way = waytogo;
         end = EndHouse;
+        transform.gameObject.SetActive(true);
+        if (EndHouse.GetTypeCell() == ThingsInCell.HousePeople) transform.GetComponent<SpriteRenderer>().color = COLORS.ColorHousePeople;
+        if (EndHouse.GetTypeCell() == ThingsInCell.HouseCom) transform.GetComponent<SpriteRenderer>().color = COLORS.ColorHouseCom;
+        if (EndHouse.GetTypeCell() == ThingsInCell.HouseFact) transform.GetComponent<SpriteRenderer>().color = COLORS.ColorHouseFact;
         //transform.localPosition = grid.tilemap.CellToWorld(new Vector3Int(waytogo[0].x, waytogo[0].y, 1));
     }
     public void DeleteHuman()
     {
         houseControlles.AddHumanToHouse(this, end);
+        transform.gameObject.SetActive(false);
         //(grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
         //Destroy(transform.gameObject);
     }
@@ -78,7 +83,7 @@ public class HumanFunctionality : MonoBehaviour
         if (positionInCell + 1 < wayInCell.Count)
         {
             CellWithRoad nowCell = grid.GetCell(way[nowposition]) as CellWithRoad;
-            if (nowCell.CanMove((wayInCell[positionInCell + 1].x, wayInCell[positionInCell + 1].y)) != null)
+            if (nowCell.CanMove((wayInCell[positionInCell + 1].x, wayInCell[positionInCell + 1].y)) != null&&wayInCell.Count-positionInCell>2)
             {
                 List<Vector3> maybeway = nowCell.GetWayFromPositionInTheCell((wayInCell[positionInCell].x, wayInCell[positionInCell].y), way[nowposition + 1]);
                 if (maybeway != null)
