@@ -6,8 +6,8 @@ public class HumanController : MonoBehaviour
 {
     public GridFunc grid;
     public Clock clock;
-    List<HumanFunctionality> Humans = new List<HumanFunctionality>();
-    List<HumanFunctionality> queue = new List<HumanFunctionality>();
+    List<Dictionary<(int, int), Dictionary<(float, float), HumanFunctionality>>> HumansInProcess = new List<Dictionary<(int, int), Dictionary<(float, float), HumanFunctionality>>>();
+    Dictionary<HumanFunctionality, ((int,int), (float,float))> whenDelete = new Dictionary<HumanFunctionality, ((int, int), (float, float))>();
     public float speed=3;
     public void Start()
     {
@@ -17,58 +17,34 @@ public class HumanController : MonoBehaviour
     {
         while (true)
         {
-            foreach (HumanFunctionality a in queue) Humans.Add(a);
-            queue.Clear();
-            Dictionary<HumanFunctionality, bool> tryedMoved = new Dictionary<HumanFunctionality, bool>();
-            foreach (HumanFunctionality a in Humans) tryedMoved.Add(a, false);
-            List<HumanFunctionality> todel = new List<HumanFunctionality>();
-            List<(HumanFunctionality, Vector3, Vector3)> toMove = new List<(HumanFunctionality, Vector3, Vector3)>();
-            foreach (HumanFunctionality i in Humans)
+            if (HumansInProcess.Count != 0)
             {
-                if (!tryedMoved[i])
+                List<(HumanFunctionality, Vector3)> tomove = new List<(HumanFunctionality, Vector3)>();
+                List<HumanFunctionality> todel = new List<HumanFunctionality>();
+                foreach ((int, int) a in HumansInProcess[0].Keys)
                 {
-                    tryedMoved[i] = true;
-                    List<HumanFunctionality> tryedMovedHuman = new List<HumanFunctionality>() { i };
-                    while (true)
+                    foreach ((float, float) b in HumansInProcess[0][a].Keys)
                     {
-                        HumanFunctionality nowHuman = tryedMovedHuman[tryedMovedHuman.Count - 1];
-
-                        if (nowHuman.CanMove() == null)
-                        {
-                            for (int j = tryedMovedHuman.Count - 1; j >= 0; j--)
-                            {
-                                Vector3 from, to;
-                                bool notok = tryedMovedHuman[j].MoveToNext(out from, out to);
-                                if (notok) todel.Add(tryedMovedHuman[j]);
-                                else toMove.Add((tryedMovedHuman[j], from, to));
-                            }
-                            break;
-                        }
-                        else
-                        {
-                            if (tryedMovedHuman.Contains(nowHuman.CanMove()))
-                            {
-                                int lastind = tryedMovedHuman.IndexOf(nowHuman.CanMove());
-                                for (int j = tryedMovedHuman.Count - 1; j >= lastind; j--)
-                                {
-                                    Vector3 from, to;
-                                    bool notok = tryedMovedHuman[j].MoveToNext(out from, out to);
-                                    if (notok) todel.Add(tryedMovedHuman[j]);
-                                    else toMove.Add((tryedMovedHuman[j], from, to));
-                                }
-                                break;
-                            }
-                            else
-                            {
-                                tryedMovedHuman.Add(nowHuman.CanMove());
-                                if (tryedMoved[tryedMovedHuman[tryedMovedHuman.Count - 1]]) break;
-                                tryedMoved[nowHuman.CanMove()] = true;
-                            }
-                        }
+                        tomove.Add((HumansInProcess[0][a][b], new Vector3(a.Item1 + b.Item1, a.Item2 + b.Item2, 0)));
+                        if (whenDelete[HumansInProcess[0][a][b]] == (a, b)) todel.Add(HumansInProcess[0][a][b]);
                     }
                 }
+
+                foreach ((HumanFunctionality, Vector3) c in tomove)
+                {
+                    c.Item1.transform.localPosition = c.Item2;
+                }
+                
+                HumansInProcess.RemoveAt(0);
+                yield return new WaitForFixedUpdate();
+                foreach (HumanFunctionality a in todel)
+                {
+                    a.DeleteHuman();
+                    whenDelete.Remove(a);
+                }
             }
-            foreach (HumanFunctionality a in todel)
+            else yield return new WaitForFixedUpdate();
+            /*foreach (HumanFunctionality a in todel)
             {
                 a.DeleteHuman();
                 Humans.Remove(a);
@@ -88,20 +64,59 @@ public class HumanController : MonoBehaviour
                     yield return new WaitForEndOfFrame();
                 }
             }
-            else 
-                yield return new WaitForEndOfFrame(); ;
+            else */
+
         }
         
     }
-    public void AddHuman(HumanFunctionality human) => queue.Add(human);
-    public void DeleteAllHumans()
+    public void AddHuman(HumanFunctionality human, List<(int,int)>way)
     {
-        foreach (HumanFunctionality a in queue) Humans.Add(a);
-        queue.Clear();
-        for (int i = 0; i < Humans.Count; i++)
+        int nowtime = 0;
+        List<(float, float)> newway=new List<(float, float)>();
+        for (int i = 1; i < way.Count-1; i++)
         {
-            Humans[i].DeleteHuman();
+            List<HashSet<(float, float)>> tmp = new List<HashSet<(float, float)>>();
+
+            for (int j = 0; j < HumansInProcess.Count; j++)
+            {
+                HashSet<(float, float)> now = new HashSet<(float, float)>();
+                tmp.Add(now);
+                if (HumansInProcess[j].ContainsKey(way[i]))
+                {
+                    foreach ((float, float) a in HumansInProcess[j][way[i]].Keys) now.Add(a);
+                }
+            }
+            newway = grid.Roads[way[i]].GetWayInTheCell(way[i - 1], way[i + 1], tmp, nowtime);
+            //Debug.Log("HERE");
+            //nowtime += newway.Count;
+            for (int j = 0; j < newway.Count; j++)
+            {
+                if (HumansInProcess.Count>j+nowtime&&!HumansInProcess[j+nowtime].ContainsKey(way[i]))
+                {
+                    Dictionary<(float, float), HumanFunctionality> dict = new Dictionary<(float, float), HumanFunctionality>();
+                    HumansInProcess[j + nowtime].Add(way[i], dict);
+                    dict.Add(newway[j], human);
+                }
+                else
+                {
+                    while (HumansInProcess.Count!=j+nowtime&&HumansInProcess[j+nowtime].ContainsKey(way[i])&&HumansInProcess[j + nowtime][way[i]].ContainsKey(newway[j])) nowtime++;
+                    if (HumansInProcess.Count == j + nowtime)
+                    {
+                        HumansInProcess.Add(new Dictionary<(int, int), Dictionary<(float, float), HumanFunctionality>>());
+                        
+                    }
+                    if (!HumansInProcess[j + nowtime].ContainsKey(way[i]))
+                    {
+                        HumansInProcess[HumansInProcess.Count - 1].Add(way[i], new Dictionary<(float, float), HumanFunctionality>());
+                    }
+                    Dictionary<(float, float), HumanFunctionality> dict = HumansInProcess[j + nowtime][way[i]];
+                    dict.Add(newway[j], human);
+                }
+
+            }
+            nowtime += newway.Count;
         }
-        Humans.Clear();
+        whenDelete.Add(human, (way[way.Count - 2], newway[newway.Count - 1]));
     }
+    
 }

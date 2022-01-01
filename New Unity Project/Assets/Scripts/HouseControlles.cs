@@ -33,7 +33,7 @@ public class HouseControlles : MonoBehaviour
         HumansInHouses.Add(house, new List<HumanFunctionality>());
         if (type == ThingsInCell.HousePeople)
         {
-            for (int i = 0; i < 20; i++)
+            for (int i = 0; i < 120; i++)
             {
                 AddHuman();
             }
@@ -73,7 +73,7 @@ public class HouseControlles : MonoBehaviour
                             clock.totalWays += way.Count;
                             if (NowHouses.Count == 0) CellsWithHumans.Remove(HouseFrom);
                             human.StartGo(way, HouseTo);
-                            humanController.AddHuman(human);
+                            humanController.AddHuman(human, way);
                         }
                     }
                 }

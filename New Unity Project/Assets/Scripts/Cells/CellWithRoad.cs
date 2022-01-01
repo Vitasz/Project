@@ -17,11 +17,10 @@ public class CellWithRoad : Cell
     private float humansNow = 0;
     public int throughput = 1;
     Dictionary<(float, float), List<(float, float)>> RoadsInCell = new Dictionary<(float, float), List<(float, float)>>();
-    Dictionary<(float,float), HumanFunctionality> humansInCell = new Dictionary<(float, float), HumanFunctionality>();
     public CellWithRoad(GridFunc grid, (int, int) position, ThingsInCell type) : base(grid, position, type) {
 
         GetCellPosition();
-        UpdateThroughPut(2);
+        UpdateThroughPut(1);
     }
     private void UpdateThroughPut(int throughput)
     {
@@ -106,11 +105,6 @@ public class CellWithRoad : Cell
                 if (j + 1 != 2 * throughput) RoadsInCell[(roadspositions[j], roadspositions[i])].Add((roadspositions[j+1], roadspositions[i-1]));
             }
         }
-        humansInCell.Clear();
-        foreach((float,float) a in RoadsInCell.Keys)
-        {
-            humansInCell.Add(a, null);
-        }
     }
     public void RemoveRoad((int, int) to)
     {
@@ -145,7 +139,7 @@ public class CellWithRoad : Cell
         }
         UpdateTile();
     }
-    public List<(float, float)> GetWayInTheCell((int,int) from, (int, int) to)
+    public List<(float, float)> GetWayInTheCell((int,int) from, (int, int) to, List<HashSet<(float, float)>> humansInCell, int nowtime)
     {
         HashSet<(float, float)>CanBePositions(int index, bool start)
         {
@@ -219,12 +213,13 @@ public class CellWithRoad : Cell
         {
 
             usedpositions.Add(a, (-1f, -1f));
-            if (humansInCell[a]==null) nowpositions.Add(a);
+            if (humansInCell.Count<=nowtime||!humansInCell[nowtime].Contains(a)) nowpositions.Add(a);
         }
         if (nowpositions.Count == 0) nowpositions.Add(CanBeStart.First());
         (float, float) end = (-1f, -1f);
         while (nowpositions.Count != 0)
         {
+            nowtime++;
             foreach((float, float)a in nowpositions)
             {
                 if (CanBeEnd.Contains(a))
@@ -239,7 +234,7 @@ public class CellWithRoad : Cell
                     if (!usedpositions.ContainsKey(b)&&b!=(-1f, -1f))
                     {
                         usedpositions.Add(b, a);
-                        if (humansInCell[b]==null)newpositionsPriority.Add(b);
+                        if (humansInCell.Count<=nowtime||!humansInCell[nowtime].Contains(a))newpositionsPriority.Add(b);
                         else newpositionsNoPriority.Add(b);
                     }
                 }
@@ -261,133 +256,7 @@ public class CellWithRoad : Cell
         ans.Reverse();
         return ans;
     }
-    public List<(float, float)> GetWayFromPositionInTheCell((float, float)from, (int, int) to)
-    {
-        HashSet<(float, float)> CanBePositions(int index, bool start)
-        {
-            HashSet<(float, float)> ans = new HashSet<(float, float)>();
-            List<float> roadspositions = new List<float>();
-            float delta = 0.5f / (2 * throughput);
-            for (int i = 0; i < 4 * throughput; i++)
-            {
-                roadspositions.Add(delta * i + delta / 2);
-
-            }
-            if (index == 0)
-            {
-                if (start)
-                {
-                    for (int i = throughput; i < 2 * throughput; i++)
-                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count - 1]));
-                }
-                else
-                {
-                    for (int i = 2 * throughput; i < 3 * throughput; i++)
-                        ans.Add((roadspositions[i], roadspositions[roadspositions.Count - 1]));
-                }
-            }
-            else if (index == 1)
-            {
-                if (start)
-                {
-                    for (int i = 2 * throughput; i < 3 * throughput; i++)
-                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
-                }
-                else
-                {
-                    for (int i = throughput; i < 2 * throughput; i++)
-                        ans.Add((roadspositions[roadspositions.Count - 1], roadspositions[i]));
-                }
-            }
-            else if (index == 2)
-            {
-                if (start)
-                {
-                    for (int i = 2 * throughput; i < 3 * throughput; i++)
-                        ans.Add((roadspositions[i], roadspositions[0]));
-                }
-                else
-                {
-                    for (int i = throughput; i < 2 * throughput; i++)
-                        ans.Add((roadspositions[i], roadspositions[0]));
-                }
-            }
-            else if (index == 3)
-            {
-                if (start)
-                {
-                    for (int i = throughput; i < 2 * throughput; i++)
-                        ans.Add((roadspositions[0], roadspositions[i]));
-                }
-                else
-                {
-                    for (int i = 2 * throughput; i < 3 * throughput; i++)
-                        ans.Add((roadspositions[0], roadspositions[i]));
-                }
-            }
-            return ans;
-        }
-        int endindex = GetIndexNearCell(to);
-        HashSet<(float, float)> CanBeStart = new HashSet<(float, float)>();
-        HashSet<(float, float)> CanBeEnd = CanBePositions(endindex, false);
-        Dictionary<(float, float), (float, float)> usedpositions = new Dictionary<(float, float), (float, float)>();
-        HashSet<(float, float)> nowpositions = new HashSet<(float, float)>(), newpositionsPriority = new HashSet<(float, float)>(), newpositionsNoPriority = new HashSet<(float, float)>();
-        foreach ((float, float) a in RoadsInCell[from]) if (a!=(-1f,-1f))CanBeStart.Add(a);
-        foreach ((float, float) a in CanBeStart)
-        {
-            usedpositions.Add(a, (-1f, -1f));
-            if (humansInCell[a] == null) nowpositions.Add(a);
-            //Debug.Log(a);
-        }
-        if (nowpositions.Count == 0) return null;
-        //foreach ((float, float) a in CanBeEnd) Debug.Log(end0)
-        (float, float) end = (-1f, -1f);
-        int free=0;
-        while (nowpositions.Count != 0)
-        {
-           
-            foreach ((float, float) a in nowpositions)
-            {
-                if (CanBeEnd.Contains(a))
-                {
-                    end = a;
-                    newpositionsPriority.Clear();
-                    newpositionsNoPriority.Clear();
-                    break;
-                }
-                foreach ((float, float) b in RoadsInCell[a])
-                {
-                    if (!usedpositions.ContainsKey(b) && b != (-1f, -1f))
-                    {
-                        usedpositions.Add(b, a);
-                        if (humansInCell[b] == null)
-                        {
-                            newpositionsPriority.Add(b);
-                            free++;
-                        }
-                        else newpositionsNoPriority.Add(b);
-                    }
-                }
-            }
-            if (free == 0) return null;
-            nowpositions.Clear();
-            foreach ((float, float) a in newpositionsPriority) nowpositions.Add(a);
-            foreach ((float, float) a in newpositionsNoPriority) nowpositions.Add(a);
-            newpositionsPriority.Clear();
-            newpositionsNoPriority.Clear();
-        }
-        if (end == (-1f, -1f)) return null;
-        List<(float, float)> ans = new List<(float, float)>();
-        while (!CanBeStart.Contains(end))
-        {
-            ans.Add(end);
-            end = usedpositions[end];
-        }
-        ans.Add(end);
-        ans.Add(from);
-        ans.Reverse();
-        return ans;
-    }
+    
     public List<(int,int)> GetNearRoadsWays()
     {
         List<(int, int)> ans = new List<(int, int)>();
@@ -429,18 +298,12 @@ public class CellWithRoad : Cell
         color.b = Mathf.Lerp(from.b, to.b, percents);
         grid.tilemap.SetColor(tmp, color);
     }
-    public HumanFunctionality CanMove((float,float) position) => humansInCell[position];
-    public void MoveToThis(HumanFunctionality who, (float, float) position)
+    public void MoveToThis()
     {
-        humansInCell[position] = who;
         humansNow++;
     }
     public void MoveOutThis(HumanFunctionality who, (float, float) position)
     {
-        if (who == humansInCell[position])
-        {
-            humansInCell[position] = null;
-        }
         humansNow--;
     }
     public void UpdateWaitTime()

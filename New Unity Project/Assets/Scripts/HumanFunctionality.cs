@@ -30,7 +30,7 @@ public class HumanFunctionality : MonoBehaviour
         //(grid.GetCell(way[nowposition]) as CellWithRoad).MoveOutThis();
         //Destroy(transform.gameObject);
     }
-    public bool MoveToNext(out Vector3 from, out Vector3 to)
+    /*public bool MoveToNext(out Vector3 from, out Vector3 to)
     {
         if (grid.Roads.ContainsKey(way[nowposition])) grid.Roads[way[nowposition]].MoveOutThis(this, wayInCell[positionInCell]);
         if (positionInCell + 1 < wayInCell.Count)
@@ -77,37 +77,6 @@ public class HumanFunctionality : MonoBehaviour
             to = new Vector3();
             return true;
         }
-    }
-    public HumanFunctionality CanMove()
-    {
-        if (positionInCell + 1 < wayInCell.Count)
-        {
-            CellWithRoad nowCell = grid.Roads[way[nowposition]];
-            if (nowCell.CanMove(wayInCell[positionInCell + 1]) != null)
-            {
-                List<(float, float)> maybeway = nowCell.GetWayFromPositionInTheCell(wayInCell[positionInCell], way[nowposition + 1]);
-                if (maybeway != null)
-                {
-                    positionInCell = 0;
-                    wayInCell = maybeway;
-                    return null;
-                }
-            }
-            
-            return nowCell.CanMove(wayInCell[positionInCell + 1]);
-        }
-        else if (nowposition + 2 < way.Count)
-        {
-            CellWithRoad nowCell = grid.Roads[way[nowposition + 1]];
-
-            if (nowCell != null)
-            {
-                transform.localScale = new Vector3(0.25f / nowCell.throughput, 0.25f / nowCell.throughput, 0);
-                List<(float,float)> nextway = nowCell.GetWayInTheCell(way[nowposition], way[nowposition + 2]);
-                return nowCell.CanMove(nextway[0]);
-            }
-            else return null;
-        }
-        else return null;
-    }
+    }*/
+    
 }
