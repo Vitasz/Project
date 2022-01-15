@@ -21,7 +21,6 @@ public class GridFunc : MonoBehaviour
     //FOR OPTIMIZATION
     public Dictionary<(int, int), Dictionary<(int, int), ((int, int),int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
 
-    private bool isRedactorActive = false;
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
     private bool hasfirstclick = false;
@@ -29,7 +28,7 @@ public class GridFunc : MonoBehaviour
     {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0))
         {
-            if (isRedactorActive && (tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick || !hasfirstclick))
+            if (tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition)) != prevpositionClick || !hasfirstclick)
             {
                 prevpositionClick = nowpositionClick;
                 nowpositionClick = tilemap.WorldToCell(nowCamera.ScreenToWorldPoint(Input.mousePosition));
@@ -43,12 +42,7 @@ public class GridFunc : MonoBehaviour
             }
         }
     }
-    public void OpenRedactorCell() => isRedactorActive = true;
-    public void CloseRedactorCell()
-    {
-        isRedactorActive = false;
-        hasfirstclick = false;
-    }
+ 
     public void SetMode(ThingsInCell mode)
     {
         ModeRedactor = (int)mode;

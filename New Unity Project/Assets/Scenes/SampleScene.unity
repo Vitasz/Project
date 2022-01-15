@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 82584860}
   - component: {fileID: 82584859}
   - component: {fileID: 82584858}
+  - component: {fileID: 82584861}
   m_Layer: 5
   m_Name: Structures
   m_TagString: Untagged
@@ -244,6 +245,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 82584856}
   m_CullTransparentMesh: 1
+--- !u!114 &82584861
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 82584856}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f94b0908c35c03044a5406ca51e0729f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HousePanel: {fileID: 321243481}
+  RoadsPanel: {fileID: 1346147502}
+  OptimizePanel: {fileID: 1161409066}
+  HouseButton: {fileID: 82584858}
+  RoadsButton: {fileID: 1808020763}
+  OptimizeButton: {fileID: 1127826183}
 --- !u!1 &119962241
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,7 +484,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &321243482
 RectTransform:
   m_ObjectHideFlags: 0
@@ -617,6 +636,7 @@ GameObject:
   - component: {fileID: 411543177}
   - component: {fileID: 411543176}
   - component: {fileID: 411543175}
+  - component: {fileID: 411543178}
   m_Layer: 5
   m_Name: Market
   m_TagString: Untagged
@@ -726,6 +746,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 411543173}
   m_CullTransparentMesh: 1
+--- !u!114 &411543178
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 411543173}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ecbb303a6a35164a95b2a8049d5732d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Market: {fileID: 411543175}
+  GridScript: {fileID: 1591633984}
 --- !u!1 &440052322
 GameObject:
   m_ObjectHideFlags: 0
@@ -1417,6 +1451,7 @@ GameObject:
   - component: {fileID: 1127826185}
   - component: {fileID: 1127826184}
   - component: {fileID: 1127826183}
+  - component: {fileID: 1127826186}
   m_Layer: 5
   m_Name: Optimization
   m_TagString: Untagged
@@ -1526,6 +1561,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1127826181}
   m_CullTransparentMesh: 1
+--- !u!114 &1127826186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1127826181}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656c7144cd6edc44a9f91f09bc724966, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HousePanel: {fileID: 321243481}
+  RoadsPanel: {fileID: 1346147502}
+  OptimizePanel: {fileID: 1161409066}
+  HouseButton: {fileID: 82584858}
+  RoadsButton: {fileID: 1808020763}
+  OptimizeButton: {fileID: 1127826183}
 --- !u!1 &1161320226
 GameObject:
   m_ObjectHideFlags: 0
@@ -1676,7 +1729,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1161409067
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1709,15 +1762,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.7607844, g: 0.7607844, b: 0.7607844, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 1e987cbdd9621f545ab2dfa939860e0b, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -1746,6 +1799,7 @@ GameObject:
   - component: {fileID: 1185094880}
   - component: {fileID: 1185094879}
   - component: {fileID: 1185094878}
+  - component: {fileID: 1185094881}
   m_Layer: 5
   m_Name: Factory
   m_TagString: Untagged
@@ -1855,6 +1909,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1185094876}
   m_CullTransparentMesh: 1
+--- !u!114 &1185094881
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1185094876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 787a6355432647a42a3a1fe427a5e7b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Factory: {fileID: 1185094878}
+  GridScript: {fileID: 1591633984}
 --- !u!1 &1199689692
 GameObject:
   m_ObjectHideFlags: 0
@@ -2254,6 +2322,7 @@ GameObject:
   - component: {fileID: 1288656843}
   - component: {fileID: 1288656842}
   - component: {fileID: 1288656841}
+  - component: {fileID: 1288656844}
   m_Layer: 5
   m_Name: House
   m_TagString: Untagged
@@ -2363,6 +2432,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1288656839}
   m_CullTransparentMesh: 1
+--- !u!114 &1288656844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1288656839}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75bfff6131b023a41afde426c3af742f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HouseButton: {fileID: 1288656841}
+  GridScript: {fileID: 1591633984}
 --- !u!1 &1346147502
 GameObject:
   m_ObjectHideFlags: 0
@@ -2417,15 +2500,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
+  m_Color: {r: 0.7607844, g: 0.7607844, b: 0.7607844, a: 0.392}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Sprite: {fileID: 21300000, guid: 1e987cbdd9621f545ab2dfa939860e0b, type: 3}
+  m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
   m_FillMethod: 4
@@ -2858,6 +2941,7 @@ GameObject:
   - component: {fileID: 1808020765}
   - component: {fileID: 1808020764}
   - component: {fileID: 1808020763}
+  - component: {fileID: 1808020766}
   m_Layer: 5
   m_Name: Roads
   m_TagString: Untagged
@@ -2967,6 +3051,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1808020761}
   m_CullTransparentMesh: 1
+--- !u!114 &1808020766
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1808020761}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c3acdb6b46f94844a67eec786948a5f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  HousePanel: {fileID: 321243481}
+  RoadsPanel: {fileID: 1346147502}
+  OptimizePanel: {fileID: 1161409066}
+  HouseButton: {fileID: 82584858}
+  RoadsButton: {fileID: 1808020763}
+  OptimizeButton: {fileID: 1127826183}
 --- !u!1 &1809316476
 GameObject:
   m_ObjectHideFlags: 0

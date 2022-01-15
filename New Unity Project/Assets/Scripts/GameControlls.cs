@@ -32,14 +32,14 @@ public class GameControlls : MonoBehaviour
             if (Mode == (int)Modes.CellRedactor)
             {
                 Mode = (int)Modes.CameraMove;
-                GridScript.CloseRedactorCell();
+                
                 SelectRedactorCellsButton.transform.GetChild(0).GetComponent<Text>().text = "Open cell Redactor";
                 Redactor.SetActive(false);
             }
             else
             {
                 Mode = (int)Modes.CellRedactor;
-                GridScript.OpenRedactorCell();
+                
                 cameraScript.SetTargetCell();
                 SelectRedactorCellsButton.transform.GetChild(0).GetComponent<Text>().text = "Close cell Redactor";
                 Redactor.SetActive(true);
