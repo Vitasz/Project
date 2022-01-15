@@ -8,6 +8,7 @@ using UnityEngine.Tilemaps;
 using System.Diagnostics;
 public class GridFunc : MonoBehaviour
 {
+    public int Lines = 1;
     public HouseControlles houseControlles;
     public GameControlls GameController;
     public Camera nowCamera;
@@ -135,7 +136,7 @@ public class GridFunc : MonoBehaviour
         }
         else if (type == ThingsInCell.RoadForCars)
         {
-            Map.Add(Position, new CellWithRoad(this, Position, type));
+            Map.Add(Position, new CellWithRoad(this, Position, type, Lines));
             Roads.Add(Position, Map[Position] as CellWithRoad);
             waysFromRoads.Add(Position, new List<(int, int)>());
             AddWaysFromRoad(Position);

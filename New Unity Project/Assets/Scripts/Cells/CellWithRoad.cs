@@ -18,10 +18,10 @@ public class CellWithRoad : Cell
     public int throughput = 1;
     Dictionary<(float, float), List<(float, float)>> RoadsInCell = new Dictionary<(float, float), List<(float, float)>>();
     Dictionary<(float,float), HumanFunctionality> humansInCell = new Dictionary<(float, float), HumanFunctionality>();
-    public CellWithRoad(GridFunc grid, (int, int) position, ThingsInCell type) : base(grid, position, type) {
+    public CellWithRoad(GridFunc grid, (int, int) position, ThingsInCell type, int Lines) : base(grid, position, type) {
 
         GetCellPosition();
-        UpdateThroughPut(2);
+        UpdateThroughPut(Lines);
     }
     private void UpdateThroughPut(int throughput)
     {
