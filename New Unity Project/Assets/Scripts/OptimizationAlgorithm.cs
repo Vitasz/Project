@@ -13,7 +13,9 @@ public class OptimizationAlgorithm : MonoBehaviour
     public bool CanRemoveHouses = false;
     public bool CanRemoveRoads = false;
     public int HODS = 0;
-
+    public int MaxVariantsHouses = 20000, MaxVariantsRoads = 20000;
+    public HouseControlles houseControlles;
+    public HumanController humanController;
     Dictionary<(int,int), List<(int, int)>> Roads = new Dictionary<(int, int), List<(int, int)>>();
     Dictionary<(int, int), ThingsInCell> Houses = new Dictionary<(int, int), ThingsInCell>();
     Dictionary<(int,int), ThingsInCell> MapCopy = new Dictionary<(int, int), ThingsInCell>();
@@ -58,7 +60,8 @@ public class OptimizationAlgorithm : MonoBehaviour
             }
             return ans2;
         }
-       
+        houseControlles.CanSpawn = false;
+        humanController.CanMove = false;
         long TOTALTIME = 0;
         Roads.Clear();
         Houses.Clear();
@@ -110,7 +113,7 @@ public class OptimizationAlgorithm : MonoBehaviour
             Indexs.Add(ThingsInCell.RoadForCars, 0);
             Stopwatch hodtime = new Stopwatch();
             hodtime.Start();
-            if (addedHouses.Count == 0 && addedRoads.Count == 0 || !CanRemoveHouses && !CanRemoveRoads) Hod(ref Positions, new List<((int, int), ThingsInCell, List<(int, int)>)>(), Deep, cntRoads, cntHousePeople + cntHouseCom + cntHouseFact, Indexs, (int.MaxValue, int.MaxValue), (int.MaxValue, int.MaxValue));
+            if (addedHouses.Count == 0 && addedRoads.Count == 0 || !CanRemoveHouses && !CanRemoveRoads) Hod(ref Positions, new List<((int, int), ThingsInCell, List<(int, int)>)>(), Deep, cntRoads, cntHousePeople + cntHouseCom + cntHouseFact, Indexs, (int.MaxValue, int.MaxValue), (int.MaxValue, int.MaxValue), MaxVariantsHouses+MaxVariantsRoads);
             else
             {
                 if (CanRemoveHouses)
@@ -122,7 +125,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                         {
                             List<((int, int), ThingsInCell, List<(int, int)>)> tmp = new List<((int, int), ThingsInCell, List<(int, int)>)>();
                             tmp.Add((a, ThingsInCell.RoadForCars, b));
-                            Hod(ref Positions, tmp, Deep, cntRoads + 1, cntHousePeople + cntHouseCom + cntHouseFact - 1, Indexs, a, (int.MaxValue, int.MaxValue));
+                            Hod(ref Positions, tmp, Deep, cntRoads + 1, cntHousePeople + cntHouseCom + cntHouseFact - 1, Indexs, a, (int.MaxValue, int.MaxValue), MaxVariantsHouses);
                         }
                         
                     }
@@ -133,7 +136,8 @@ public class OptimizationAlgorithm : MonoBehaviour
                     {
                         List<((int, int), ThingsInCell, List<(int, int)>)> tmp = new List<((int, int), ThingsInCell, List<(int, int)>)>();
                         tmp.Add((a, ThingsInCell.HousePeople, null));
-                        Hod(ref Positions, tmp, Deep, cntRoads-1, cntHousePeople + cntHouseCom + cntHouseFact+1, Indexs, (int.MaxValue, int.MaxValue), a);
+                        if (MaxVariantsRoads + MaxVariantsHouses <= total) break;
+                        Hod(ref Positions, tmp, Deep, cntRoads-1, cntHousePeople + cntHouseCom + cntHouseFact+1, Indexs, (int.MaxValue, int.MaxValue), a, MaxVariantsHouses+MaxVariantsRoads);
 
                     }
                 }
@@ -259,6 +263,8 @@ public class OptimizationAlgorithm : MonoBehaviour
             
         }
         UnityEngine.Debug.Log("TOTAL TIME: " + Convert.ToString(TOTALTIME));
+        houseControlles.CanSpawn = true;
+        humanController.CanMove = true;
         yield return null;
     }
     
@@ -279,7 +285,7 @@ public class OptimizationAlgorithm : MonoBehaviour
         return res;
     }
     private void Hod(ref Dictionary<ThingsInCell, List<(int, int)>> Positions, List<((int,int), ThingsInCell, List<(int,int)>)>TilesToAdd, int deep,
-        int cntroads, int cntHouses, Dictionary<ThingsInCell, int> Indexs, (int,int)housetoremove, (int,int) roadtoremove)
+        int cntroads, int cntHouses, Dictionary<ThingsInCell, int> Indexs, (int,int)housetoremove, (int,int) roadtoremove, int MaxVariants)
     {
         if (deep == 0)
         {
@@ -297,6 +303,7 @@ public class OptimizationAlgorithm : MonoBehaviour
                 //TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp);
                 tasks.Add(Task.Run(() => TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp)));
                 total++;
+                
             }
             return;
         }
@@ -349,7 +356,7 @@ public class OptimizationAlgorithm : MonoBehaviour
         int save = Indexs[whatadd];
         for (int i = Indexs[whatadd]; i < Positions[whatadd].Count; i++)
         {
-            
+            if (total >= MaxVariants) return;
             Indexs[whatadd] = i + 1;
             (int, int) Position = Positions[whatadd][i];
             bool notok = false;
@@ -379,9 +386,10 @@ public class OptimizationAlgorithm : MonoBehaviour
                 {
                     TilesToAdd.Add((Position, ThingsInCell.RoadForCars, a));
 
-                    Hod(ref Positions, TilesToAdd, deep - 1, cntroads + 1, cntHouses, Indexs, housetoremove, roadtoremove);
+                    Hod(ref Positions, TilesToAdd, deep - 1, cntroads + 1, cntHouses, Indexs, housetoremove, roadtoremove, MaxVariants);
                     
                     TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
+                    if (total >= MaxVariants) break;
                 }
                 for (int j = 0; j < cnt; j++)
                 {
@@ -394,12 +402,12 @@ public class OptimizationAlgorithm : MonoBehaviour
                 TilesToAdd.Add((Position, whatadd, null));
                 cntHouses++;
 
-                Hod(ref Positions, TilesToAdd, deep - 1, cntroads, cntHouses, Indexs, housetoremove, roadtoremove);
+                Hod(ref Positions, TilesToAdd, deep - 1, cntroads, cntHouses, Indexs, housetoremove, roadtoremove, MaxVariants);
                 
                 cntHouses--;
                 TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
             }
-
+            if (total >= MaxVariants) return;
         }
         Indexs[whatadd] = save;
 

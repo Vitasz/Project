@@ -136,14 +136,13 @@ public class Generator : MonoBehaviour
                 if (USED[last].Item2 == 0) return true;
                 (int, int) tosave = to;
                 to = last;
-
                 (int, int) nowpos = USED[last].Item1;
                 while (nowpos != from)
                 {
                     
                     if (Roads.ContainsKey(nowpos))
                     {
-                        if (to!=tosave)
+                        if (to != tosave)
                             Roads[nowpos].Add(to);
                     }
                     else
@@ -168,6 +167,7 @@ public class Generator : MonoBehaviour
                     to = nowpos;
                     nowpos = USED[to].Item1;
                 }
+
                 return true;
             }
         }

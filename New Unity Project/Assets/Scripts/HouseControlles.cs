@@ -13,6 +13,7 @@ public class HouseControlles : MonoBehaviour
     private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
     private List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
     public HumanController humanController;
+    public bool CanSpawn = true;
     Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
     private void Start()
     {
@@ -43,42 +44,40 @@ public class HouseControlles : MonoBehaviour
     {
         while (true)
         {
-            Stopwatch totalTime = new Stopwatch();
-            totalTime.Start();
-            if (CellsWithHumans.Count>=1)
+            if (CanSpawn)
             {
-                CellWithHouse HouseFrom = CellsWithHumans[UnityEngine.Random.Range(0, CellsWithHumans.Count)];
-                if (HouseFrom != null)
+                if (CellsWithHumans.Count >= 1)
                 {
-                    List<CellWithHouse> houseswithout = new List<CellWithHouse>();
-                    foreach (CellWithHouse a in CellsWithHouses) if (HouseFrom != a) houseswithout.Add(a);
-                    if (houseswithout.Count == 0)
+                    CellWithHouse HouseFrom = CellsWithHumans[UnityEngine.Random.Range(0, CellsWithHumans.Count)];
+                    if (HouseFrom != null)
                     {
-                        yield return new WaitForEndOfFrame();
-                        continue;
-                    }
-                    CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
-                    if (HouseTo != null)
-                    {
-                        List<(int,int)> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
-                        if (way != null)
+                        List<CellWithHouse> houseswithout = new List<CellWithHouse>();
+                        foreach (CellWithHouse a in CellsWithHouses) if (HouseFrom != a) houseswithout.Add(a);
+                        if (houseswithout.Count == 0)
                         {
-                            way.Insert(0, HouseFrom.GetCellPosition());
-                            way.Add(HouseTo.GetCellPosition());
-                            //Create Human
-                            List<HumanFunctionality> NowHouses = HumansInHouses[HouseFrom];
-                            HumanFunctionality human = NowHouses[0];
-                            NowHouses.RemoveAt(0);
-                            clock.totalHumans++;
-                            clock.totalWays += way.Count;
-                            if (NowHouses.Count == 0) CellsWithHumans.Remove(HouseFrom);
-                            human.StartGo(way, HouseTo);
-                            humanController.AddHuman(human);
+                            yield return new WaitForEndOfFrame();
+                            continue;
+                        }
+                        CellWithHouse HouseTo = houseswithout[UnityEngine.Random.Range(0, houseswithout.Count)];
+                        if (HouseTo != null)
+                        {
+                            List<(int, int)> way = Grid.FindWay(HouseFrom.GetNearTiles(), HouseTo.GetNearTiles());
+                            if (way != null)
+                            {
+                                way.Insert(0, HouseFrom.GetCellPosition());
+                                way.Add(HouseTo.GetCellPosition());
+                                //Create Human
+                                List<HumanFunctionality> NowHouses = HumansInHouses[HouseFrom];
+                                HumanFunctionality human = NowHouses[0];
+                                NowHouses.RemoveAt(0);
+                                if (NowHouses.Count == 0) CellsWithHumans.Remove(HouseFrom);
+                                human.StartGo(way, HouseTo);
+                                humanController.AddHuman(human);
+                            }
                         }
                     }
                 }
             }
-            totalTime.Stop();
             yield return new WaitForEndOfFrame();
         }
     }

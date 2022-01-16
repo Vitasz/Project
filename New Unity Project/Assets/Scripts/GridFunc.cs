@@ -10,7 +10,6 @@ public class GridFunc : MonoBehaviour
 {
     public int Lines = 1;
     public HouseControlles houseControlles;
-    public GameControlls GameController;
     public Camera nowCamera;
     public Tilemap tilemap;
     public Clock clock;
@@ -147,6 +146,9 @@ public class GridFunc : MonoBehaviour
     {
         if (Roads.ContainsKey(PositionFrom))
         {
+            List<(int, int)> tmp = new List<(int, int)>();
+            foreach ((int, int) a in PositionTo) if (!Roads.ContainsKey(a)) tmp.Add(a);
+            foreach ((int, int) b in tmp) PositionTo.Remove(b);
             Roads[PositionFrom].AddRoad(PositionTo);
             waysFromRoads[PositionFrom] = Roads[PositionFrom].GetNearRoadsWays();
             AddWaysFromRoad(PositionFrom);

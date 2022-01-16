@@ -12,15 +12,13 @@ public class CameraFunc : MonoBehaviour
     private float zoomInCellRedactor = 5f;
     [Range(2f, 100f)]
     private float nowZoom = 50, startZoom = 50;
-    public GameControlls gameController;
     public Camera thisCamera;
     private void Update()
     {
         Vector3 MousePosition = thisCamera.ScreenToWorldPoint(Input.mousePosition);
         MousePosition.z = -100;
         //Camera Position
-        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject()
-            &&gameController.Mode==(int)Modes.CameraMove)
+        if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
         {
             targetPosition = MousePosition;
             startPosition = transform.position;
@@ -32,7 +30,7 @@ public class CameraFunc : MonoBehaviour
             transform.position = Vector3.Lerp(startPosition, targetPosition, progressMove);
         }
         //Camera Zoom
-        if (Input.mouseScrollDelta.y!=0 && gameController.Mode == (int)Modes.CameraMove)
+        if (Input.mouseScrollDelta.y!=0)
         {
             nowZoom -= Input.mouseScrollDelta.y * zoomMultiplayer;
             startZoom = thisCamera.orthographicSize;

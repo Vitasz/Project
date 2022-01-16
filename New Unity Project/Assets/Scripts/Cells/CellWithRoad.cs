@@ -443,7 +443,7 @@ public class CellWithRoad : Cell
         }
         humansNow--;
     }
-    public void UpdateWaitTime()
+    public float UpdateWaitTime()
     {
         EmptyLastFrames.Add(humansNow / ((roadsFromCell.Count*2+4)*throughput));
         humansInCelllast100frames += humansNow / ((roadsFromCell.Count * 2 + 4) * throughput);
@@ -455,6 +455,7 @@ public class CellWithRoad : Cell
         humansInCelllast100frames = Math.Max(0.00001f, humansInCelllast100frames);
         WaitTime = (float)(humansInCelllast100frames);
         UpdateTile();
+        return WaitTime;
     }
     
 }
