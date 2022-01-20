@@ -18,7 +18,7 @@ public class Clock : MonoBehaviour
         while (true)
         {
             int seconds = Mathf.CeilToInt(Time.time);
-            TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString((int)efficiency);
+            TextComponent.text = "Time: " + Convert.ToString(seconds / 3600) + ':' + Convert.ToString(seconds % 3600 / 60) + ':' + Convert.ToString(seconds % 60) + " Efficiency: " + Convert.ToString(Math.Round(efficiency, 3));
             //UpdateWaitTime();
             yield return new WaitForEndOfFrame();
         }
