@@ -16,65 +16,40 @@ public enum ThingsInCell : int
 public class Cell
 {
     protected GridFunc grid;
-    protected HouseControlles houseControlles;
-    protected Vector3Int positioninTileMap;
+    protected (int, int) positioninTileMap;
     ThingsInCell typeCell;
-    public Cell(GridFunc Grid, HouseControlles HouseControlles, Vector3Int PositionCell, ThingsInCell type)
+    public Cell(GridFunc Grid, (int, int) PositionCell, ThingsInCell type)
     {
         grid = Grid;
-        houseControlles = HouseControlles;
         positioninTileMap = PositionCell;
         typeCell = type;
     }
-    protected virtual void UpdateTileWithNewNeighboors() { }
-    public int GetIndexNearCell(Vector3Int from, Vector3Int to)
+    public int GetIndexNearCell((int, int) to)
     {
-        if (from.x - 1 == to.x && from.y + 1 == to.y) return 0;
-        if (from.x == to.x && from.y + 1 == to.y) return 1;
-        if (from.x + 1 == to.x && from.y + 1 == to.y) return 2;
-        if (from.x + 1 == to.x && from.y == to.y) return 3;
-        if (from.x + 1 == to.x && from.y - 1 == to.y) return 4;
-        if (from.x == to.x && from.y - 1 == to.y) return 5;
-        if (from.x - 1 == to.x && from.y - 1 == to.y) return 6;
-        if (from.x-1==to.x && from.y==to.y) return 7;
+        if (positioninTileMap.Item1 == to.Item1 && positioninTileMap.Item2 + 1 == to.Item2) return 0;
+        if (positioninTileMap.Item1 + 1 == to.Item1 && positioninTileMap.Item2 == to.Item2) return 1;
+        if (positioninTileMap.Item1 == to.Item1 && positioninTileMap.Item2 - 1 == to.Item2) return 2;
+        if (positioninTileMap.Item1 - 1==to.Item1 && positioninTileMap.Item2 == to.Item2) return 3;
         return -1;
     }
-    public Vector3Int GetPositionNearCell(Vector3Int from, int index)
+    public (int, int) GetPositionNearCell(int index)
     {
-        if (index == 0) return new Vector3Int(from.x - 1, from.y + 1,0);
-        if (index == 1) return new Vector3Int(from.x, from.y + 1, 0);
-        if (index == 2) return new Vector3Int(from.x + 1, from.y + 1, 0);
-        if (index == 3) return new Vector3Int(from.x + 1, from.y, 0);
-        if (index == 4) return new Vector3Int(from.x + 1, from.y - 1, 0);
-        if (index == 5) return new Vector3Int(from.x, from.y -1, 0);
-        if (index == 6) return new Vector3Int(from.x - 1, from.y - 1, 0);
-        if (index == 7) return new Vector3Int(from.x - 1, from.y, 0);
-        return new Vector3Int();
+        if (index == 0) return (positioninTileMap.Item1, positioninTileMap.Item2 + 1);
+        if (index == 1) return (positioninTileMap.Item1 + 1, positioninTileMap.Item2);
+        if (index == 2) return (positioninTileMap.Item1, positioninTileMap.Item2 - 1);
+        if (index == 3) return (positioninTileMap.Item1 - 1, positioninTileMap.Item2);
+        return (0,0);
     }
-    protected virtual void UpdateTile()
+    protected virtual void UpdateTile() { }
+    public ThingsInCell GetTypeCell() => typeCell;
+    public List<(int,int)> GetNearTiles()
     {
-        /*foreach(KeyValuePair<int, int[]> a in whatNearCells)
-        {
-            string temp = "";
-            foreach (int b in a.Value) temp += Convert.ToString(b);
-            grid.tilemap.SetTile(new Vector3Int(positioninTileMap.x, positioninTileMap.y, a.Key), Resources.Load<Tile>(ResourcesLoadedPaths[a.Key] + temp));
-        }*/
-    }
-    public ThingsInCell GetTypeCell()
-    {
-        return typeCell;
-    }
-    public List<Vector3Int> GetNearTiles()
-    {
-        List<Vector3Int> ans = new List<Vector3Int>();
-        for (int i = -1; i < 2; i++)
-        {
-            for (int j = -1; j < 2; j++)
-            {
-                if ((i != 0 || j != 0)&&Math.Abs(i)+Math.Abs(j)<=1) ans.Add(new Vector3Int(positioninTileMap.x + i, positioninTileMap.y + j, positioninTileMap.z));
-            }
-        }
+        List<(int, int)> ans = new List<(int, int)>();
+        for (int i = -1; i < 2; i+=2)
+            ans.Add((positioninTileMap.Item1 + i, positioninTileMap.Item2));
+        for (int i = -1; i < 2; i += 2)
+            ans.Add((positioninTileMap.Item1, positioninTileMap.Item2 + i));
         return ans;
     }
-    public Vector3Int GetCellPosition() => positioninTileMap;
+    public (int,int) GetCellPosition() => positioninTileMap;
 }

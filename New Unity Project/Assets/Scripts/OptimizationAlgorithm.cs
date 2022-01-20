@@ -8,901 +8,877 @@ using System.Linq;
 
 public class OptimizationAlgorithm : MonoBehaviour
 {
-    List<CellWithHouse> GranHouse = new List<CellWithHouse>();
-    List<CellWithRoad> GranRoad = new List<CellWithRoad>();
-    //GridFunc grid;
     public int Deep = 1;
-    List<ThingsInCell> Variants = new List<ThingsInCell>() { ThingsInCell.HousePeople, ThingsInCell.HouseCom, ThingsInCell.HouseFact, ThingsInCell.RoadForCars };
-    Dictionary<Vector3Int, List<Vector3Int>> Roads = new Dictionary<Vector3Int, List<Vector3Int>>();
-    Dictionary<Vector3Int, ThingsInCell> Houses = new Dictionary<Vector3Int, ThingsInCell>();
-    Dictionary<Vector3Int, ThingsInCell> MapCopy = new Dictionary<Vector3Int, ThingsInCell>();
-    Dictionary<Vector3Int, List<Vector3Int>> HousesAndRoadsAround = new Dictionary<Vector3Int, List<Vector3Int>>();
-    Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> NowSystem;
-    Dictionary<Vector3Int, HashSet<int>> RoadsToHouses;
-    List<Task> tasks = new List<Task>();
-    Vector3Int bestPosition = new Vector3Int();
-    double bestEfficienty = -1;
-    ThingsInCell bestVariant;
-    List<Vector3Int> bestRoadsFrom = new List<Vector3Int>();
-    List<Vector3Int> bestRoadsTo = new List<Vector3Int>();
+    public float k = 1.2f;
+    public bool CanRemoveHouses = false;
+    public bool CanRemoveRoads = false;
     public int HODS = 0;
+    public int MaxVariantsHouses = 20000, MaxVariantsRoads = 20000;
+    public HouseControlles houseControlles;
+    public HumanController humanController;
+    Dictionary<(int,int), List<(int, int)>> Roads = new Dictionary<(int, int), List<(int, int)>>();
+    Dictionary<(int, int), ThingsInCell> Houses = new Dictionary<(int, int), ThingsInCell>();
+    Dictionary<(int,int), ThingsInCell> MapCopy = new Dictionary<(int, int), ThingsInCell>();
+    
+    HashSet<(int, int)> Grans = new HashSet<(int, int)>();
+    Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
+    HashSet<(int, int)> addedHouses = new HashSet<(int, int)>();
+    HashSet<(int, int)> addedRoads = new HashSet<(int, int)>();
+    List<Task> tasks = new List<Task>();
+    List<((int, int), List<((int, int), ThingsInCell, List<(int, int)>)>,(int,int), (int,int))> variants = new List<((int, int), List<((int, int), ThingsInCell, List<(int, int)>)>, (int, int), (int, int))>();
+    int bestEfficienty = int.MaxValue;
+    int maxway = int.MaxValue;
+   
     private int total = 0;
-    private bool IsGran(Vector3Int position)
-    {
-        return !(MapCopy.ContainsKey(new Vector3Int(position.x - 1, position.y, position.z)) &&
-            MapCopy.ContainsKey(new Vector3Int(position.x, position.y - 1, position.z)) &&
-            MapCopy.ContainsKey(new Vector3Int(position.x + 1, position.y, position.z)) &&
-            MapCopy.ContainsKey(new Vector3Int(position.x, position.y + 1, position.z)));
-    }
-    private List<Vector3Int> GetGrans(Vector3Int position)
-    {
-        List<Vector3Int> Grans = new List<Vector3Int>();
-        if (!MapCopy.ContainsKey(new Vector3Int(position.x - 1, position.y, position.z))) Grans.Add(new Vector3Int(position.x - 1, position.y, position.z));
-        if (!MapCopy.ContainsKey(new Vector3Int(position.x + 1, position.y, position.z))) Grans.Add(new Vector3Int(position.x + 1, position.y, position.z));
-        if (!MapCopy.ContainsKey(new Vector3Int(position.x, position.y - 1, position.z))) Grans.Add(new Vector3Int(position.x, position.y - 1, position.z));
-        if (!MapCopy.ContainsKey(new Vector3Int(position.x, position.y + 1, position.z))) Grans.Add(new Vector3Int(position.x, position.y + 1, position.z));
-        return Grans;
-    }
-    public void Optimization(GridFunc grid)
-    {
-        //this.grid = grid;
-        //if (grid.Map.Count == 0) grid.CreateNewTile(new Vector3Int(0, 0, 0), ThingsInCell.HousePeople, false);
+    private long timepreparing = 0;
 
+    private bool IsGran((int,int) position)
+    {
+        return !(MapCopy.ContainsKey((position.Item1 - 1, position.Item2)) &&
+            MapCopy.ContainsKey((position.Item1, position.Item2 - 1)) &&
+            MapCopy.ContainsKey((position.Item1 + 1, position.Item2)) &&
+            MapCopy.ContainsKey((position.Item1, position.Item2 + 1)));
+    }
+    public void Optimization(GridFunc grid, int deep, float K, int hods, bool canRhouses, bool canRroads)
+    {
+        Deep = deep;
+        k = K;
+        HODS = hods;
+        CanRemoveHouses = canRhouses;
+        CanRemoveRoads = canRroads;
         StartCoroutine(F(grid));
     }
     IEnumerator F(GridFunc grid)
     {
-        List<Vector3Int> GetNearTiles(Vector3Int a)
+        int cntHousePeople = 0, cntHouseCom = 0, cntHouseFact = 0, cntRoads;
+        List<(int,int)> GetEmptyTiles((int, int) a)
         {
-            List<Vector3Int> ans2 = new List<Vector3Int>();
+            List<(int, int)> ans2 = new List<(int, int)>();
             for (int i = -1; i < 2; i++)
             {
                 for (int j = -1; j < 2; j++)
                 {
-                    Vector3Int now = new Vector3Int(a.x + i, a.y + j, a.z);
-                    if ((i != 0 || j != 0) && Math.Abs(i) + Math.Abs(j) <= 1) ans2.Add(now);
+                    (int, int) now = (a.Item1 + i, a.Item2 + j);
+                    if ((i != 0 || j != 0) && Math.Abs(i) + Math.Abs(j) <= 1&&!MapCopy.ContainsKey(now)) ans2.Add(now);
                 }
             }
             return ans2;
         }
+        houseControlles.CanSpawn = false;
+        humanController.CanMove = false;
         long TOTALTIME = 0;
-        while (HODS != 0)
+        Roads.Clear();
+        Houses.Clear();
+        MapCopy.Clear();
+        Grans.Clear();
+        addedHouses.Clear();
+        addedRoads.Clear();
+        foreach ((int, int) a in grid.Map.Keys)
         {
-            NowSystem = grid.NowSystem;
-            int cntroads, cnthousesPeople = 0, cnthousesCom = 0, cnthousesFact = 0;
-            Stopwatch timepred = new Stopwatch();
-            timepred.Start();
-            foreach (Vector3Int a in grid.Map.Keys)
+            MapCopy.Add(a, grid.Map[a].GetTypeCell());
+            if (MapCopy[a] == ThingsInCell.HouseCom) cntHouseCom++;
+            if (MapCopy[a] == ThingsInCell.HouseFact) cntHouseFact++;
+            if (MapCopy[a] == ThingsInCell.HousePeople) cntHousePeople++;
+            if (MapCopy[a] == ThingsInCell.RoadForCars)
             {
-                Cell cell = grid.Map[a];
-                if (IsGran(a))
-                {
-                    if (cell is CellWithHouse) GranHouse.Add(cell as CellWithHouse);
-                    else if (cell is CellWithRoad) GranRoad.Add(cell as CellWithRoad);
-                }
-                MapCopy.Add(a, cell.GetTypeCell());
-                if (cell.GetTypeCell() == ThingsInCell.RoadForCars)
-                {
-                    Roads.Add(a, (cell as CellWithRoad).GetNearRoadsWays());
-                }
-                else
-                {
-                    Houses.Add(a, cell.GetTypeCell());
-                    if (cell.GetTypeCell() == ThingsInCell.HousePeople) cnthousesPeople++;
-                    else if (cell.GetTypeCell() == ThingsInCell.HouseCom) cnthousesCom++;
-                    else cnthousesFact++;
-                }
+                Roads.Add(a, grid.Roads[a].GetNearRoadsWays());
             }
-            
-            foreach(Vector3Int a in Houses.Keys)
-            {
-                HousesAndRoadsAround.Add(a, new List<Vector3Int>());
-                foreach (Vector3Int b in GetNearTiles(a))
-                {
-                    if (Roads.ContainsKey(b)) HousesAndRoadsAround[a].Add(b);
-                }
-            }
-            RoadsToHouses = new Dictionary<Vector3Int, HashSet<int>>();
-            foreach(Vector3Int a in NowSystem.Keys)
-            {
-                HashSet<int> now = new HashSet<int>();
-                RoadsToHouses.Add(a, now);
-                foreach((int, List<Vector3Int>) b in NowSystem[a])
-                {
-                    now.Add(b.Item1);
-                }
-            }
-            Dictionary<ThingsInCell, List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>> PositionsToCheck = new Dictionary<ThingsInCell, List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>>();
-            HODS -= 1;
-            cntroads = Roads.Count;
-            List<Vector3Int> was = new List<Vector3Int>();
-            foreach (ThingsInCell type in Variants) PositionsToCheck.Add(type, new List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>());
-            
-            foreach (CellWithRoad cell in GranRoad)
-            {
-                foreach (Vector3Int PositionGran in GetGrans(cell.GetCellPosition()))
-                {
-                    if (!was.Contains(PositionGran)) was.Add(PositionGran);
-                    else continue;
-                    foreach (ThingsInCell type in Variants)
-                        if (type == ThingsInCell.HouseCom || type == ThingsInCell.HousePeople || type == ThingsInCell.HouseFact)
-                            PositionsToCheck[type].Add((PositionGran, null, null));
-                        else if (type == ThingsInCell.RoadForCars)
-                        {
-                            foreach ((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
-                                PositionsToCheck[type].Add((PositionGran, a.Item1, a.Item2));
-                        }
-                }
-            }
+            else Houses.Add(a, MapCopy[a]);
+        }
+        foreach((int,int)a in Roads.Keys)
+        {
+            if (IsGran(a)) Grans.Add(a);
+        }
+        while (HODS > 0)
+        {
+            variants.Clear();
+            timepreparing = 0;
             total = 0;
-            timepred.Stop();
-            UnityEngine.Debug.Log("TIME: " + Convert.ToString(timepred.ElapsedMilliseconds));
-            List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> temp = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
-            Stopwatch PereborWatch = new Stopwatch();
-            PereborWatch.Start();
-            if (PositionsToCheck.Count != 0) Hod(ref PositionsToCheck, temp, Deep, new List<Vector3Int>(), cntroads,cnthousesPeople,cnthousesCom,cnthousesFact);
-            //UnityEngine.Debug.Log(tasks.Count);
-            //yield return new WaitForEndOfFrame();
+            bestEfficienty = int.MaxValue;
+            WaysFromRoadsToHouses = grid.WaysFromRoadsToHouses;
+            cntRoads = Roads.Count;
+            Dictionary<ThingsInCell, List<(int, int)>> Positions = new Dictionary<ThingsInCell, List<(int, int)>>();
+            Positions.Add(ThingsInCell.HousePeople, new List<(int, int)>());
+            Positions.Add(ThingsInCell.RoadForCars, new List<(int, int)>());
+            foreach((int,int) a in Grans)
+            {
+                foreach ((int, int) b in GetEmptyTiles(a))
+                {
+                    if (!Positions[ThingsInCell.HousePeople].Contains(b))
+                    {
+                        Positions[ThingsInCell.HousePeople].Add(b);
+                        Positions[ThingsInCell.RoadForCars].Add(b);
+                    }
+                }
+            }
+            
+            Dictionary<ThingsInCell, int> Indexs = new Dictionary<ThingsInCell, int>();
+            Indexs.Add(ThingsInCell.HousePeople, 0);
+            Indexs.Add(ThingsInCell.RoadForCars, 0);
+            Stopwatch hodtime = new Stopwatch();
+            hodtime.Start();
+            if (addedHouses.Count == 0 && addedRoads.Count == 0 || !CanRemoveHouses && !CanRemoveRoads) Hod(ref Positions, new List<((int, int), ThingsInCell, List<(int, int)>)>(), Deep, cntRoads, cntHousePeople + cntHouseCom + cntHouseFact, Indexs, (int.MaxValue, int.MaxValue), (int.MaxValue, int.MaxValue), MaxVariantsHouses+MaxVariantsRoads);
+            else
+            {
+                if (CanRemoveHouses)
+                {
+                    foreach ((int, int) a in addedHouses)
+                    {
+                       
+                        foreach (List<(int, int)> b in GetRoadsVariants(a, GetRoadsAround(a, new List<((int, int), ThingsInCell, List<(int, int)>)>(), (int.MaxValue, int.MaxValue))))
+                        {
+                            List<((int, int), ThingsInCell, List<(int, int)>)> tmp = new List<((int, int), ThingsInCell, List<(int, int)>)>();
+                            tmp.Add((a, ThingsInCell.RoadForCars, b));
+                            Hod(ref Positions, tmp, Deep, cntRoads + 1, cntHousePeople + cntHouseCom + cntHouseFact - 1, Indexs, a, (int.MaxValue, int.MaxValue), MaxVariantsHouses);
+                        }
+                        
+                    }
+                }
+                if (CanRemoveRoads)
+                {
+                    foreach ((int, int) a in addedRoads)
+                    {
+                        List<((int, int), ThingsInCell, List<(int, int)>)> tmp = new List<((int, int), ThingsInCell, List<(int, int)>)>();
+                        tmp.Add((a, ThingsInCell.HousePeople, null));
+                        if (MaxVariantsRoads + MaxVariantsHouses <= total) break;
+                        Hod(ref Positions, tmp, Deep, cntRoads-1, cntHousePeople + cntHouseCom + cntHouseFact+1, Indexs, (int.MaxValue, int.MaxValue), a, MaxVariantsHouses+MaxVariantsRoads);
+
+                    }
+                }
+            }
             Task.WaitAll(tasks.ToArray());
-            PereborWatch.Stop();
-            TOTALTIME += PereborWatch.ElapsedMilliseconds;
-            UnityEngine.Debug.Log("Total variants:" + Convert.ToString(total) + " Time Perebor: " + Convert.ToString(PereborWatch.ElapsedMilliseconds));
-            if (bestEfficienty != -1) grid.CreateNewTile(bestPosition, bestVariant, false);
-            else
-            {
-                UnityEngine.Debug.Log("NO VARIANTS");
-                HODS = 0;
-            }
-            if (bestVariant == ThingsInCell.RoadForCars)
-            {
-                foreach (Vector3Int a in bestRoadsTo)
-                    grid.UniteTiles(a, bestPosition, ThingsInCell.RoadForCars, false);
-                foreach (Vector3Int a in bestRoadsFrom)
-                    grid.UniteTiles(bestPosition, a, ThingsInCell.RoadForCars, false);
-            }
             
-            bestEfficienty = -1;
-            GranRoad.Clear();
-            GranHouse.Clear();
-            MapCopy.Clear();
-            Roads.Clear();
-            Houses.Clear();
-            tasks.Clear();
-            HousesAndRoadsAround.Clear();
-            yield return new WaitForEndOfFrame();
-        }
-        UnityEngine.Debug.Log("TOTAL TIME: " + Convert.ToString(TOTALTIME));
-        yield return null;
-    }
-    private List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> BonusFor((Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>) what)
-    {
-        List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> res = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
-        if (what.Item2 == ThingsInCell.RoadForCars)
-            foreach (Vector3Int PositionGran in GetGrans(what.Item1))
+            hodtime.Stop();
+            //UnityEngine.Debug.Log("TOTAL VARIANTS: " + Convert.ToString(total));
+            //UnityEngine.Debug.Log("Time counting (ms): " + Convert.ToString((float) timepreparing / total));
+            UnityEngine.Debug.Log("Time per variant (ms): " + Convert.ToString((float)hodtime.ElapsedMilliseconds/total) + " Total var: "+ Convert.ToString(total));
+            bestEfficienty = int.MaxValue;
+            int bestvar = -1;
+            for (int i = 0; i < variants.Count; i++)
             {
-               // res.Add(new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>());
-                foreach (ThingsInCell type in Variants)
-                    if (type == ThingsInCell.HouseCom || type == ThingsInCell.HouseFact || type == ThingsInCell.HouseFact)
-                        res.Add((PositionGran, type, null, null));
-                    else if (type == ThingsInCell.RoadForCars)
+                int nowefficiency = variants[i].Item1.Item1;
+                int waymax = variants[i].Item1.Item2;
+                if (bestEfficienty > nowefficiency && nowefficiency != int.MaxValue)
+                {
+                    bestvar = i;
+                    bestEfficienty = nowefficiency;
+                    maxway = waymax;
+                }
+                else if (bestEfficienty == nowefficiency)
+                {
+                    if (waymax < maxway)
                     {
-                        foreach ((List<Vector3Int>, List<Vector3Int>) a in GetRoadsVariants(PositionGran))
-                            res.Add((PositionGran, type, a.Item1, a.Item2));
-                    }
-            }
-        return res;
-    }
-
-    private List<(List<Vector3Int>, List<Vector3Int>)> GetRoadsVariants(Vector3Int Position)
-    {
-        List<(List<Vector3Int>, List<Vector3Int>)> res = new List<(List<Vector3Int>, List<Vector3Int>)>();
-        List<Vector3Int> CanBeRoadsFrom = PositionsRoadAround(Position);
-        int st1 = 1;
-        for (int i = 0; i < CanBeRoadsFrom.Count; i++)
-            st1 *= 2;
-
-        for (int i = 0; i < st1; i++)
-        {
-            int now1 = i;
-            List<Vector3Int> RoadsFrom = new List<Vector3Int>();
-            int pos = 0;
-            List<Vector3Int> CanBeRoadsTo = new List<Vector3Int>();
-            foreach (Vector3Int a in CanBeRoadsFrom)
-            {
-                CanBeRoadsTo.Add(a);
-            }
-            while (now1 != 0)
-            {
-                if (now1 % 2 == 1)
-                {
-                    RoadsFrom.Add(CanBeRoadsFrom[pos]);
-                    CanBeRoadsTo.Remove(CanBeRoadsFrom[pos]);
-                }
-                now1 /= 2;
-                pos++;
-            }
-            int st2 = 1;
-
-            for (int j = 0; j < CanBeRoadsTo.Count; j++)
-            {
-                st2 *= 2;
-            }
-            for (int j = 0; j < st2; j++)
-            {
-                if (i == 0 && j == 0) continue;
-                int now2 = j;
-                List<Vector3Int> RoadsTo = new List<Vector3Int>();
-                int pos2 = 0;
-                while (now2 != 0)
-                {
-                    if (now2 % 2 == 1) RoadsTo.Add(CanBeRoadsTo[pos2]);
-                    now2 /= 2;
-                    pos2++;
-                }
-                res.Add((RoadsFrom, RoadsTo));
-            }
-        }
-        return res;
-    }
-    private void Hod(ref Dictionary<ThingsInCell, List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>> nowdeep, List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd, int deep, List<Vector3Int> PosToadd, 
-        int cntroads, int cnthousePeople, int cnthouseCom, int cnthouseFact)
-    {
-        ThingsInCell whatadd;
-        if (cntroads <= (cnthouseFact + cnthouseCom + cnthousePeople) *1.5)
-        {
-            whatadd = ThingsInCell.RoadForCars;
-            cntroads++;
-        }
-        else if (cnthouseCom <= cnthouseFact && cnthousePeople >= cnthouseCom)
-        {
-            whatadd = ThingsInCell.HouseCom;
-            cnthouseCom++;
-        }
-        else if (cnthouseFact <= cnthouseCom && cnthousePeople >= cnthouseFact)
-        {
-            whatadd = ThingsInCell.HouseFact;
-            cnthouseFact++;
-        }
-        else
-        {
-            whatadd = ThingsInCell.HousePeople;
-            cnthousePeople++;
-        }
-        if (deep == 1 && Deep!=1) whatadd = ThingsInCell.HousePeople;
-        //UnityEngine.Debug.Log(nowdeep[whatadd]);
-        foreach((Vector3Int, List<Vector3Int>, List<Vector3Int>) NowPosition in nowdeep[whatadd])
-        {
-            if (PosToadd.Contains(NowPosition.Item1)) continue;
-
-            TilesToAdd.Add((NowPosition.Item1, whatadd, NowPosition.Item2, NowPosition.Item3));
-            PosToadd.Add(NowPosition.Item1);
-            if (deep == 1)
-            {
-                List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> tilesToAddCopy = new List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>();
-                foreach ((Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>) a in TilesToAdd)
-                    tilesToAddCopy.Add(a);
-                Dictionary<Vector3Int, List<Vector3Int>> RoadsCopy = new Dictionary<Vector3Int, List<Vector3Int>>();
-                Dictionary<Vector3Int, ThingsInCell> HousesCopy = new Dictionary<Vector3Int, ThingsInCell>();
-                Dictionary<Vector3Int, List<Vector3Int>> housesandroadsAroundcopy = new Dictionary<Vector3Int, List<Vector3Int>>();
-                foreach (Vector3Int a in Roads.Keys)
-                {
-                    RoadsCopy.Add(a, new List<Vector3Int>());
-                    foreach (Vector3Int b in Roads[a])
-                        RoadsCopy[a].Add(b);
-                }
-                foreach (Vector3Int a in Houses.Keys)
-                    HousesCopy.Add(a, Houses[a]);
-                foreach(Vector3Int a in HousesAndRoadsAround.Keys)
-                {
-                    List<Vector3Int> Now = new List<Vector3Int>();
-                    housesandroadsAroundcopy.Add(a, Now);
-                    foreach(Vector3Int b in HousesAndRoadsAround[a])
-                    {
-                        Now.Add(b);
-                    }
-                }
-                tasks.Add(Task.Run(() => TestSystem(tilesToAddCopy)));
-                total++;
-            }
-            else
-            {
-                //List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>> nextdeep = new List<List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)>>();
-                //foreach (List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> a in nowdeep) if (!PosToadd.Contains(a[0].Item1)) nextdeep.Add(a);
-                List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> bonus = BonusFor((NowPosition.Item1, whatadd, NowPosition.Item2, NowPosition.Item3));
-                Dictionary<ThingsInCell, List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>> nextdeep = new Dictionary<ThingsInCell, List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>>();
-                foreach (ThingsInCell a in nowdeep.Keys)
-                {
-                    nextdeep.Add(a, new List<(Vector3Int, List<Vector3Int>, List<Vector3Int>)>());
-                    foreach((Vector3Int, List<Vector3Int>, List<Vector3Int>) b in nowdeep[a])
-                    {
-                        nextdeep[a].Add(b);
-                    }
-                }
-                foreach ((Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>) b in bonus) nextdeep[b.Item2].Add((b.Item1, b.Item3, b.Item4));
-                Hod(ref nextdeep, TilesToAdd, deep - 1, PosToadd, cntroads, cnthousePeople, cnthouseCom, cnthouseFact);
-                
-            }
-            TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
-            PosToadd.RemoveAt(PosToadd.Count - 1);
-        }
-    }
-    public List<Vector3Int> PositionsRoadAround(Vector3Int position)
-    {
-        List<Vector3Int> ans = new List<Vector3Int>();
-        for (int i = -1; i < 2; i++)
-        {
-            for (int j = -1; j < 2; j++)
-            {
-                if (Math.Abs(i) + Math.Abs(j) <= 1 && MapCopy.ContainsKey(new Vector3Int(position.x + i, position.y + j, 0)))
-                {
-                    if (MapCopy[new Vector3Int(position.x + i, position.y + j, 0)] == ThingsInCell.RoadForCars)
-                    {
-                        ans.Add(new Vector3Int(position.x + i, position.y + j, 0));
+                        bestvar = i;
+                        bestEfficienty = nowefficiency;
+                        maxway = waymax;
                     }
                 }
             }
-        }
-        return ans;
-    }
-    List<List<Vector3Int>> GetWaysToEachOtherFor2(ref Dictionary<Vector3Int, List<Vector3Int>> roads, ref Dictionary<Vector3Int, ThingsInCell> houses)
-    {
-        List<List<Vector3Int>> ans = new List<List<Vector3Int>>();
-        List<Vector3Int> GetNearTiles(Vector3Int a)
-        {
-            List<Vector3Int> ans2 = new List<Vector3Int>();
-            for (int i = -1; i < 2; i++)
+            int toadd = Deep+1;
+            HODS-= toadd;
+            if (bestvar!=-1)
             {
-                for (int j = -1; j < 2; j++)
+                //addedHouses.Clear();
+                //addedRoads.Clear();
+                if (variants[bestvar].Item3.Item1 != int.MaxValue)
                 {
-                    Vector3Int now = new Vector3Int(a.x + i, a.y + j, a.z);
-                    if ((i != 0 || j != 0) && Math.Abs(i) + Math.Abs(j) <= 1) ans2.Add(now);
+                    ThingsInCell typehouse = grid.GetCell(variants[bestvar].Item3).GetTypeCell();
+                    grid.RemoveHouseAt(variants[bestvar].Item3);
+                    Houses.Remove(variants[bestvar].Item3);
+                    addedHouses.Remove(variants[bestvar].Item3);
+                    MapCopy.Remove(variants[bestvar].Item3);
+                    if (typehouse == ThingsInCell.HousePeople) cntHousePeople--;
+                    if (typehouse == ThingsInCell.HouseCom) cntHouseCom--;
+                    if (typehouse == ThingsInCell.HouseFact) cntHouseFact--;
+                    HODS++;
                 }
-            }
-            return ans2;
-        }
-        List<Vector3Int> HousesInList = new List<Vector3Int>();
-        Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> roadsandWaysFromThem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
-        Dictionary<Vector3Int, List<int>> roadstohouses = new Dictionary<Vector3Int, List<int>>();
-        Dictionary<Vector3Int, List<int>> RoadsWithHouses = new Dictionary<Vector3Int, List<int>>();
-        foreach (Vector3Int a in houses.Keys) HousesInList.Add(a);
-        for (int i = 0; i < HousesInList.Count; i++)
-        {
-            foreach (Vector3Int a in GetNearTiles(HousesInList[i]))
-            {
-                if (roads.ContainsKey(a))
+                if (variants[bestvar].Item4.Item1 != int.MaxValue)
                 {
-                    if (!roadstohouses.ContainsKey(a))
+                    grid.RemoveRoadAt(variants[bestvar].Item4);
+                    foreach((int,int) a in Roads[variants[bestvar].Item4])
                     {
-                        roadstohouses.Add(a, new List<int>());
-                        roadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
-                        RoadsWithHouses.Add(a, new List<int>());
+                        Roads[a].Remove(variants[bestvar].Item4);
                     }
-                    if (!roadstohouses[a].Contains(i))
-                    {
-                        roadstohouses[a].Add(i);
-                        RoadsWithHouses[a].Add(i);
-                        roadsandWaysFromThem[a].Add((i, new List<Vector3Int>() { a }));
-                    }
+                    Roads.Remove(variants[bestvar].Item4);
+                    addedRoads.Remove(variants[bestvar].Item4);
+                    MapCopy.Remove(variants[bestvar].Item4);
+                    if (Grans.Contains(variants[bestvar].Item4)) Grans.Remove(variants[bestvar].Item4);
+                    cntRoads--;
+                    HODS++;
                 }
-            }
-        }
-        foreach (Vector3Int a in roads.Keys)
-        {
-            List<(Vector3Int, List<Vector3Int>)> nowpos = new List<(Vector3Int, List<Vector3Int>)>() { (a, new List<Vector3Int>()) }, newpos = new List<(Vector3Int, List<Vector3Int>)>();
-            List<Vector3Int> Used = new List<Vector3Int>(); ;
-            while (nowpos.Count != 0)
-            {
-                foreach ((Vector3Int, List<Vector3Int>) b in nowpos)
+                foreach (((int, int), ThingsInCell, List<(int, int)>) a in variants[bestvar].Item2)
                 {
-                    Used.Add(b.Item1);
-                    b.Item2.Add(b.Item1);
-                    if (RoadsWithHouses.ContainsKey(b.Item1))
+                    ThingsInCell whatadd=a.Item2;
+                    if (whatadd != ThingsInCell.RoadForCars)
                     {
-                        List<Vector3Int> copy = new List<Vector3Int>();
-                        foreach (Vector3Int c in b.Item2) copy.Add(c);
-                        if (!roadstohouses.ContainsKey(a)) {
-                            roadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
-                            roadstohouses.Add(a, new List<int>());
-                        }
-                        foreach (int c in RoadsWithHouses[b.Item1])
+                        if (cntHouseFact <= cntHouseCom && cntHouseFact <= cntHousePeople) whatadd = ThingsInCell.HouseFact;
+                        else if (cntHouseCom <= cntHouseFact && cntHouseCom <= cntHousePeople) whatadd = ThingsInCell.HouseCom;
+                        else whatadd = ThingsInCell.HousePeople;
+                    }
+                    grid.CreateNewTile(a.Item1, whatadd);
+                    MapCopy.Add(a.Item1, whatadd);
+                    if (whatadd == ThingsInCell.RoadForCars)
+                    {
+                        grid.UniteTiles(a.Item1, a.Item3);
+                        foreach ((int, int) b in a.Item3)
                         {
-                            if (roadstohouses[a].Contains(c)) continue;
-                            roadsandWaysFromThem[a].Add((c, copy));
-                            roadstohouses[a].Add(c);
+                            Roads[b].Add(a.Item1);
                         }
-                    }
-                    foreach (Vector3Int f in roads[b.Item1])
-                    {
-                        if (!Used.Contains(f))
+                        foreach ((int, int) b in a.Item3)
                         {
-                            bool ok = true;
-                            foreach ((Vector3Int, List<Vector3Int>) k in newpos)
-                            {
-                                if (k.Item1 == f) ok = false;
-                            }
-
-                            if (ok)
-                            {
-                                List<Vector3Int> Copy = new List<Vector3Int>();
-                                foreach (Vector3Int l in b.Item2) Copy.Add(l);
-                                newpos.Add((f, Copy));
-                            }
+                            grid.UniteTiles(b, new List<(int, int)>() { a.Item1 });
                         }
-                    }
-                }
-                nowpos.Clear();
-                foreach ((Vector3Int, List<Vector3Int>) b in newpos) nowpos.Add(b);
-                newpos.Clear();
-            }
-        }
-        for (int i = 0; i < HousesInList.Count; i++)
-        {
-            Dictionary<int, List<Vector3Int>> temp = new Dictionary<int, List<Vector3Int>>();
-            foreach (Vector3Int a in GetNearTiles(HousesInList[i]))
-            {
-                if (roads.ContainsKey(a))
-                {
-                    List<(int, List<Vector3Int>)> now = roadsandWaysFromThem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-            }
-            if (temp.Count != houses.Count) return null;
-            foreach (int a in temp.Keys)
-            {
-                if (a != i)
-                    ans.Add(temp[a]);
-            }
-        }
-        return ans;
-    }
-
-    double GetWaysToEachOtherFor1(ref Dictionary<Vector3Int, List<Vector3Int>> bonusroads, ref Dictionary<Vector3Int, ThingsInCell> bonushouses, ref List<Vector3Int> NotChecked,
-        ref Dictionary<Vector3Int, List<Vector3Int>>bonushousesandroadsAround)
-    {
-        List<Vector3Int> HousesInList = new List<Vector3Int>();
-        List<Vector3Int> BonusHousesInList = new List<Vector3Int>();
-        Dictionary<Vector3Int, List<(int, List<Vector3Int>)>> BonusroadsandWaysFromThem = new Dictionary<Vector3Int, List<(int, List<Vector3Int>)>>();
-        Dictionary<Vector3Int, HashSet<int>> Bonusroadstohouses = new Dictionary<Vector3Int, HashSet<int>>();
-        Dictionary<Vector3Int, List<int>> RoadsWithHouses = new Dictionary<Vector3Int, List<int>>();
-        foreach (Vector3Int a in Houses.Keys) HousesInList.Add(a);
-        foreach (Vector3Int a in bonushouses.Keys) BonusHousesInList.Add(a);
-        /*foreach(Vector3Int a in NowSystem.Keys)
-        {
-            roadstohouses.Add(a, new List<int>());
-            roadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
-            foreach((int,List<Vector3Int>) c in NowSystem[a])
-            {
-                roadstohouses[a].Add(c.Item1);
-                roadsandWaysFromThem[a].Add(c);
-            }
-        }*/
-        for (int i = 0; i < HousesInList.Count; i++)
-        {
-            foreach(Vector3Int a in HousesAndRoadsAround[HousesInList[i]])
-            {
-                if (!RoadsWithHouses.ContainsKey(a))
-                {
-                    RoadsWithHouses.Add(a, new List<int>());
-                }
-                RoadsWithHouses[a].Add(i);
-            }
-            if (bonushousesandroadsAround.ContainsKey(HousesInList[i]))
-            {
-                foreach (Vector3Int a in bonushousesandroadsAround[HousesInList[i]])
-                {
-                    if (!RoadsWithHouses.ContainsKey(a))
-                    {
-                        RoadsWithHouses.Add(a, new List<int>());
-                    }
-                    RoadsWithHouses[a].Add(i);
-                }
-            }
-        }
-        for (int i = HousesInList.Count; i < BonusHousesInList.Count+ HousesInList.Count; i++)
-        {
-            foreach (Vector3Int a in bonushousesandroadsAround[BonusHousesInList[i- HousesInList.Count]])
-            {
-                if (!RoadsWithHouses.ContainsKey(a))
-                {
-                    RoadsWithHouses.Add(a, new List<int>());
-                }
-                RoadsWithHouses[a].Add(i);
-            }
-        }
-        //Дома, к которым можно доехать из этой клетки
-        foreach (Vector3Int a in NotChecked)
-        {
-            List<(Vector3Int, List<Vector3Int>)> nowpos = new List<(Vector3Int, List<Vector3Int>)>() { (a, new List<Vector3Int>()) }, newpos = new List<(Vector3Int, List<Vector3Int>)>();
-            List<Vector3Int> Used = new List<Vector3Int>();
-            bool end = false;
-            if (!BonusroadsandWaysFromThem.ContainsKey(a))
-            {
-                BonusroadsandWaysFromThem.Add(a, new List<(int, List<Vector3Int>)>());
-                Bonusroadstohouses.Add(a, new HashSet<int>());
-            }
-            while (nowpos.Count != 0&&!end)
-            {
-                foreach ((Vector3Int, List<Vector3Int>) b in nowpos)
-                {
-                    Used.Add(b.Item1);
-                    b.Item2.Add(b.Item1);
-                    //Добавление маршрута до дома
-                    if (RoadsWithHouses.ContainsKey(b.Item1))
-                    {
-                        List<Vector3Int> copy = new List<Vector3Int>();
-                        foreach (Vector3Int c in b.Item2) copy.Add(c);
-                        foreach (int c in RoadsWithHouses[b.Item1])
-                        {
-                            if (RoadsToHouses.ContainsKey(a)&&RoadsToHouses[a].Contains(c)||Bonusroadstohouses[a].Contains(c)) continue;
-                            BonusroadsandWaysFromThem[a].Add((c, copy));
-                            Bonusroadstohouses[a].Add(c);
-                            if (Bonusroadstohouses[a].Count == Houses.Count + bonushouses.Count) end = true;
-                        }
-                    }
-                    if (Roads.ContainsKey(b.Item1)){
-                        foreach (Vector3Int f in Roads[b.Item1])
-                        {
-                            if (!Used.Contains(f))
-                            {
-                                bool ok = true;
-                                foreach ((Vector3Int, List<Vector3Int>) k in newpos)
-                                {
-                                    if (k.Item1 == f) ok = false;
-                                }
-
-                                if (ok)
-                                {
-                                    List<Vector3Int> Copy = new List<Vector3Int>();
-                                    foreach (Vector3Int l in b.Item2) Copy.Add(l);
-                                    newpos.Add((f, Copy));
-                                }
-                            }
-                        }
-                    }
-                    if (bonusroads.ContainsKey(b.Item1))
-                    {
-                        foreach (Vector3Int f in bonusroads[b.Item1])
-                        {
-                            if (!Used.Contains(f))
-                            {
-                                bool ok = true;
-                                foreach ((Vector3Int, List<Vector3Int>) k in newpos)
-                                {
-                                    if (k.Item1 == f) ok = false;
-                                }
-
-                                if (ok)
-                                {
-                                    List<Vector3Int> Copy = new List<Vector3Int>();
-                                    foreach (Vector3Int l in b.Item2) Copy.Add(l);
-                                    newpos.Add((f, Copy));
-                                }
-                            }
-                        }
-                    }
-                }
-                nowpos.Clear();
-                foreach ((Vector3Int, List<Vector3Int>) b in newpos) nowpos.Add(b);
-                newpos.Clear();
-            }
-        }
-        
-        Dictionary<Vector3Int, List<Vector3Int>> ReverseRoads = new Dictionary<Vector3Int, List<Vector3Int>>();
-        foreach(Vector3Int a in Roads.Keys)
-        {
-            foreach(Vector3Int b in Roads[a])
-            {
-                if (!ReverseRoads.ContainsKey(b)) ReverseRoads.Add(b, new List<Vector3Int>());
-                ReverseRoads[b].Add(a);
-            }
-        }
-        foreach(Vector3Int a in bonusroads.Keys)
-        {
-            foreach (Vector3Int b in bonusroads[a])
-            {
-                if (!ReverseRoads.ContainsKey(b)) ReverseRoads.Add(b, new List<Vector3Int>());
-                ReverseRoads[b].Add(a);
-            }
-        }
-        //Дома, куда можно доехать благодаря этой клетки
-        foreach (Vector3Int a in NotChecked)
-        {
-            List<(Vector3Int, int, List<Vector3Int>)> nowpos = new List<(Vector3Int, int, List<Vector3Int>)>(), newpos = new List<(Vector3Int, int, List<Vector3Int>)>();
-            if (ReverseRoads.ContainsKey(a))
-            {
-                if (RoadsToHouses.ContainsKey(a))
-                {
-                    foreach ((int, List<Vector3Int>) b in NowSystem[a])
-                    {
-                        foreach (Vector3Int k in ReverseRoads[a])
-                            nowpos.Add((k, b.Item1, b.Item2));
-                    }
-                }
-                if (Bonusroadstohouses.ContainsKey(a))
-                {
-                    foreach ((int, List<Vector3Int>) b in BonusroadsandWaysFromThem[a])
-                    {
-                        foreach (Vector3Int k in ReverseRoads[a])
-                            nowpos.Add((k, b.Item1, b.Item2));
-                    }
-                }
-            }
-            
-            while (nowpos.Count != 0)
-            {
-                foreach((Vector3Int, int, List<Vector3Int>) k in nowpos)
-                {
-                    List<Vector3Int> copy = new List<Vector3Int>();
-                    foreach (Vector3Int f in k.Item3) copy.Add(f);
-                    copy.Insert(0, k.Item1);
-                    if (RoadsToHouses.ContainsKey(k.Item1)&&!RoadsToHouses[k.Item1].Contains(k.Item2))
-                    {
-                        if (!Bonusroadstohouses.ContainsKey(k.Item1))
-                        {
-                            Bonusroadstohouses.Add(k.Item1, new HashSet<int>());
-                            BonusroadsandWaysFromThem.Add(k.Item1, new List<(int, List<Vector3Int>)>());
-                        }
-                        if (!Bonusroadstohouses[k.Item1].Contains(k.Item2))
-                        {
-                            Bonusroadstohouses[k.Item1].Add(k.Item2);
-                            BonusroadsandWaysFromThem[k.Item1].Add((k.Item2, copy));
-                            if (ReverseRoads.ContainsKey(k.Item1))
-                            {
-                                foreach (Vector3Int f in ReverseRoads[k.Item1])
-                                {
-                                    newpos.Add((f, k.Item2, copy));
-                                }
-                            }
-                        }
+                        Roads.Add(a.Item1, a.Item3);
+                        addedRoads.Add(a.Item1);
+                        cntRoads++;
+                        
                     }
                     else
                     {
-                        int index = 0;
-                        bool ok = true;
-                        if (BonusroadsandWaysFromThem.ContainsKey(k.Item1))
-                        {
-                            int index1 = 0;
-                            foreach((int, List<Vector3Int>) f in BonusroadsandWaysFromThem[k.Item1])
-                            {
-                                if (f.Item1 == k.Item2)
-                                {
-                                    if (f.Item2.Count > copy.Count)
-                                    {
-                                        BonusroadsandWaysFromThem[k.Item1][index1] = (f.Item1, copy);
-                                    }
-                                    ok = false;
-                                    break;
-                                }
-                                index1++;
-                            }
-                        }
-                        if (ok&&NowSystem.ContainsKey(k.Item1))
-                        {
-                            foreach ((int, List<Vector3Int>) f in NowSystem[k.Item1])
-                            {
-                                if (f.Item1 == k.Item2)
-                                {
-                                    if (f.Item2.Count > copy.Count)
-                                    {
-                                        if (!BonusroadsandWaysFromThem.ContainsKey(k.Item1))
-                                        {
-                                            BonusroadsandWaysFromThem.Add(k.Item1, new List<(int, List<Vector3Int>)>());
-                                            Bonusroadstohouses.Add(k.Item1, new HashSet<int>());
-                                        }
-                                        BonusroadsandWaysFromThem[k.Item1].Add((f.Item1, copy));
-                                        Bonusroadstohouses[k.Item1].Add(f.Item1);
-                                    }
-                                    break;
-                                }
-                                index++;
-                            }
-                        }
+                        addedHouses.Add(a.Item1);
+                        Houses.Add(a.Item1, whatadd);
+                        if (whatadd == ThingsInCell.HouseCom) cntHouseCom++;
+                        if (whatadd == ThingsInCell.HouseFact) cntHouseFact++;
+                        if (whatadd == ThingsInCell.HousePeople) cntHousePeople++;
                     }
                 }
-
-                nowpos.Clear();
-                foreach ((Vector3Int, int, List<Vector3Int>) s in newpos) nowpos.Add(s);
-                newpos.Clear();
+                foreach (((int, int), ThingsInCell, List<(int, int)>) a in variants[bestvar].Item2)
+                {
+                    if (a.Item2 == ThingsInCell.RoadForCars)
+                    {
+                        if (Grans.Contains(a.Item1) && !IsGran(a.Item1)) Grans.Remove(a.Item1);
+                        else if (!Grans.Contains(a.Item1) && IsGran(a.Item1)) Grans.Add(a.Item1);
+                    }
+                    foreach ((int, int) b in GetNearTiles(a.Item1))
+                    {
+                        if (Grans.Contains(b) && !IsGran(b)) Grans.Remove(b);
+                    }
+                }
+                foreach ((int, int) b in GetNearTiles(variants[bestvar].Item3))
+                {
+                    if (!Grans.Contains(b) && IsGran(b) && Roads.ContainsKey(b)) Grans.Add(b);
+                }
             }
+            else HODS = 0;
+            
+            tasks.Clear();
+            
+            yield return new WaitForEndOfFrame();
+            
         }
-         List<Dictionary<Vector3Int,int>> ways = new List<Dictionary<Vector3Int, int>>();
-         int ans = 0,total=0;
-         for(int i =0; i<HousesInList.Count;i++)
-         {
-             Dictionary<int, List<Vector3Int>> temp = new Dictionary<int, List<Vector3Int>>();
-             foreach (Vector3Int a in HousesAndRoadsAround[HousesInList[i]])
-             {  
-                if (BonusroadsandWaysFromThem.ContainsKey(a))
-                {
-                    List<(int, List<Vector3Int>)> now = BonusroadsandWaysFromThem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-                if (NowSystem.ContainsKey(a))
-                {
-                    List<(int, List<Vector3Int>)> now = NowSystem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-             }
-             if (bonushousesandroadsAround.ContainsKey(HousesInList[i]))
-            {
-                foreach (Vector3Int a in bonushousesandroadsAround[HousesInList[i]])
-                {
-                    List<(int, List<Vector3Int>)> now = BonusroadsandWaysFromThem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-            }
-             if (temp.Count != Houses.Count+bonushouses.Count)
-                return -1f;
-             foreach (int a in temp.Keys)
-             {
-                 if (a != i)
-                 {
-                     total++;
-                     List<Vector3Int> b = temp[a];
-                     for (int j = 0; j < b.Count; j++)
-                     {
-                         if (ways.Count > j && ways[j].ContainsKey(b[j]))
-                         {
-                             ans += ways[j][b[j]];
-                             ways[j][b[j]]++;
-                         }
-                         else if (ways.Count <= j)
-                         {
-                             ways.Add(new Dictionary<Vector3Int, int>());
-                             ways[j].Add(b[j], 1);
-                         }
-                         else
-                         {
-                             ways[j].Add(b[j], 1);
-                         }
-                     }
-                 }
-             }
-         }
-        for (int i = 0; i < BonusHousesInList.Count; i++)
-        {
-            Dictionary<int, List<Vector3Int>> temp = new Dictionary<int, List<Vector3Int>>();
-            foreach (Vector3Int a in bonushousesandroadsAround[BonusHousesInList[i]])
-            {
-                if (BonusroadsandWaysFromThem.ContainsKey(a))
-                {
-                    List<(int, List<Vector3Int>)> now = BonusroadsandWaysFromThem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-                if (NowSystem.ContainsKey(a))
-                {
-                    List<(int, List<Vector3Int>)> now = NowSystem[a];
-                    foreach ((int, List<Vector3Int>) b in now)
-                    {
-                        if (!temp.ContainsKey(b.Item1)) temp.Add(b.Item1, b.Item2);
-                        else if (temp[b.Item1].Count > b.Item2.Count) temp[b.Item1] = b.Item2;
-                    }
-                }
-            }
-            if (temp.Count != Houses.Count + bonushouses.Count) return -1f;
-            foreach (int a in temp.Keys)
-            {
-                if (a != i)
-                {
-                    total++;
-                    List<Vector3Int> b = temp[a];
-                    for (int j = 0; j < b.Count; j++)
-                    {
-                        if (ways.Count > j && ways[j].ContainsKey(b[j]))
-                        {
-                            ans += ways[j][b[j]];
-                            ways[j][b[j]]++;
-                        }
-                        else if (ways.Count <= j)
-                        {
-                            ways.Add(new Dictionary<Vector3Int, int>());
-                            ways[j].Add(b[j], 1);
-                        }
-                        else
-                        {
-                            ways[j].Add(b[j], 1);
-                        }
-                    }
-                }
-            }
-        }
-        return (double)ans/ways.Count;
+        UnityEngine.Debug.Log("TOTAL TIME: " + Convert.ToString(TOTALTIME));
+        houseControlles.CanSpawn = true;
+        humanController.CanMove = true;
+        yield return null;
     }
-
-    private void TestSystem(List<(Vector3Int, ThingsInCell, List<Vector3Int>, List<Vector3Int>)> TilesToAdd)
+    
+    private List<List<(int, int)>> GetRoadsVariants((int, int) Position, List<(int,int)>RoadsAround)
     {
-        Dictionary<Vector3Int, List<Vector3Int>> BonusRoads = new Dictionary<Vector3Int, List<Vector3Int>>();
-        Dictionary<Vector3Int, ThingsInCell> BonusHouses = new Dictionary<Vector3Int, ThingsInCell>();
-        Dictionary<Vector3Int, List<Vector3Int>> BonushousesandroadsAround = new Dictionary<Vector3Int, List<Vector3Int>>();
-        List<Vector3Int> tocheck = new List<Vector3Int>();
-        for (int f = 0; f < TilesToAdd.Count; f++)
+        List<List< (int, int) >> res = new List<List<(int, int)>>();
+        for (int i = 0; i < RoadsAround.Count; i++)
         {
-            Vector3Int NowPosition = TilesToAdd[f].Item1;
-            if (TilesToAdd[f].Item2 == ThingsInCell.RoadForCars)
+            int cnt = res.Count;
+            for (int j = 0; j < cnt; j++)
             {
+                res.Add(new List<(int, int)>());
+                foreach ((int, int) a in res[j]) res[res.Count - 1].Add(a);
+                res[res.Count - 1].Add(RoadsAround[i]);
+            }
+            res.Add(new List<(int, int)>() { RoadsAround[i] });
+        }
+        return res;
+    }
+    private void Hod(ref Dictionary<ThingsInCell, List<(int, int)>> Positions, List<((int,int), ThingsInCell, List<(int,int)>)>TilesToAdd, int deep,
+        int cntroads, int cntHouses, Dictionary<ThingsInCell, int> Indexs, (int,int)housetoremove, (int,int) roadtoremove, int MaxVariants)
+    {
+        if (deep == 0)
+        {
+            if (Positions[ThingsInCell.HousePeople].Count>Deep)
+            {
+                List<((int, int), ThingsInCell, List<(int, int)>)> tilestoaddnew = new List<((int, int), ThingsInCell, List<(int, int)>)>();
+               
+                for (int i = 0; i < TilesToAdd.Count; i++)
+                {
+                    //if (TilesToAdd[i].Item2 == ThingsInCell.RoadForCars && TilesToAdd[i].Item3 == null) UnityEngine.Debug.LogError("");
+                    tilestoaddnew.Add(TilesToAdd[i]);
+                }
+                variants.Add(((int.MaxValue, int.MaxValue), tilestoaddnew, (int.MaxValue, int.MaxValue), (int.MaxValue, int.MaxValue)));
+                int tmp = total;
+                //TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp);
+                tasks.Add(Task.Run(() => TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp)));
+                total++;
                 
-                BonusRoads.Add(NowPosition, new List<Vector3Int>());
-                foreach (Vector3Int a in TilesToAdd[f].Item3)
-                    BonusRoads[NowPosition].Add(a);
-                foreach (Vector3Int a in TilesToAdd[f].Item4)
-                    if (BonusRoads.ContainsKey(a)) BonusRoads[a].Add(NowPosition);
-                    else BonusRoads.Add(a, new List<Vector3Int>() { NowPosition });
-                if (!tocheck.Contains(NowPosition)) 
-                    tocheck.Add(NowPosition);
-                List<Vector3Int> ans2 = new List<Vector3Int>();
-                ans2.Add(new Vector3Int(NowPosition.x - 1, NowPosition.y,0));
-                ans2.Add(new Vector3Int(NowPosition.x +1, NowPosition.y,0));
-                ans2.Add(new Vector3Int(NowPosition.x, NowPosition.y-1,0));
-                ans2.Add(new Vector3Int(NowPosition.x, NowPosition.y+1,0));
-                foreach (Vector3Int a in ans2)
-                    if (Houses.ContainsKey(a) || BonusHouses.ContainsKey(a)) {
-                        if (BonushousesandroadsAround.ContainsKey(a)) BonushousesandroadsAround[a].Add(NowPosition);
-                        else BonushousesandroadsAround.Add(a, new List<Vector3Int>() { NowPosition });
+            }
+            return;
+        }
+        ThingsInCell whatadd;
+        
+        if (cntroads <= cntHouses * k) whatadd = ThingsInCell.RoadForCars;
+        else  whatadd = ThingsInCell.HousePeople;
+
+        List<(int,int)> GetEmptyTiles((int, int)pos){
+            List<(int, int)> ans = new List<(int, int)>();
+            for (int x = -1; x < 2; x += 2)
+            {
+                (int, int) tmp = (pos.Item1 + x, pos.Item2);
+                if (!Roads.ContainsKey(tmp) && !Houses.ContainsKey(tmp))
+                {
+                    bool notok = false;
+                    for (int j = 0; j < TilesToAdd.Count; j++)
+                    {
+                        if (TilesToAdd[j].Item1 == pos)
+                        {
+                            notok = true;
+                            break;
+                        }
                     }
+                    if (notok) continue;
+                    ans.Add(tmp);
+                }
+            }
+            for (int y = -1; y < 2; y += 2)
+            {
+                (int, int) tmp = (pos.Item1, pos.Item2 + y);
+                if (!Roads.ContainsKey(tmp) && !Houses.ContainsKey(tmp))
+                {
+                    bool notok = false;
+                    for (int j = 0; j < TilesToAdd.Count; j++)
+                    {
+                        if (TilesToAdd[j].Item1 == pos)
+                        {
+                            notok = true;
+                            break;
+                        }
+                    }
+                    if (notok) continue;
+                    ans.Add(tmp);
+                }
+            }
+
+            return ans;
+        }
+        int save = Indexs[whatadd];
+        for (int i = Indexs[whatadd]; i < Positions[whatadd].Count; i++)
+        {
+            if (total >= MaxVariants) return;
+            Indexs[whatadd] = i + 1;
+            (int, int) Position = Positions[whatadd][i];
+            bool notok = false;
+            for (int j = 0; j < TilesToAdd.Count; j++)
+            {
+                if (TilesToAdd[j].Item1 == Position)
+                {
+                    notok = true;
+                    break;
+                }
+            }
+            if (notok) continue;
+            if (whatadd == ThingsInCell.RoadForCars)
+            {
+                int cnt = 0;
+                foreach ((int, int) b in GetEmptyTiles(Position))
+                {
+                    if (!Positions[ThingsInCell.HousePeople].Contains(b))
+                    {
+                        Positions[ThingsInCell.HousePeople].Add(b);
+                        Positions[ThingsInCell.RoadForCars].Add(b);
+                        cnt++;
+                    }
+                }
+                
+                foreach (List<(int, int)> a in GetRoadsVariants(Position, GetRoadsAround(Position, TilesToAdd, roadtoremove)))
+                {
+                    TilesToAdd.Add((Position, ThingsInCell.RoadForCars, a));
+
+                    Hod(ref Positions, TilesToAdd, deep - 1, cntroads + 1, cntHouses, Indexs, housetoremove, roadtoremove, MaxVariants);
+                    
+                    TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
+                    if (total >= MaxVariants) break;
+                }
+                for (int j = 0; j < cnt; j++)
+                {
+                    Positions[ThingsInCell.HousePeople].RemoveAt(Positions[ThingsInCell.HousePeople].Count - 1);
+                    Positions[ThingsInCell.RoadForCars].RemoveAt(Positions[ThingsInCell.RoadForCars].Count - 1);
+                }
             }
             else
             {
-                BonusHouses.Add(TilesToAdd[f].Item1, TilesToAdd[f].Item2);
-                List<Vector3Int> NearRoads = new List<Vector3Int>();
-                BonushousesandroadsAround.Add(TilesToAdd[f].Item1, NearRoads);
-                List<Vector3Int> ans2 = new List<Vector3Int>();
-                ans2.Add(new Vector3Int(NowPosition.x - 1, NowPosition.y, 0));
-                ans2.Add(new Vector3Int(NowPosition.x + 1, NowPosition.y, 0));
-                ans2.Add(new Vector3Int(NowPosition.x, NowPosition.y - 1, 0));
-                ans2.Add(new Vector3Int(NowPosition.x, NowPosition.y + 1, 0));
-                foreach (Vector3Int a in ans2) if (Roads.ContainsKey(a)||BonusRoads.ContainsKey(a))
-                {
-                    if (!tocheck.Contains(a))
-                            tocheck.Add(a);
-                    NearRoads.Add(a);
-                }
+                TilesToAdd.Add((Position, whatadd, null));
+                cntHouses++;
+
+                Hod(ref Positions, TilesToAdd, deep - 1, cntroads, cntHouses, Indexs, housetoremove, roadtoremove, MaxVariants);
+                
+                cntHouses--;
+                TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
             }
+            if (total >= MaxVariants) return;
         }
-        double nowEfficiency = GetWaysToEachOtherFor1(ref BonusRoads, ref BonusHouses, ref tocheck, ref BonushousesandroadsAround);
-       // UnityEngine.Debug.Log(nowEfficiency);
-        if (nowEfficiency != -1f)
+        Indexs[whatadd] = save;
+
+    }
+
+    List<(int,int)> GetRoadsAround((int, int) position, List<((int, int), ThingsInCell, List<(int, int)>)> TilesToAdd, (int,int)roadtoremove)
+    {
+        List<(int, int)> RoadsAround = new List<(int, int)>();
+        for (int x = -1; x < 2; x += 2)
         {
-            if (bestEfficienty == nowEfficiency && nowEfficiency != -1)
+            (int, int) tmp = (position.Item1 + x, position.Item2);
+            if (tmp != roadtoremove)
             {
-                if (bestVariant == ThingsInCell.RoadForCars)
+                if (Roads.ContainsKey(tmp))
                 {
-                    if (bestRoadsFrom.Count + bestRoadsTo.Count > TilesToAdd[0].Item3.Count + TilesToAdd[0].Item4.Count)
+                    RoadsAround.Add(tmp);
+                }
+                else
+                {
+                    foreach (((int, int), ThingsInCell, List<(int, int)>) a in TilesToAdd)
                     {
-                        bestPosition = TilesToAdd[0].Item1;
-                        bestVariant = TilesToAdd[0].Item2;
-                        bestRoadsFrom = TilesToAdd[0].Item3;
-                        bestRoadsTo = TilesToAdd[0].Item4;
+                        if (a.Item1 == tmp && a.Item2 == ThingsInCell.RoadForCars)
+                        {
+                            RoadsAround.Add(tmp);
+                            continue;
+                        }
                     }
                 }
             }
-            else if (bestEfficienty == -1 || bestEfficienty > nowEfficiency)
+        }
+        for (int y = -1; y < 2; y += 2)
+        {
+            (int, int) tmp = (position.Item1, position.Item2 + y);
+            if (tmp != roadtoremove)
             {
-                bestEfficienty = nowEfficiency;
-                bestPosition = TilesToAdd[0].Item1;
-                bestVariant = TilesToAdd[0].Item2;
-                bestRoadsFrom = TilesToAdd[0].Item3;
-                bestRoadsTo = TilesToAdd[0].Item4;
+                if (Roads.ContainsKey(tmp))
+                {
+                    RoadsAround.Add(tmp);
+                }
+                else
+                {
+                    foreach (((int, int), ThingsInCell, List<(int, int)>) a in TilesToAdd)
+                    {
+                        if (a.Item1 == tmp && a.Item2 == ThingsInCell.RoadForCars)
+                        {
+                            RoadsAround.Add(tmp);
+                            continue;
+                        }
+                    }
+                }
             }
         }
+        return RoadsAround;
+    }
+    
+    
+    private void TestSystem(List<((int, int), ThingsInCell, List<(int, int)>)> TilesToAdd, (int,int)housetoremove, (int, int) roadtoremove, int number)
+    {
+        Dictionary<(int, int), HashSet<(int, int)>> newroads = new Dictionary<(int, int), HashSet<(int, int)>>();
+        List<(int, int)> newhouses = new List<(int, int)>();
+        Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWays = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
+        int newlength = 0, eco = 0, newwaymax = 0;
+        if (housetoremove.Item1 != int.MaxValue)
+        {
+            eco+= RemoveHouse(housetoremove);
+        }
+        if (roadtoremove.Item1 != int.MaxValue)
+        {
+            newwaymax = RemoveRoad(roadtoremove, newroads, newWays, housetoremove);
+            if (newwaymax==-1)return;
+        }
+        int cntnewroads = 0;
+        foreach (((int, int), ThingsInCell, List<(int, int)>) b in TilesToAdd)
+        {
+            if (b.Item2 == ThingsInCell.RoadForCars)
+            {
+                cntnewroads++;
+                newroads.Add(b.Item1, new HashSet<(int, int)>());
+                foreach ((int, int) c in b.Item3)
+                {
+                    newroads[b.Item1].Add(c);
+                    if (!newroads.ContainsKey(c)) newroads.Add(c, new HashSet<(int, int)>());
+                    newroads[c].Add(b.Item1);
+                }
+                
+                eco+=AddWaysFromRoad(b.Item1, newhouses, newroads, newWays, housetoremove, roadtoremove);
+            }
+            else
+            {
+                newhouses.Add(b.Item1);
+                int t = AddWaysFromHouse(b.Item1, newroads, newWays, roadtoremove, cntnewroads);
+                if (t == -1) return;
+                newlength += t;
+                newwaymax = Math.Max(t, newwaymax);
+            }
+        }
+        
+        (int, int) nowefficiency = (newlength-eco, newwaymax);
+        bestEfficienty = Math.Min(nowefficiency.Item1, bestEfficienty);
+        variants[number] = (nowefficiency, TilesToAdd, housetoremove, roadtoremove);
+    }
+    
+    
+    
+    
+    List<(int,int)>GetNearTiles((int,int) position)
+    {
+        List<(int, int)> ans = new List<(int, int)>();
+        ans.Add((position.Item1 + 1, position.Item2));
+        ans.Add((position.Item1 - 1, position.Item2));
+        ans.Add((position.Item1, position.Item2 + 1));
+        ans.Add((position.Item1, position.Item2 - 1));
+        return ans;
+    }
+    /// <summary>
+    /// Добавляет в граф путей новый дом
+    /// </summary>
+    /// <param name="position">Позиция дома</param>
+    /// <param name="Roads">Граф дорог</param>
+    /// <param name="WaysFromRoadsToHouses">Граф города</param>
+    /// <returns>Возвращает максимальный маршрут</returns>
+    private int AddWaysFromHouse((int, int) position, Dictionary<(int, int), HashSet<(int, int)>> newRoads, Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWaysFromRoadsToHouses, (int, int) roadtoremove, int cntnewroads)
+    {
+        HashSet<(int, int)> nowpos = new HashSet<(int, int)>(), newpos = new HashSet<(int, int)>();
+        HashSet<(int, int)> usedRoads = new HashSet<(int, int)>();
+        
+        int timer = 1;
+        int ans = 0;
+        foreach ((int, int) a in GetNearTiles(position))
+        {
+            if (a == roadtoremove) continue;
+            if (Roads.ContainsKey(a)||newRoads.ContainsKey(a))
+            {
+                nowpos.Add(a);
+                if (!newWaysFromRoadsToHouses.ContainsKey(a)) newWaysFromRoadsToHouses.Add(a, new Dictionary<(int, int), ((int, int), int)>());
+                newWaysFromRoadsToHouses[a][position] = (position, 1);
+                ans++;
+                usedRoads.Add(a);
+            }
+        }
+        
+        while (nowpos.Count != 0)
+        {
+            timer++;
+            foreach ((int, int) a in nowpos)
+            {
+                //Продолжили движение по дороге
+                if (Roads.ContainsKey(a)&&a!=roadtoremove)
+                {
+                    foreach ((int, int) b in Roads[a])
+                    {
+                        if (!usedRoads.Contains(b)&&b!=roadtoremove)
+                        {
+                            if (!newWaysFromRoadsToHouses.ContainsKey(b))
+                                newWaysFromRoadsToHouses.Add(b, new Dictionary<(int, int), ((int, int), int)>());
+                            newWaysFromRoadsToHouses[b][position] = (a, timer);
+                            usedRoads.Add(b);
+                            newpos.Add(b);
+                        }
+                    }
+                }
+                if (newRoads.ContainsKey(a)&&a!=roadtoremove)
+                {
+                    foreach((int, int) b in newRoads[a])
+                    {
+                        if (!usedRoads.Contains(b)&&b!=roadtoremove)
+                        {
+                            if (!newWaysFromRoadsToHouses.ContainsKey(b))
+                                newWaysFromRoadsToHouses.Add(b, new Dictionary<(int, int), ((int, int), int)>());
+                            newWaysFromRoadsToHouses[b][position] = (a, timer);
+                            usedRoads.Add(b);
+                            newpos.Add(b);
+                            ans += timer;
+                        }
+                    }
+                }
+            }
+            nowpos.Clear();
+            foreach ((int, int) b in newpos) nowpos.Add(b);
+            newpos.Clear();
+        }
+        //UnityEngine.Debug.Log(Convert.ToString(usedRoads.Count) + ' ' + Convert.ToString(newRoads.Count + Roads.Count - (roadtoremove.Item1 == int.MaxValue ? 0 : 1)));
+        return usedRoads.Count== cntnewroads + Roads.Count-(roadtoremove.Item1==int.MaxValue?0:1)?ans:-1;
+    }
+    /// <summary>
+    /// Добавляет новую дорогу в граф
+    /// </summary>
+    /// <param name="position">Позиция дороги</param>
+    /// <param name="Houses">Позиции домов</param>
+    /// <param name="Roads">Граф дорог</param>
+    /// <param name="WaysFromRoadsToHouses">Граф города</param>
+    /// <returns>Возвращает "экономию" расстояния между домами</returns>
+    private int AddWaysFromRoad((int, int) position, List<(int,int)> newHouses, Dictionary<(int,int), HashSet<(int,int)>> newRoads, Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWaysFromRoadsToHouses, (int,int)housetoremove, (int, int) roadtoremove)
+    {
+        //ДОМА ВОКРУГ ДОРОГИ
+        Dictionary<(int, int), ((int, int), int)> dictposition;
+        dictposition = new Dictionary<(int, int), ((int, int), int)>();
+        newWaysFromRoadsToHouses.Add(position, dictposition);
+
+        foreach ((int, int) a in GetNearTiles(position))
+        {
+            if (a != housetoremove)
+            {
+                if (Houses.ContainsKey(a))
+                {
+                    dictposition[a] = (a, 1);
+                }
+                else if (newHouses.Contains(a))
+                {
+                    dictposition[a] = (a, 1);
+                }
+            }
+        }
+
+        //ДОРОГИ ВОКРУГ ТАЙЛА
+        //Перезаписываем все дома в этот тайл  
+        foreach ((int, int) b in newRoads[position])
+        {
+            if (b == roadtoremove) continue;
+            Dictionary<(int, int), ((int, int), int)> dictbNEW, dictbOLD;
+            if (newWaysFromRoadsToHouses.ContainsKey(b))
+            {
+                dictbNEW = newWaysFromRoadsToHouses[b];
+                foreach ((int, int) c in dictbNEW.Keys)
+                {
+                    if (c != housetoremove)
+                    {
+                        if (!dictposition.ContainsKey(c))
+                        {
+                            dictposition.Add(c, (b, dictbNEW[c].Item2 + 1));
+                        }
+                        else if (dictposition[c].Item2 > dictbNEW[c].Item2 + 1)
+                        {
+                            dictposition[c] = (b, dictbNEW[c].Item2 + 1);
+                        }
+                    }
+                }
+            }
+            if (WaysFromRoadsToHouses.ContainsKey(b))
+            {
+                dictbOLD = WaysFromRoadsToHouses[b];
+                foreach ((int, int) c in dictbOLD.Keys)
+                {
+                    if (c != housetoremove)
+                    {
+                        if (!dictposition.ContainsKey(c))
+                        {
+                            dictposition.Add(c, (b, dictbOLD[c].Item2 + 1));
+                        }
+                        else if (dictposition[c].Item2 > dictbOLD[c].Item2 + 1)
+                        {
+                            dictposition[c] = (b, dictbOLD[c].Item2 + 1);
+                        }
+                    }
+                }
+            }
+            
+        }
+        
+        //ПЕРЕСТРОЕНИЕ ГРАФА И РАССЧЁТ ЭКОНОМИИ
+        int ans = 0;
+        foreach ((int, int) a in newRoads[position])
+        {
+            if (a == roadtoremove) continue;
+            HashSet<(int, int)> housesskipped = new HashSet<(int, int)>();
+            List<((int, int), int)> housesneedtochange = new List<((int, int), int)>();//Дома, которые надо перезаписать, при помощи поиска в глубину
+            if (newWaysFromRoadsToHouses.ContainsKey(a))
+            {
+                Dictionary<(int, int), ((int, int), int)> dicta = newWaysFromRoadsToHouses[a];
+                foreach ((int, int) house in dictposition.Keys)
+                {
+                    if (!dicta.ContainsKey(house))
+                    {
+                        housesneedtochange.Add((house, dictposition[house].Item2 + 1));
+                    }
+                    else if (dicta[house].Item2 > dictposition[house].Item2 + 1)
+                    {
+                        housesneedtochange.Add((house, dictposition[house].Item2 + 1));
+                        ans += dicta[house].Item2 - dictposition[house].Item2 - 1;
+                    }
+                    housesskipped.Add(house);
+                }
+            }
+            if (WaysFromRoadsToHouses.ContainsKey(a)) {
+                Dictionary<(int, int), ((int, int), int)> dicta = WaysFromRoadsToHouses[a];
+                foreach ((int, int) house in dictposition.Keys)
+                {
+                    if (!housesskipped.Contains(house))
+                    {
+                        if (!dicta.ContainsKey(house))
+                        {
+                            housesneedtochange.Add((house, dictposition[house].Item2 + 1));
+                        }
+                        else if (dicta[house].Item2 > dictposition[house].Item2 + 1)
+                        {
+                            housesneedtochange.Add((house, dictposition[house].Item2 + 1));
+                            ans += dicta[house].Item2 - dictposition[house].Item2 - 1;
+                        }
+                    }
+                }
+            }
+
+
+
+            //Запускаем обход в глубину, перезаписывая те дома, которые необходимо
+            /*if (housesneedtochange.Count != 0)
+            {
+                for (int i = 0; i < housesneedtochange.Count; i++)
+                {
+                    (int, int) nowhouse = housesneedtochange[i].Item1;
+                    HashSet<(int, int)> nowpositions = new HashSet<(int, int)>(), nextpositions = new HashSet<(int, int)>();
+                    nowpositions.Add(position);
+                    int timer = dictposition[nowhouse].Item2;
+                    while (nowpositions.Count != 0)
+                    {
+                        timer++;
+                        foreach ((int, int) f in nowpositions)
+                        {
+                            if (Roads.ContainsKey(f))
+                                foreach ((int, int) m in Roads[f])
+                                {
+
+                                    Dictionary<(int, int), ((int, int), int)> dictm;
+                                    if (!newWaysFromRoadsToHouses.ContainsKey(m))
+                                    {
+                                        dictm = new Dictionary<(int, int), ((int, int), int)>();
+                                        newWaysFromRoadsToHouses.Add(m, new Dictionary<(int, int), ((int, int), int)>());
+                                    }
+                                    else dictm = newWaysFromRoadsToHouses[m];
+                                    if (!dictm.ContainsKey(nowhouse) || dictm[nowhouse].Item2 > timer)
+                                    {
+                                        nextpositions.Add(m);
+                                        if (!dictm.ContainsKey(nowhouse)) dictm.Add(nowhouse, (f, timer));
+                                        else dictm[nowhouse] = (f, timer);
+                                    }
+                                }
+                            if (newRoads.ContainsKey(f))
+                            {
+                                foreach ((int, int) m in newRoads[f])
+                                {
+
+                                    Dictionary<(int, int), ((int, int), int)> dictm;
+                                    if (!newWaysFromRoadsToHouses.ContainsKey(m))
+                                    {
+                                        dictm = new Dictionary<(int, int), ((int, int), int)>();
+                                        newWaysFromRoadsToHouses.Add(m, new Dictionary<(int, int), ((int, int), int)>());
+                                    }
+                                    else dictm = newWaysFromRoadsToHouses[m];
+                                    if (!dictm.ContainsKey(nowhouse) || dictm[nowhouse].Item2 > timer)
+                                    {
+                                        nextpositions.Add(m);
+                                        if (!dictm.ContainsKey(nowhouse)) dictm.Add(nowhouse, (f, timer));
+                                        else dictm[nowhouse] = (f, timer);
+                                    }
+                                }
+                            }
+                        }
+                        nowpositions.Clear();
+                        foreach ((int, int) f in nextpositions) nowpositions.Add(f);
+                        nextpositions.Clear();
+                    }
+                }
+            }*/
+        }
+        return ans;
+    }
+    private int RemoveHouse((int, int) position)
+    {
+        int ans = 0;
+        foreach((int,int) a in Roads.Keys)
+        {
+            if(WaysFromRoadsToHouses[a].ContainsKey(position)) ans += WaysFromRoadsToHouses[a][position].Item2;
+        }
+        return ans;
+    }
+    private int RemoveRoad((int,int) position, Dictionary<(int, int), HashSet<(int, int)>> newRoads, Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> newWaysFromRoadsToHouses, (int, int) housetoremove)
+    {
+        HashSet<(int, int)> housesneedtorec = new HashSet<(int, int)>();
+        foreach ((int, int) a in Roads[position])
+        {
+            foreach ((int, int) b in WaysFromRoadsToHouses[a].Keys)
+            {
+                if (b!=housetoremove&&WaysFromRoadsToHouses[a][b].Item1 == position) housesneedtorec.Add(b);
+            }
+        }
+        int ans = 0;
+        foreach ((int, int) z in housesneedtorec)
+        {
+            int t = AddWaysFromHouse(z, newRoads, newWaysFromRoadsToHouses, position, 0);
+            
+            if (t == -1) return -1;
+            foreach ((int, int) a in Roads.Keys) ans += WaysFromRoadsToHouses[a][z].Item2;
+            ans -= t;
+        }
+        return ans;
+    }
+    private bool checkSystem(List<(int, int)> newHouses, Dictionary<(int, int), HashSet<(int, int)>> newRoads, (int, int) housetoremove, (int,int)roadtoremove)
+    {
+        Dictionary<(int, int), List<(int, int)>> housesAround = new Dictionary<(int, int), List<(int, int)>>();
+        int cnth = 0, cntr = 0;
+        foreach((int,int) a in Roads.Keys)
+        {
+            if (a != roadtoremove)
+            {
+                housesAround.Add(a, new List<(int, int)>());
+                foreach((int,int) b in GetNearTiles(a))
+                {
+                    if (b != housetoremove)
+                        if (Houses.ContainsKey(b)||newHouses.Contains(b)) housesAround[a].Add(b);
+                }
+            }
+        }
+        foreach ((int, int) a in newRoads.Keys)
+        {
+            if (!housesAround.ContainsKey(a))
+            {
+                housesAround.Add(a, new List<(int, int)>());
+                foreach ((int, int) b in GetNearTiles(a))
+                {
+                    if (b != housetoremove)
+                        if (Houses.ContainsKey(b) || newHouses.Contains(b)) housesAround[a].Add(b);
+                }
+            }
+        }
+        HashSet<(int, int)> nowpositions = new HashSet<(int, int)>() { Roads.First().Key }, newpositions = new HashSet<(int, int)>();
+        HashSet<(int, int)> reached = new HashSet<(int, int)>(), usedroads=  new HashSet<(int, int)>() { Roads.First().Key };
+        while (nowpositions.Count != 0)
+        {
+            foreach((int,int) a in nowpositions)
+            {
+                if (a == roadtoremove) continue;
+                cntr++;
+                foreach ((int,int) b in housesAround[a])
+                {
+                    if (!reached.Contains(b))
+                    {
+                        cnth++;
+                        reached.Add(b);
+                    }
+                }
+                if (Roads.ContainsKey(a)){
+                    foreach ((int, int) b in Roads[a])
+                    {
+                        if (!usedroads.Contains(b))
+                        {
+                            usedroads.Add(b);
+                            newpositions.Add(b);
+                        }
+                    }
+                }
+                if (newRoads.ContainsKey(a))
+                {
+                    foreach ((int, int) b in newRoads[a])
+                    {
+                        if (!usedroads.Contains(b))
+                        {
+                            usedroads.Add(b);
+                            newpositions.Add(b);
+                        }
+                    }
+                }
+            }
+            nowpositions.Clear();
+            foreach ((int, int) a in newpositions) nowpositions.Add(a);
+            newpositions.Clear();
+        }
+
+        return cnth == newHouses.Count + Houses.Count - (housetoremove.Item1!=int.MaxValue ? 1 : 0) && cntr == housesAround.Count;
     }
 }
