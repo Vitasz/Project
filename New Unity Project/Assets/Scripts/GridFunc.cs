@@ -6,10 +6,12 @@ using System.Linq;
 using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using System.Diagnostics;
+using UnityEngine.UI;
 public class GridFunc : MonoBehaviour
 {
     public int Lines = 2;
     public HouseControlles houseControlles;
+    
     public Camera nowCamera;
     public Tilemap tilemap;
     public Clock clock;
@@ -280,9 +282,9 @@ public class GridFunc : MonoBehaviour
             }
         }
     }
-    public void Optimize()
+    public void Optimize(int deep, float K, int hods, bool canrHouses, bool canrRoads)
     {
-        a.Optimization(this);
+        a.Optimization(this, deep, K, hods, canrHouses, canrRoads);
     }
     public void RemoveHouseAt((int,int) position)
     {

@@ -39,9 +39,13 @@ public class OptimizationAlgorithm : MonoBehaviour
             MapCopy.ContainsKey((position.Item1 + 1, position.Item2)) &&
             MapCopy.ContainsKey((position.Item1, position.Item2 + 1)));
     }
-    public void Optimization(GridFunc grid)
+    public void Optimization(GridFunc grid, int deep, float K, int hods, bool canRhouses, bool canRroads)
     {
-
+        Deep = deep;
+        k = K;
+        HODS = hods;
+        CanRemoveHouses = canRhouses;
+        CanRemoveRoads = canRroads;
         StartCoroutine(F(grid));
     }
     IEnumerator F(GridFunc grid)

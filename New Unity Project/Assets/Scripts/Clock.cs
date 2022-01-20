@@ -30,6 +30,6 @@ public class Clock : MonoBehaviour
         {
             totalwaittime+=a.UpdateWaitTime();
         }
-        efficiency = totalwaittime / grid.Roads.Count;
+        efficiency = grid.Roads.Count / totalwaittime;
     }
 }
