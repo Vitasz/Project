@@ -8,7 +8,7 @@ using UnityEngine.Tilemaps;
 using System.Diagnostics;
 public class GridFunc : MonoBehaviour
 {
-    public int Lines = 1;
+    public int Lines = 2;
     public HouseControlles houseControlles;
     public Camera nowCamera;
     public Tilemap tilemap;
