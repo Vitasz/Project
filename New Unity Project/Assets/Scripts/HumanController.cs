@@ -35,8 +35,9 @@ public class HumanController : MonoBehaviour
                         while (true)
                         {
                             HumanFunctionality nowHuman = tryedMovedHuman[tryedMovedHuman.Count - 1];
-
-                            if (nowHuman.CanMove() == null)
+                            HumanFunctionality nowHumanCanMove = nowHuman.CanMove();
+                            
+                            if (nowHumanCanMove == null)
                             {
                                 for (int j = tryedMovedHuman.Count - 1; j >= 0; j--)
                                 {
@@ -49,9 +50,9 @@ public class HumanController : MonoBehaviour
                             }
                             else
                             {
-                                if (tryedMovedHuman.Contains(nowHuman.CanMove()))
+                                if (nowHuman!= nowHumanCanMove && tryedMovedHuman.Contains(nowHumanCanMove))
                                 {
-                                    int lastind = tryedMovedHuman.IndexOf(nowHuman.CanMove());
+                                    int lastind = tryedMovedHuman.IndexOf(nowHumanCanMove);
                                     for (int j = tryedMovedHuman.Count - 1; j >= lastind; j--)
                                     {
                                         Vector3 from, to;
@@ -63,9 +64,9 @@ public class HumanController : MonoBehaviour
                                 }
                                 else
                                 {
-                                    tryedMovedHuman.Add(nowHuman.CanMove());
+                                    tryedMovedHuman.Add(nowHumanCanMove);
                                     if (tryedMoved[tryedMovedHuman[tryedMovedHuman.Count - 1]]) break;
-                                    tryedMoved[nowHuman.CanMove()] = true;
+                                    tryedMoved[nowHumanCanMove] = true;
                                 }
                             }
                         }

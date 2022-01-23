@@ -18,6 +18,8 @@ public class CellWithRoad : Cell
     public int throughput = 1;
     Dictionary<(float, float), List<(float, float)>> RoadsInCell = new Dictionary<(float, float), List<(float, float)>>();
     Dictionary<(float,float), HumanFunctionality> humansInCell = new Dictionary<(float, float), HumanFunctionality>();
+    List<int> trafficLights = new List<int>() ;
+    int nowLight = 0, nowsec=0;
     public CellWithRoad(GridFunc grid, (int, int) position, ThingsInCell type, int Lines) : base(grid, position, type) {
 
         GetCellPosition();
@@ -111,6 +113,7 @@ public class CellWithRoad : Cell
         {
             humansInCell.Add(a, null);
         }
+
     }
     public void RemoveRoad((int, int) to)
     {
@@ -124,6 +127,7 @@ public class CellWithRoad : Cell
                 if (roadsfromCellOnIndex[i] == 1) name += '1';
                 else name += '0';
             }
+            trafficLights.Remove(GetIndexNearCell(to));
         }
         UpdateTile();
     }
@@ -141,6 +145,7 @@ public class CellWithRoad : Cell
                     if (roadsfromCellOnIndex[i] == 1) name += '1';
                     else name += '0';
                 }
+                trafficLights.Add(GetIndexNearCell(to));
             }
         }
         UpdateTile();
@@ -429,7 +434,16 @@ public class CellWithRoad : Cell
         color.b = Mathf.Lerp(from.b, to.b, percents);
         grid.tilemap.SetColor(tmp, color);
     }
-    public HumanFunctionality CanMove((float,float) position) => humansInCell[position];
+    public HumanFunctionality CanMove((float, float) position, (int, int) prevCell, HumanFunctionality human, int index)
+    {
+        //if (GetIndexNearCell(prevCell) == -1) Debug.LogError("ERROR");
+        //if (roadsFromCell.Count > 2&&index==throughput&& trafficLights[nowLight]!=GetIndexNearCell(prevCell))
+        //{
+        //    return human;
+        //}
+        //else
+        return humansInCell[position];
+    }
     public void MoveToThis(HumanFunctionality who, (float, float) position)
     {
         humansInCell[position] = who;
@@ -445,6 +459,14 @@ public class CellWithRoad : Cell
     }
     public float UpdateWaitTime()
     {
+        nowsec++;
+        if (nowsec == 5)
+        {
+            nowsec = 0;
+            nowLight++;
+            nowLight %= trafficLights.Count;
+            //Debug.Log("NEXT: " + Convert.ToString(nowLight));
+        }
         EmptyLastFrames.Add(humansNow / ((roadsFromCell.Count*2+4)*throughput));
         humansInCelllast100frames += humansNow / ((roadsFromCell.Count * 2 + 4) * throughput);
         if (EmptyLastFrames.Count > 15)

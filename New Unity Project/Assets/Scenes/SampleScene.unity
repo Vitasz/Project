@@ -4444,13 +4444,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 72d38224a0fdf334b90f88b6cb9e9439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Deep: 4
+  Deep: 1
   k: 1.05
   CanRemoveHouses: 1
   CanRemoveRoads: 1
-  HODS: 1000
-  MaxVariantsHouses: 100
-  MaxVariantsRoads: 100
+  HODS: 10000
+  MaxVariantsHouses: 1
+  MaxVariantsRoads: 1
   houseControlles: {fileID: 1414301251}
   humanController: {fileID: 1916703569}
 --- !u!4 &1809316478

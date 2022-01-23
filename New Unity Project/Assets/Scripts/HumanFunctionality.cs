@@ -83,7 +83,7 @@ public class HumanFunctionality : MonoBehaviour
         if (positionInCell + 1 < wayInCell.Count)
         {
             CellWithRoad nowCell = grid.Roads[way[nowposition]];
-            if (nowCell.CanMove(wayInCell[positionInCell + 1]) != null)
+            /*if (nowCell.CanMove(wayInCell[positionInCell + 1]) != null)
             {
                 List<(float, float)> maybeway = nowCell.GetWayFromPositionInTheCell(wayInCell[positionInCell], way[nowposition + 1]);
                 if (maybeway != null)
@@ -93,8 +93,8 @@ public class HumanFunctionality : MonoBehaviour
                     return null;
                 }
             }
-            
-            return nowCell.CanMove(wayInCell[positionInCell + 1]);
+            */
+            return nowCell.CanMove(wayInCell[positionInCell + 1], way[nowposition-1], this, positionInCell+1);
         }
         else if (nowposition + 2 < way.Count)
         {
@@ -104,7 +104,7 @@ public class HumanFunctionality : MonoBehaviour
             {
                 transform.localScale = new Vector3(0.25f / nowCell.throughput, 0.25f / nowCell.throughput, 0);
                 List<(float,float)> nextway = nowCell.GetWayInTheCell(way[nowposition], way[nowposition + 2]);
-                return nowCell.CanMove(nextway[0]);
+                return nowCell.CanMove(nextway[0], way[nowposition], this, 0);
             }
             else return null;
         }

@@ -125,12 +125,12 @@ public class OptimizationAlgorithm : MonoBehaviour
                     foreach ((int, int) a in addedHouses)
                     {
                        
-                        foreach (List<(int, int)> b in GetRoadsVariants(a, GetRoadsAround(a, new List<((int, int), ThingsInCell, List<(int, int)>)>(), (int.MaxValue, int.MaxValue))))
-                        {
+                        //foreach (List<(int, int)> b in GetRoadsVariants(a, GetRoadsAround(a, new List<((int, int), ThingsInCell, List<(int, int)>)>(), (int.MaxValue, int.MaxValue))))
+                       // {
                             List<((int, int), ThingsInCell, List<(int, int)>)> tmp = new List<((int, int), ThingsInCell, List<(int, int)>)>();
-                            tmp.Add((a, ThingsInCell.RoadForCars, b));
+                            tmp.Add((a, ThingsInCell.RoadForCars, GetRoadsAround(a, new List<((int, int), ThingsInCell, List<(int, int)>)>(), (int.MaxValue, int.MaxValue))));
                             Hod(ref Positions, tmp, Deep, cntRoads + 1, cntHousePeople + cntHouseCom + cntHouseFact - 1, Indexs, a, (int.MaxValue, int.MaxValue), MaxVariantsHouses);
-                        }
+                       // }
                         
                     }
                 }
@@ -386,16 +386,16 @@ public class OptimizationAlgorithm : MonoBehaviour
                     }
                 }
                 
-                foreach (List<(int, int)> a in GetRoadsVariants(Position, GetRoadsAround(Position, TilesToAdd, roadtoremove)))
-                {
-                    TilesToAdd.Add((Position, ThingsInCell.RoadForCars, a));
+               // foreach (List<(int, int)> a in GetRoadsVariants(Position, GetRoadsAround(Position, TilesToAdd, roadtoremove)))
+              //  {
+                    TilesToAdd.Add((Position, ThingsInCell.RoadForCars, GetRoadsAround(Position, TilesToAdd, roadtoremove)));
 
                     Hod(ref Positions, TilesToAdd, deep - 1, cntroads + 1, cntHouses, Indexs, housetoremove, roadtoremove, MaxVariants);
                     
                     TilesToAdd.RemoveAt(TilesToAdd.Count - 1);
                     if (total >= MaxVariants) break;
-                }
-                for (int j = 0; j < cnt; j++)
+              //  }
+               for (int j = 0; j < cnt; j++)
                 {
                     Positions[ThingsInCell.HousePeople].RemoveAt(Positions[ThingsInCell.HousePeople].Count - 1);
                     Positions[ThingsInCell.RoadForCars].RemoveAt(Positions[ThingsInCell.RoadForCars].Count - 1);
