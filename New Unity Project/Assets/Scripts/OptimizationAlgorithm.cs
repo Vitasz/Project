@@ -20,7 +20,7 @@ public class OptimizationAlgorithm : MonoBehaviour
     Dictionary<(int, int), ThingsInCell> Houses = new Dictionary<(int, int), ThingsInCell>();
     Dictionary<(int,int), ThingsInCell> MapCopy = new Dictionary<(int, int), ThingsInCell>();
     
-    HashSet<(int, int)> Grans = new HashSet<(int, int)>();
+    List<(int, int)> Grans = new List<(int, int)>();
     Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>> WaysFromRoadsToHouses = new Dictionary<(int, int), Dictionary<(int, int), ((int, int), int)>>();
     HashSet<(int, int)> addedHouses = new HashSet<(int, int)>();
     HashSet<(int, int)> addedRoads = new HashSet<(int, int)>();
@@ -304,8 +304,8 @@ public class OptimizationAlgorithm : MonoBehaviour
                 }
                 variants.Add(((int.MaxValue, int.MaxValue), tilestoaddnew, (int.MaxValue, int.MaxValue), (int.MaxValue, int.MaxValue)));
                 int tmp = total;
-                //TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp);
-                tasks.Add(Task.Run(() => TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp)));
+                TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp);
+                //tasks.Add(Task.Run(() => TestSystem(tilestoaddnew, housetoremove, roadtoremove, tmp)));
                 total++;
                 
             }

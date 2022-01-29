@@ -311,6 +311,21 @@ public class Generator : MonoBehaviour
                         cntHousePeople++;
                     }
                     Houses.Add(Position, whatadd);
+                    grid.CreateNewTile(Position, whatadd);
+                    foreach((int,int) a in Roads.Keys)
+                    {
+                        if (!grid.Roads.ContainsKey(a))
+                        {
+                            grid.CreateNewTile(a, ThingsInCell.RoadForCars);
+                            grid.UniteTiles(a, Roads[a]);
+                            foreach ((int, int) b in Roads[a])
+                            {
+                                grid.UniteTiles(b, new List<(int, int)>() { a });
+                            }
+                        }
+                        
+                    }
+                    yield return new WaitForEndOfFrame();
                     GetBonusPositions(Position);
                     foreach ((int, int) c in newRoads)
                     {
@@ -340,7 +355,7 @@ public class Generator : MonoBehaviour
         Stopwatch timeVisible = new Stopwatch();
         timeVisible.Start();
         
-        foreach ((int, int) a in Houses.Keys)
+       /* foreach ((int, int) a in Houses.Keys)
         {
             grid.CreateNewTile(a, Houses[a]);
         }
@@ -352,7 +367,7 @@ public class Generator : MonoBehaviour
         {
             List<(int, int)> RoadsCell = Roads[a];
             grid.UniteTiles(a, RoadsCell);
-        }
+        }*/
         timeVisible.Stop();
         UnityEngine.Debug.Log("TIME DRAW: " + Convert.ToString(timeVisible.ElapsedMilliseconds));
         yield return null;

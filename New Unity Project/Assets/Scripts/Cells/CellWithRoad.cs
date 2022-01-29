@@ -459,14 +459,6 @@ public class CellWithRoad : Cell
     }
     public float UpdateWaitTime()
     {
-        nowsec++;
-        if (nowsec == 5)
-        {
-            nowsec = 0;
-            nowLight++;
-            nowLight %= trafficLights.Count;
-            //Debug.Log("NEXT: " + Convert.ToString(nowLight));
-        }
         EmptyLastFrames.Add(humansNow / ((roadsFromCell.Count*2+4)*throughput));
         humansInCelllast100frames += humansNow / ((roadsFromCell.Count * 2 + 4) * throughput);
         if (EmptyLastFrames.Count > 15)

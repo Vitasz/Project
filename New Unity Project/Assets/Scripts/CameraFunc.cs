@@ -8,10 +8,10 @@ public class CameraFunc : MonoBehaviour
     private bool isMouseDragging;
     Vector3 targetPosition=new Vector3(0,0,-100), startPosition;
     private float cameraSpeed = 3f, progressMove = 0;
-    private float zoomSpeed = 5f, zoomMultiplayer = 10, progressZoom;
+    private float zoomSpeed = 2f, zoomMultiplayer = 3, progressZoom;
     private float zoomInCellRedactor = 5f;
     [Range(2f, 100f)]
-    private float nowZoom = 50, startZoom = 50;
+    private float nowZoom = 10, startZoom = 10;
     public Camera thisCamera;
     private void Update()
     {

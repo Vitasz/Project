@@ -613,7 +613,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   grid: {fileID: 1591633984}
   r: 1
-  N: 100
+  N: 50
   MinimumRoads: 1
 --- !u!4 &290494461
 Transform:
@@ -1470,7 +1470,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 50
+  orthographic size: 10
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -3792,7 +3792,7 @@ MonoBehaviour:
   HumanPrefab: {fileID: 11567934722639218, guid: 1e7de2f36331d044cb8abf1bc99fcaee, type: 3}
   clock: {fileID: 1573902187}
   humanController: {fileID: 1916703569}
-  CanSpawn: 1
+  CanSpawn: 0
 --- !u!1 &1573902183
 GameObject:
   m_ObjectHideFlags: 0
@@ -4449,8 +4449,8 @@ MonoBehaviour:
   CanRemoveHouses: 1
   CanRemoveRoads: 1
   HODS: 10000
-  MaxVariantsHouses: 1
-  MaxVariantsRoads: 1
+  MaxVariantsHouses: 100
+  MaxVariantsRoads: 100
   houseControlles: {fileID: 1414301251}
   humanController: {fileID: 1916703569}
 --- !u!4 &1809316478
