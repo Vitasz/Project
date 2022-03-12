@@ -11,7 +11,7 @@ public class GridFunc : MonoBehaviour
 {
     public int Lines = 2;
     public HouseControlles houseControlles;
-    
+    public Generator generator;
     public Camera nowCamera;
     public Tilemap tilemap;
     public Clock clock;
@@ -26,6 +26,7 @@ public class GridFunc : MonoBehaviour
     private int ModeRedactor = 0;
     Vector3Int prevpositionClick = new Vector3Int(), nowpositionClick = new Vector3Int();
     private bool hasfirstclick = false;
+    public bool generatorActive = false;
     private void Update()
     {
         if (!EventSystem.current.IsPointerOverGameObject() && Input.GetMouseButtonDown(0))
@@ -44,7 +45,14 @@ public class GridFunc : MonoBehaviour
             }
         }
     }
- 
+    public void GenerateCity(int N)
+    {
+        if (!generatorActive)
+        {
+            generatorActive = true;
+            StartCoroutine(generator.GenerateCity(N, Map));
+        }
+    }
     public void SetMode(ThingsInCell mode)
     {
         ModeRedactor = (int)mode;

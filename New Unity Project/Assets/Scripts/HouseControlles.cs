@@ -34,7 +34,7 @@ public class HouseControlles : MonoBehaviour
         HumansInHouses.Add(house, new List<HumanFunctionality>());
         if (type == ThingsInCell.HousePeople)
         {
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
             {
                 AddHuman();
             }
