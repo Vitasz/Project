@@ -203,12 +203,43 @@ public class Generator : MonoBehaviour
                 if ((Map[position] as CellWithHouse).GetTypeCell() == ThingsInCell.HouseFact) cntHouseFact++;
                 Houses.Add(position, (Map[position] as CellWithHouse).GetTypeCell());
             }
-            else if (Map[position] is CellWithRoad)
+        }
+        if (Houses.Keys.Count != 0)
+        {
+            (int, int) startposition = Houses.Keys.First();
+            foreach ((int, int) position in Houses.Keys)
             {
-                GetBonusPositionsForRoad(position);
-                Roads.Add(position, (Map[position] as CellWithRoad).GetNearRoadsWays());
+                if (position != startposition)
+                {
+                    bool ok = CreateRoadsBetweenHouses(position, startposition);
+                    if (ok)
+                    {
+                        foreach ((int, int) a in Roads.Keys)
+                        {
+                            if (!grid.Roads.ContainsKey(a))
+                            {
+                                grid.CreateNewTile(a, ThingsInCell.RoadForCars);
+                                grid.UniteTiles(a, Roads[a]);
+                                foreach ((int, int) b in Roads[a])
+                                {
+                                    grid.UniteTiles(b, new List<(int, int)>() { a });
+                                }
+                            }
+
+                        }
+                        yield return new WaitForEndOfFrame();
+                        GetBonusPositions(position);
+                        foreach ((int, int) c in newRoads)
+                        {
+                            GetBonusPositionsForRoad(c);
+                            canBePositions.Remove(c);
+                            wasPositions.Add(c);
+                        }
+                    }
+                }
             }
         }
+
         if (canBePositions.Count == 0)
         {
             Houses.Add((0, 0), ThingsInCell.HousePeople);
@@ -216,6 +247,19 @@ public class Generator : MonoBehaviour
             GetBonusPositions((0, 0));
             cntHousePeople++;
         }
+
+        foreach ((int, int) position in Map.Keys)
+        {
+            wasPositions.Add(position);
+            canBePositions.Remove(position);
+            if (!Roads.ContainsKey(position) && Map[position] is CellWithRoad)
+            {
+                Roads.Add(position, (Map[position] as CellWithRoad).GetNearRoadsWays());
+            }
+        }
+
+
+
         long totalct = 0;
         while (Count!=0)
         {
