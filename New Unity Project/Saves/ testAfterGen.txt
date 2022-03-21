@@ -1,0 +1,306 @@
+0 -1 HouseCom
+1 0 cellwithroad 3 1 -1 2 0 0 0 
+1 -1 cellwithroad 2 1 0 1 -2 
+2 -2 HouseFact
+1 -2 cellwithroad 3 1 -1 0 -2 1 -3 
+2 -1 HousePeople
+3 0 HouseCom
+2 0 cellwithroad 2 1 0 2 1 
+-1 0 HousePeople
+0 -2 cellwithroad 2 1 -2 -1 -2 
+-1 -2 cellwithroad 3 0 -2 -1 -1 -1 -3 
+-1 -1 cellwithroad 2 -1 -2 -2 -1 
+4 1 HouseFact
+2 1 cellwithroad 3 2 0 3 1 2 2 
+3 1 cellwithroad 1 2 1 
+-2 -2 HousePeople
+4 -1 HouseCom
+1 -3 cellwithroad 2 1 -2 2 -3 
+2 -3 cellwithroad 2 1 -3 3 -3 
+3 -3 cellwithroad 3 2 -3 3 -2 3 -4 
+3 -2 cellwithroad 3 3 -3 3 -1 4 -2 
+3 -1 cellwithroad 1 3 -2 
+3 2 HousePeople
+4 -3 HouseFact
+-2 -3 HousePeople
+-1 -3 cellwithroad 2 -1 -2 -1 -4 
+-2 1 HouseCom
+-2 -1 cellwithroad 3 -1 -1 -2 0 -3 -1 
+-2 0 cellwithroad 2 -2 -1 -3 0 
+-3 -3 HousePeople
+-3 -1 cellwithroad 3 -2 -1 -3 -2 -4 -1 
+-3 -2 cellwithroad 2 -3 -1 -4 -2 
+2 3 HouseFact
+2 2 cellwithroad 2 2 1 1 2 
+5 1 HousePeople
+4 -2 cellwithroad 2 3 -2 5 -2 
+5 -2 cellwithroad 4 4 -2 5 -1 5 -3 6 -2 
+5 -1 cellwithroad 3 5 -2 5 0 6 -1 
+5 0 cellwithroad 2 5 -1 6 0 
+3 4 HouseCom
+1 2 cellwithroad 2 2 2 1 3 
+1 3 cellwithroad 2 1 2 1 4 
+1 4 cellwithroad 3 1 3 2 4 0 4 
+2 4 cellwithroad 2 1 4 2 5 
+6 2 HousePeople
+6 0 cellwithroad 2 5 0 6 1 
+6 1 cellwithroad 2 6 0 7 1 
+5 -4 HouseFact
+5 -3 cellwithroad 2 5 -2 6 -3 
+3 3 HousePeople
+2 5 cellwithroad 3 2 4 3 5 1 5 
+3 5 cellwithroad 3 2 5 4 5 3 6 
+4 5 cellwithroad 2 3 5 4 4 
+4 4 cellwithroad 3 4 5 4 3 5 4 
+4 3 cellwithroad 2 4 4 5 3 
+-2 -4 HouseCom
+-1 -4 cellwithroad 2 -1 -3 -1 -5 
+2 -4 HousePeople
+0 5 HouseFact
+1 5 cellwithroad 2 2 5 1 6 
+4 -4 HousePeople
+3 -4 cellwithroad 2 3 -3 3 -5 
+4 -5 HouseCom
+3 -5 cellwithroad 2 3 -4 2 -5 
+4 0 HousePeople
+6 3 HouseFact
+5 3 cellwithroad 1 4 3 
+-1 4 HousePeople
+0 4 cellwithroad 1 1 4 
+4 6 HouseCom
+-4 -3 HousePeople
+-4 -2 cellwithroad 2 -3 -2 -5 -2 
+3 -6 HouseFact
+0 0 cellwithroad 2 1 0 0 1 
+0 1 cellwithroad 2 0 0 -1 1 
+-1 1 cellwithroad 2 0 1 -1 2 
+-3 -5 HousePeople
+-1 -5 cellwithroad 3 -1 -4 -2 -5 -1 -6 
+-2 -5 cellwithroad 1 -1 -5 
+0 -5 HousePeople
+7 4 HouseCom
+5 4 cellwithroad 2 4 4 6 4 
+6 4 cellwithroad 2 5 4 6 5 
+0 -6 HousePeople
+-1 -6 cellwithroad 3 -1 -5 -1 -7 -2 -6 
+-1 5 HouseFact
+1 6 cellwithroad 2 1 5 0 6 
+0 6 cellwithroad 3 1 6 -1 6 0 7 
+-1 6 cellwithroad 2 0 6 -2 6 
+1 -7 HousePeople
+-1 -7 cellwithroad 2 -1 -6 0 -7 
+0 -7 cellwithroad 2 -1 -7 0 -8 
+2 -7 HouseCom
+2 -5 cellwithroad 2 3 -5 2 -6 
+2 -6 cellwithroad 1 2 -5 
+7 5 HousePeople
+6 5 cellwithroad 2 6 4 6 6 
+4 7 HouseFact
+3 6 cellwithroad 2 3 5 3 7 
+3 7 cellwithroad 2 3 6 3 8 
+8 3 HousePeople
+7 1 cellwithroad 2 6 1 7 2 
+7 2 cellwithroad 3 7 1 7 3 8 2 
+7 3 cellwithroad 1 7 2 
+5 -5 HouseCom
+6 -3 cellwithroad 2 5 -3 6 -4 
+6 -4 cellwithroad 2 6 -3 6 -5 
+6 -5 cellwithroad 2 6 -4 6 -6 
+-1 -8 HousePeople
+5 2 HouseFact
+2 7 HousePeople
+8 4 HouseCom
+8 2 cellwithroad 2 7 2 9 2 
+9 2 cellwithroad 4 8 2 9 3 10 2 9 1 
+9 3 cellwithroad 2 9 2 9 4 
+9 4 cellwithroad 3 9 3 9 5 10 4 
+1 7 HousePeople
+1 -5 HouseFact
+1 8 HousePeople
+0 7 cellwithroad 3 0 6 0 8 -1 7 
+0 8 cellwithroad 2 0 7 -1 8 
+-3 1 HouseCom
+-3 0 cellwithroad 2 -2 0 -4 0 
+7 6 HousePeople
+6 6 cellwithroad 2 6 5 5 6 
+6 7 HouseFact
+-2 7 HousePeople
+-1 7 cellwithroad 1 0 7 
+2 -8 HouseCom
+0 -8 cellwithroad 2 0 -7 1 -8 
+1 -8 cellwithroad 2 0 -8 1 -9 
+0 2 HousePeople
+3 -9 HouseFact
+1 -9 cellwithroad 3 1 -8 2 -9 0 -9 
+2 -9 cellwithroad 2 1 -9 2 -10 
+5 8 HousePeople
+3 8 cellwithroad 3 3 7 4 8 3 9 
+4 8 cellwithroad 1 3 8 
+-4 1 HouseCom
+-4 0 cellwithroad 2 -3 0 -5 0 
+-2 8 HousePeople
+-1 8 cellwithroad 1 0 8 
+-2 2 HouseFact
+-1 2 cellwithroad 1 -1 1 
+1 -10 HousePeople
+8 1 HouseCom
+7 -3 HousePeople
+4 9 HouseFact
+4 -10 HousePeople
+2 -10 cellwithroad 2 2 -9 3 -10 
+3 -10 cellwithroad 2 2 -10 3 -11 
+1 -4 HouseCom
+10 3 HousePeople
+3 10 HouseFact
+3 9 cellwithroad 2 3 8 2 9 
+5 -11 HousePeople
+3 -11 cellwithroad 3 3 -10 4 -11 3 -12 
+4 -11 cellwithroad 1 3 -11 
+-5 -1 HouseCom
+-4 -1 cellwithroad 1 -3 -1 
+7 -2 HousePeople
+6 -2 cellwithroad 1 5 -2 
+7 0 HouseFact
+3 11 HousePeople
+2 9 cellwithroad 2 3 9 2 10 
+2 10 cellwithroad 2 2 9 2 11 
+2 11 cellwithroad 2 2 10 2 12 
+4 12 HouseCom
+2 12 cellwithroad 4 2 11 3 12 2 13 1 12 
+3 12 cellwithroad 1 2 12 
+-5 -3 HousePeople
+-5 -2 cellwithroad 2 -4 -2 -6 -2 
+7 8 HouseFact
+9 5 cellwithroad 3 9 4 9 6 10 5 
+9 6 cellwithroad 2 9 5 9 7 
+9 7 cellwithroad 4 9 6 9 8 10 7 8 7 
+9 8 cellwithroad 3 9 7 8 8 10 8 
+8 8 cellwithroad 2 9 8 8 9 
+11 4 HousePeople
+10 4 cellwithroad 1 9 4 
+12 5 HouseCom
+10 5 cellwithroad 2 9 5 11 5 
+11 5 cellwithroad 2 10 5 11 6 
+3 -8 HousePeople
+6 -6 cellwithroad 3 6 -5 6 -7 5 -6 
+6 -7 cellwithroad 2 6 -6 6 -8 
+6 -8 cellwithroad 3 6 -7 5 -8 6 -9 
+5 -8 cellwithroad 2 6 -8 4 -8 
+4 -8 cellwithroad 1 5 -8 
+10 6 HouseFact
+-3 8 HousePeople
+-2 6 cellwithroad 3 -1 6 -3 6 -2 5 
+-3 6 cellwithroad 2 -2 6 -3 7 
+-3 7 cellwithroad 2 -3 6 -4 7 
+11 2 HouseCom
+10 2 cellwithroad 1 9 2 
+2 -12 HousePeople
+3 -12 cellwithroad 3 3 -11 3 -13 4 -12 
+-6 -1 HouseFact
+-6 -2 cellwithroad 3 -5 -2 -6 -3 -7 -2 
+6 -10 HousePeople
+6 -9 cellwithroad 1 6 -8 
+-4 -6 HouseCom
+-2 -6 cellwithroad 2 -1 -6 -3 -6 
+-3 -6 cellwithroad 2 -2 -6 -3 -7 
+-5 -5 HousePeople
+-6 -3 cellwithroad 2 -6 -2 -6 -4 
+-6 -4 cellwithroad 2 -6 -3 -6 -5 
+-6 -5 cellwithroad 2 -6 -4 -6 -6 
+-5 -4 HouseFact
+-7 -1 HousePeople
+-7 -2 cellwithroad 2 -6 -2 -8 -2 
+4 -13 HouseCom
+3 -13 cellwithroad 2 3 -12 2 -13 
+-5 -7 HousePeople
+-6 -6 cellwithroad 2 -6 -5 -6 -7 
+-6 -7 cellwithroad 2 -6 -6 -7 -7 
+1 9 HouseFact
+1 10 HousePeople
+-6 0 HouseCom
+-5 0 cellwithroad 1 -4 0 
+1 13 HousePeople
+2 13 cellwithroad 1 2 12 
+5 10 HouseFact
+8 9 cellwithroad 2 8 8 8 10 
+8 10 cellwithroad 2 8 9 7 10 
+7 10 cellwithroad 2 8 10 6 10 
+6 10 cellwithroad 3 7 10 6 11 6 9 
+5 7 HousePeople
+5 6 cellwithroad 1 6 6 
+6 -12 HouseCom
+4 -12 cellwithroad 2 3 -12 5 -12 
+5 -12 cellwithroad 2 4 -12 5 -13 
+3 -14 HousePeople
+4 -15 HouseFact
+5 -13 cellwithroad 2 5 -12 5 -14 
+5 -14 cellwithroad 2 5 -13 5 -15 
+5 -15 cellwithroad 1 5 -14 
+8 -1 HousePeople
+6 -1 cellwithroad 2 5 -1 7 -1 
+7 -1 cellwithroad 1 6 -1 
+11 7 HouseCom
+10 7 cellwithroad 1 9 7 
+-7 -5 HousePeople
+1 -12 HouseFact
+2 -13 cellwithroad 2 3 -13 1 -13 
+1 -13 cellwithroad 2 2 -13 1 -14 
+-2 4 HousePeople
+-2 5 cellwithroad 1 -2 6 
+1 11 HouseCom
+-4 9 HousePeople
+-4 7 cellwithroad 2 -3 7 -4 8 
+-4 8 cellwithroad 1 -4 7 
+5 -16 HouseFact
+9 0 HousePeople
+9 1 cellwithroad 2 9 2 10 1 
+-7 -3 HouseCom
+-6 -8 HousePeople
+4 -6 HouseFact
+5 -6 cellwithroad 1 6 -6 
+-1 -9 HousePeople
+0 -9 cellwithroad 1 1 -9 
+4 11 HouseCom
+6 11 cellwithroad 2 6 10 5 11 
+5 11 cellwithroad 1 6 11 
+11 3 HousePeople
+10 1 cellwithroad 2 9 1 11 1 
+11 1 cellwithroad 2 10 1 12 1 
+12 1 cellwithroad 2 11 1 12 2 
+12 2 cellwithroad 2 12 1 12 3 
+12 3 cellwithroad 2 12 2 13 3 
+1 -6 HouseFact
+7 7 HousePeople
+8 7 cellwithroad 1 9 7 
+12 8 HouseCom
+10 8 cellwithroad 2 9 8 11 8 
+11 8 cellwithroad 2 10 8 11 9 
+5 -7 HousePeople
+5 9 HouseFact
+6 9 cellwithroad 1 6 10 
+12 4 HousePeople
+-4 -8 HouseCom
+-3 -7 cellwithroad 2 -3 -6 -3 -8 
+-3 -8 cellwithroad 1 -3 -7 
+8 6 HousePeople
+13 8 HouseFact
+11 9 cellwithroad 2 11 8 12 9 
+12 9 cellwithroad 2 11 9 13 9 
+13 9 cellwithroad 1 12 9 
+-8 -3 HousePeople
+-8 -2 cellwithroad 1 -7 -2 
+0 13 HouseCom
+1 12 cellwithroad 2 2 12 0 12 
+0 12 cellwithroad 2 1 12 -1 12 
+-7 -9 HousePeople
+-7 -7 cellwithroad 2 -6 -7 -7 -8 
+-7 -8 cellwithroad 1 -7 -7 
+13 4 HouseFact
+13 3 cellwithroad 1 12 3 
+0 -14 HousePeople
+1 -14 cellwithroad 1 1 -13 
+-1 14 HouseCom
+-1 12 cellwithroad 2 0 12 -1 13 
+-1 13 cellwithroad 1 -1 12 
+12 6 HousePeople
+11 6 cellwithroad 1 11 5 

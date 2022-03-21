@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.Tilemaps;
 using System.Diagnostics;
 using UnityEngine.UI;
+using System.IO;
 public class GridFunc : MonoBehaviour
 {
     public int Lines = 2;
@@ -45,12 +46,14 @@ public class GridFunc : MonoBehaviour
             }
         }
     }
-    public void GenerateCity(int N)
+    public IEnumerator GenerateCity(int N)
     {
         if (!generatorActive)
         {
             generatorActive = true;
-            StartCoroutine(generator.GenerateCity(N, Map));
+            HumanControlles.StopAllCoroutines();
+            yield return StartCoroutine(generator.GenerateCity(N, Map));
+            HumanControlles.StartCoroutine(HumanControlles.Go());
         }
     }
     public void SetMode(ThingsInCell mode)
@@ -327,5 +330,63 @@ public class GridFunc : MonoBehaviour
             }
         }
         foreach ((int, int) z in housesneedtorec) AddWaysFromHouse(z);
+    }
+    public void Load(string filename)
+    {
+        UnityEngine.Debug.Log("Load from " + filename);
+
+       
+        HumanControlles.StopCoroutine(HumanControlles.go);
+        houseControlles.StopCoroutine(houseControlles.SH);
+        foreach (Transform child in houseControlles.transform)
+        {
+            Destroy(child.gameObject);
+        }
+        HumanControlles.queue.Clear();
+        HumanControlles.Humans.Clear();
+        houseControlles.CellsWithHouses.Clear();
+        houseControlles.CellsWithHumans.Clear();
+        houseControlles.HumansInHouses.Clear();
+        
+        string[] data = File.ReadAllLines(filename);
+        Dictionary<(int, int), List<(int, int)>> roads = new Dictionary<(int, int), List<(int, int)>>();
+       
+        Map.Clear();
+        Roads.Clear();
+        waysFromRoads.Clear();
+        WaysFromRoadsToHouses.Clear();
+        tilemap.ClearAllTiles();
+        for (int i=0;i<data.Length; i++)
+        {
+            string[] tile = data[i].Split(' ');
+            int x = Convert.ToInt32(tile[0]);
+            int y = Convert.ToInt32(tile[1]);
+            string type = tile[2];
+            if (type == "HouseCom") CreateNewTile((x, y), ThingsInCell.HouseCom);
+            else if (type == "HouseFact") CreateNewTile((x, y), ThingsInCell.HouseFact);
+            else if (type == "HousePeople") CreateNewTile((x, y), ThingsInCell.HousePeople);
+            else if (type == "cellwithroad")
+            {
+                CreateNewTile((x, y), ThingsInCell.RoadForCars);
+                int N = Convert.ToInt32(tile[3]);
+                roads.Add((x, y), new List<(int, int)>()) ;
+                for (int j = 0; j < 2*N; j+=2)
+                {
+                    int x1 = Convert.ToInt32(tile[4+j]);
+                    int y1 = Convert.ToInt32(tile[5+j]);
+                    roads[(x, y)].Add((x1, y1));
+                }
+            }
+            
+        }
+
+        foreach ((int, int) a in roads.Keys)
+        {
+            UniteTiles(a, roads[a]);
+            foreach ((int, int) b in roads[a]) UniteTiles(b, new List<(int, int)>() { a });
+        }
+        HumanControlles.CanMove = true;
+        HumanControlles.StartCoroutine(HumanControlles.go);
+        houseControlles.StartCoroutine(houseControlles.SH);
     }
 }

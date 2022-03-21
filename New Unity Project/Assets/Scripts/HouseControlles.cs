@@ -10,14 +10,16 @@ public class HouseControlles : MonoBehaviour
     public GridFunc Grid;
     public GameObject HumanPrefab;
     public Clock clock;
-    private List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
-    private List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
+    public List<CellWithHouse> CellsWithHumans = new List<CellWithHouse>();
+    public List<CellWithHouse> CellsWithHouses = new List<CellWithHouse>();
     public HumanController humanController;
     public bool CanSpawn = true;
-    Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
+    public Dictionary<CellWithHouse, List<HumanFunctionality>> HumansInHouses = new Dictionary<CellWithHouse, List<HumanFunctionality>>();
+    public IEnumerator SH;
     private void Start()
     {
-       StartCoroutine("SpawnHuman");
+        SH = SpawnHuman();
+       StartCoroutine(SH);
     }
     public void AddHouse(ThingsInCell type, CellWithHouse house)
     {

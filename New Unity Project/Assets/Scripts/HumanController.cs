@@ -6,13 +6,15 @@ public class HumanController : MonoBehaviour
 {
     public GridFunc grid;
     public Clock clock;
-    List<HumanFunctionality> Humans = new List<HumanFunctionality>();
-    List<HumanFunctionality> queue = new List<HumanFunctionality>();
+    public List<HumanFunctionality> Humans = new List<HumanFunctionality>();
+    public List<HumanFunctionality> queue = new List<HumanFunctionality>();
     public float speed=3;
     public bool CanMove = true;
+    public IEnumerator go;
     public void Start()
     {
-        StartCoroutine("Go");
+        go = Go();
+        StartCoroutine(go);
     }
     public IEnumerator Go()
     {
@@ -87,7 +89,7 @@ public class HumanController : MonoBehaviour
                         progress += Time.deltaTime * speed;
                         foreach ((HumanFunctionality, Vector3, Vector3) a in toMove)
                         {
-                            a.Item1.transform.localPosition = Vector3.Lerp(a.Item2, a.Item3, progress);
+                            if(!a.Item1.destroyed)a.Item1.transform.localPosition = Vector3.Lerp(a.Item2, a.Item3, progress);
                         }
                         yield return new WaitForEndOfFrame();
                     }
@@ -100,7 +102,7 @@ public class HumanController : MonoBehaviour
         }
         
     }
-    public void AddHuman(HumanFunctionality human) => queue.Add(human);
+    public void AddHuman(HumanFunctionality human) { if (human != null) queue.Add(human); }
     public void DeleteAllHumans()
     {
         foreach (HumanFunctionality a in queue) Humans.Add(a);

@@ -8,6 +8,7 @@ public class GenerateButton : MonoBehaviour
     public Button thisButton;
     public InputField hods;
     public GridFunc grid;
+    public Image buttonImage;
     int HODS;
     void Start()
     {
@@ -16,6 +17,6 @@ public class GenerateButton : MonoBehaviour
     private void Generate()
     {
         HODS = Convert.ToInt32(hods.text); HODS = Math.Max(HODS, 0);
-        grid.GenerateCity(HODS);
+        StartCoroutine(grid.GenerateCity(HODS));
     }
 }
