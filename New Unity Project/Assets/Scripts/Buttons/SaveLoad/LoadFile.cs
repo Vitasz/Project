@@ -32,6 +32,10 @@ public class LoadFile : MonoBehaviour
     public void Start()
     {
         thisButton.onClick.AddListener(PreLoad);
+        if (!Directory.Exists("Saves"))
+        {
+            Directory.CreateDirectory("Saves");
+        }
         PreLoad();
     }
 }

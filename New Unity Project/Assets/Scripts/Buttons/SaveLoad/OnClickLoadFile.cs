@@ -18,6 +18,10 @@ public class OnClickLoadFile : MonoBehaviour
             grid.Load(filename);
         }
         thisButton.onClick.AddListener(load);
+        if (!Directory.Exists("Saves"))
+        {
+            Directory.CreateDirectory("Saves");
+        }
     }
     public void init()
     {

@@ -1,0 +1,124 @@
+1 1 HouseCom
+1 0 cellwithroad 3 1 -1 2 0 0 0 
+0 1 HouseFact
+1 -1 cellwithroad 4 1 0 0 -1 1 -2 2 -1 
+0 -1 cellwithroad 2 1 -1 -1 -1 
+-1 -1 cellwithroad 3 0 -1 -1 0 -1 -2 
+-1 0 cellwithroad 3 -1 -1 -1 1 -2 0 
+-1 1 cellwithroad 3 -1 0 -1 2 -2 1 
+2 -2 HousePeople
+1 -2 cellwithroad 2 1 -1 1 -3 
+-2 -1 HouseCom
+-3 0 HousePeople
+-2 0 cellwithroad 1 -1 0 
+2 -3 HouseFact
+1 -3 cellwithroad 2 1 -2 1 -4 
+3 -2 HousePeople
+2 -1 cellwithroad 2 1 -1 3 -1 
+3 -1 cellwithroad 2 2 -1 4 -1 
+0 -3 HouseCom
+3 0 HousePeople
+0 2 HouseFact
+-1 2 cellwithroad 2 -1 1 -1 3 
+2 -4 HousePeople
+1 -4 cellwithroad 1 1 -3 
+4 -2 HouseCom
+4 -1 cellwithroad 2 3 -1 4 0 
+5 -1 HousePeople
+4 1 HouseFact
+4 0 cellwithroad 2 4 -1 5 0 
+-4 1 HousePeople
+-2 1 cellwithroad 2 -1 1 -3 1 
+-3 1 cellwithroad 2 -2 1 -3 2 
+1 -5 HouseCom
+-5 0 HousePeople
+-3 2 cellwithroad 2 -3 1 -4 2 
+-4 2 cellwithroad 2 -3 2 -5 2 
+-5 2 cellwithroad 3 -4 2 -5 1 -5 3 
+-5 1 cellwithroad 2 -5 2 -6 1 
+0 -4 HouseFact
+3 2 HousePeople
+2 0 cellwithroad 2 1 0 2 1 
+2 1 cellwithroad 2 2 0 2 2 
+2 2 cellwithroad 2 2 1 2 3 
+-3 3 HouseCom
+5 -2 HousePeople
+5 0 cellwithroad 2 4 0 6 0 
+6 0 cellwithroad 3 5 0 6 -1 6 1 
+6 -1 cellwithroad 2 6 0 6 -2 
+6 -2 cellwithroad 2 6 -1 6 -3 
+1 -6 HouseFact
+-1 -2 cellwithroad 2 -1 -1 -1 -3 
+-1 -3 cellwithroad 2 -1 -2 -1 -4 
+-1 -4 cellwithroad 2 -1 -3 -1 -5 
+-1 -5 cellwithroad 2 -1 -4 -1 -6 
+-1 -6 cellwithroad 2 -1 -5 0 -6 
+0 -6 cellwithroad 2 -1 -6 0 -7 
+-4 3 HousePeople
+7 -1 HouseCom
+2 -6 HousePeople
+0 -7 cellwithroad 4 0 -6 1 -7 0 -8 -1 -7 
+1 -7 cellwithroad 2 0 -7 2 -7 
+2 -7 cellwithroad 2 1 -7 3 -7 
+3 1 HouseFact
+-3 4 HousePeople
+-5 3 cellwithroad 3 -5 2 -5 4 -6 3 
+-5 4 cellwithroad 3 -5 3 -4 4 -5 5 
+-4 4 cellwithroad 1 -5 4 
+-1 -8 HouseCom
+0 -8 cellwithroad 2 0 -7 0 -9 
+3 -3 HousePeople
+6 -3 cellwithroad 2 6 -2 5 -3 
+5 -3 cellwithroad 2 6 -3 4 -3 
+4 -3 cellwithroad 2 5 -3 4 -4 
+0 3 HouseFact
+-1 3 cellwithroad 2 -1 2 -1 4 
+0 0 cellwithroad 1 1 0 
+5 1 HousePeople
+-2 4 HousePeople
+-1 4 cellwithroad 1 -1 3 
+-6 4 HouseCom
+-7 5 HousePeople
+-5 5 cellwithroad 3 -5 4 -6 5 -4 5 
+-6 5 cellwithroad 1 -5 5 
+4 2 HouseFact
+6 1 cellwithroad 2 6 0 6 2 
+6 2 cellwithroad 2 6 1 5 2 
+5 2 cellwithroad 1 6 2 
+-5 -1 HousePeople
+-6 1 cellwithroad 2 -5 1 -6 0 
+-6 0 cellwithroad 2 -6 1 -6 -1 
+-6 -1 cellwithroad 2 -6 0 -6 -2 
+1 -8 HouseCom
+3 3 HousePeople
+2 3 cellwithroad 2 2 2 2 4 
+3 4 HouseFact
+2 4 cellwithroad 2 2 3 2 5 
+-2 -7 HousePeople
+-1 -7 cellwithroad 1 0 -7 
+7 2 HouseCom
+-7 4 HousePeople
+-6 3 cellwithroad 2 -5 3 -7 3 
+-7 3 cellwithroad 1 -6 3 
+-1 5 HouseFact
+3 -6 HousePeople
+3 -7 cellwithroad 1 2 -7 
+7 -2 HouseCom
+4 5 HousePeople
+2 5 cellwithroad 2 2 4 3 5 
+3 5 cellwithroad 1 2 5 
+-6 2 HouseFact
+-5 -2 HousePeople
+-6 -2 cellwithroad 1 -6 -1 
+-2 -5 HouseCom
+-2 -9 HousePeople
+0 -9 cellwithroad 2 0 -8 -1 -9 
+-1 -9 cellwithroad 2 0 -9 -1 -10 
+-3 -9 HouseFact
+-1 -10 cellwithroad 2 -1 -9 -2 -10 
+-2 -10 cellwithroad 2 -1 -10 -3 -10 
+-3 -10 cellwithroad 1 -2 -10 
+-3 5 HousePeople
+-4 5 cellwithroad 1 -5 5 
+4 -5 HouseCom
+4 -4 cellwithroad 1 4 -3 

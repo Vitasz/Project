@@ -336,8 +336,8 @@ public class GridFunc : MonoBehaviour
         UnityEngine.Debug.Log("Load from " + filename);
 
        
-        HumanControlles.StopCoroutine(HumanControlles.go);
-        houseControlles.StopCoroutine(houseControlles.SH);
+        HumanControlles.StopAllCoroutines();
+        houseControlles.StopAllCoroutines();
         foreach (Transform child in houseControlles.transform)
         {
             Destroy(child.gameObject);
@@ -386,7 +386,7 @@ public class GridFunc : MonoBehaviour
             foreach ((int, int) b in roads[a]) UniteTiles(b, new List<(int, int)>() { a });
         }
         HumanControlles.CanMove = true;
-        HumanControlles.StartCoroutine(HumanControlles.go);
-        houseControlles.StartCoroutine(houseControlles.SH);
+        HumanControlles.StartCoroutine(HumanControlles.Go());
+        houseControlles.StartCoroutine(houseControlles.SpawnHuman());
     }
 }

@@ -15,6 +15,10 @@ public class SaveFile : MonoBehaviour
     public void Start()
     {
         saveButton.onClick.AddListener(saveTilemap);
+        if (!Directory.Exists("Saves"))
+        {
+            Directory.CreateDirectory("Saves");
+        }
     }
     private void saveTilemap()
     {
