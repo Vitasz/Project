@@ -40,10 +40,13 @@ public class Generator : MonoBehaviour
             PositionIND0.Add(from, 0);
             (int, int) last = to;
             bool nowind = false;
-            while (PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)
+            int cnt = 0;
+            while ((PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)&&cnt!=10000)
             {
+                cnt++;
                 if (ok && !MinimumRoads) break;
                 Dictionary<(int, int), int> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
+                newPosition.Clear();
                 foreach ((int, int) a in nowPosition.Keys)
                 {
                     int NewRoads = nowPosition[a];
