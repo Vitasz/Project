@@ -10,7 +10,6 @@ public class Generator : MonoBehaviour
     public GridFunc grid;
 
     public int r, N;
-    public bool MinimumRoads;
     /// <summary>
     /// Генерирует город с Count домами
     /// </summary>
@@ -28,93 +27,50 @@ public class Generator : MonoBehaviour
         int cntHousePeople = 0, cntHouseCom = 0, cntHouseFact = 0;
         
         
-        bool CreateRoadsBetweenHouses((int, int) from, (int, int) to)
+        bool CreateRoadsBetweenHouses((int, int) from)
         {
-            Dictionary<(int, int), int> PositionIND0 = new Dictionary<(int, int), int>();
-            Dictionary<(int, int), int> PositionIND1 = new Dictionary<(int, int), int>();
-            Dictionary<(int, int), ((int, int), int)> USED = new Dictionary<(int, int), ((int, int), int)>();
+            List<(int, int)> PositionIND0 = new List<(int, int)>();
+            List<(int, int)> PositionIND1 = new List<(int, int)>();
+            Dictionary<(int, int), (int, int)> USED = new Dictionary<(int, int), (int, int)>();
 
             bool ok = false;
-            int minWay = int.MaxValue;
-            USED.Add(from, ((0,0), 0));
-            PositionIND0.Add(from, 0);
-            (int, int) last = to;
+            USED.Add(from, (0,0));
+            PositionIND0.Add(from);
+            (int, int) last = (0, 0);
             bool nowind = false;
-            int cnt = 0;
-            while ((PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)&&cnt!=10000)
+            while (PositionIND0.Count != 0&&!nowind||PositionIND1.Count!=0&&nowind)
             {
-                cnt++;
-                if (ok && !MinimumRoads) break;
-                Dictionary<(int, int), int> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
+                if (ok) break;
+                List<(int, int)> nowPosition = nowind?PositionIND1:PositionIND0, newPosition = nowind?PositionIND0:PositionIND1;
                 newPosition.Clear();
-                foreach ((int, int) a in nowPosition.Keys)
+                foreach ((int, int) a in nowPosition)
                 {
-                    int NewRoads = nowPosition[a];
-                    if (NewRoads > minWay)
-                    {
-                        continue;
-                    }
-                    if (a == to&&NewRoads!=0&&Roads.Count==0)
-                    {
-                        ok = true;
-                        if (minWay > NewRoads)
-                        {
-                            minWay = NewRoads;
-                            last = a;
-                        }
-                        newPosition.Clear();
-                        break;
-
-                    }
                     if (Roads.ContainsKey(a))
                     {
                         ok = true;
-                        
-                        if (minWay > NewRoads)
-                        {
-                            minWay = NewRoads;
-                            last = a;
-                        }
+                        last = a;
                         newPosition.Clear();
                         break;
                     }
-                    if (Houses.ContainsKey(a) && a != from)
+                    for (int i = -1; i < 2; i += 2)
                     {
-                        continue;
-                    }
-                    if (!ok||MinimumRoads)
-                    {
-                        for (int i = -1; i < 2; i += 2)
+                        (int, int) temp = (a.Item1 + i, a.Item2);
+                        if (!USED.ContainsKey(temp) && !Houses.ContainsKey(temp))
                         {
-                            (int, int) temp = (a.Item1 + i, a.Item2);
-                            int roads = Roads.ContainsKey(temp) || Houses.ContainsKey(temp) ? 0 : 1;
-                            if ((!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads)&&!Houses.ContainsKey(temp) || temp == to)
-                            {
-                                if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
-                                else newPosition[temp] = NewRoads + roads;
-                                if (USED.ContainsKey(temp))
-                                {
-                                    USED[temp] = (a, NewRoads + roads);
-                                }
-                                else USED.Add(temp, (a, NewRoads));
-                            }
-                        }
-                        for (int i = -1; i < 2; i += 2)
-                        {
-                            (int, int) temp = (a.Item1, a.Item2+i);
-                            int roads = Roads.ContainsKey(temp)||Houses.ContainsKey(temp) ? 0 : 1;
-                            if ((!USED.ContainsKey(temp) || USED[temp].Item2 > NewRoads + roads) && !Houses.ContainsKey(temp) || temp == to)
-                            {
-                                if (!newPosition.ContainsKey(temp)) newPosition.Add(temp, NewRoads + roads);
-                                else newPosition[temp] = NewRoads + roads;
-                                if (USED.ContainsKey(temp))
-                                {
-                                    USED[temp] = (a, NewRoads + roads);
-                                }
-                                else USED.Add(temp, (a, NewRoads));
-                            }
+                            newPosition.Add(temp);
+                            USED.Add(temp, a);
                         }
                     }
+                    for (int i = -1; i < 2; i += 2)
+                    {
+                        (int, int) temp = (a.Item1, a.Item2 + i);
+                        if (!USED.ContainsKey(temp) && !Houses.ContainsKey(temp))
+                        {
+                            newPosition.Add(temp);
+                            USED.Add(temp, a);
+                        }
+                    }
+                
                 }
                 nowPosition.Clear();
                 nowind = !nowind;
@@ -126,39 +82,34 @@ public class Generator : MonoBehaviour
             }
             else
             {
-                if (USED[last].Item2 == 0) return true;
-                (int, int) tosave = to;
+                (int, int) to;
                 to = last;
-                (int, int) nowpos = USED[last].Item1;
+                (int, int) nowpos = USED[last];
                 while (nowpos != from)
                 {
                     
                     if (Roads.ContainsKey(nowpos))
                     {
-                        if (to != tosave)
-                            Roads[nowpos].Add(to);
+                        Roads[nowpos].Add(to);
                     }
                     else
                     {
                         Roads.Add(nowpos, new List<(int,int)>());
-                        if (to != tosave) Roads[nowpos].Add(to);
+                        Roads[nowpos].Add(to);
                         if (!newRoads.Contains(nowpos))newRoads.Add(nowpos);
                     }
-                    if (to != tosave)
+                    if (Roads.ContainsKey(to))
                     {
-                        if (Roads.ContainsKey(to))
-                        {
-                            Roads[to].Add(nowpos);
-                        }
-                        else
-                        {
-                            Roads.Add(to, new List<(int, int)>() { nowpos });
-                            if (!newRoads.Contains(to)) newRoads.Add(to);
-                        }
+                        Roads[to].Add(nowpos);
+                    }
+                    else
+                    {
+                        Roads.Add(to, new List<(int, int)>() { nowpos });
+                        if (!newRoads.Contains(to)) newRoads.Add(to);
                     }
                     
                     to = nowpos;
-                    nowpos = USED[to].Item1;
+                    nowpos = USED[to];
                 }
 
                 return true;
@@ -209,45 +160,51 @@ public class Generator : MonoBehaviour
         }
         if (Houses.Keys.Count != 0)
         {
-            (int, int) startposition = Houses.Keys.First();
+            (int, int) firstroad = canBePositions.First();
+            wasPositions.Add(firstroad);
+            canBePositions.Remove(firstroad);
+            Roads.Add(firstroad, new List<(int, int)>());
+            GetBonusPositionsForRoad(firstroad);
             foreach ((int, int) position in Houses.Keys)
             {
-                if (position != startposition)
+                bool ok = CreateRoadsBetweenHouses(position);
+                if (ok)
                 {
-                    bool ok = CreateRoadsBetweenHouses(position, startposition);
-                    if (ok)
+                    foreach ((int, int) a in Roads.Keys)
                     {
-                        foreach ((int, int) a in Roads.Keys)
+                        if (!grid.Roads.ContainsKey(a))
                         {
-                            if (!grid.Roads.ContainsKey(a))
+                            grid.CreateNewTile(a, ThingsInCell.RoadForCars);
+                            grid.UniteTiles(a, Roads[a]);
+                            foreach ((int, int) b in Roads[a])
                             {
-                                grid.CreateNewTile(a, ThingsInCell.RoadForCars);
-                                grid.UniteTiles(a, Roads[a]);
-                                foreach ((int, int) b in Roads[a])
-                                {
-                                    grid.UniteTiles(b, new List<(int, int)>() { a });
-                                }
+                                grid.UniteTiles(b, new List<(int, int)>() { a });
                             }
+                        }
 
-                        }
-                        yield return new WaitForEndOfFrame();
-                        GetBonusPositions(position);
-                        foreach ((int, int) c in newRoads)
-                        {
-                            GetBonusPositionsForRoad(c);
-                            canBePositions.Remove(c);
-                            wasPositions.Add(c);
-                        }
+                    }
+                    yield return new WaitForEndOfFrame();
+                    GetBonusPositions(position);
+                    foreach ((int, int) c in newRoads)
+                    {
+                        GetBonusPositionsForRoad(c);
+                        canBePositions.Remove(c);
+                        wasPositions.Add(c);
                     }
                 }
             }
         }
 
-        if (canBePositions.Count == 0)
+        else if (canBePositions.Count == 0)
         {
             Houses.Add((0, 0), ThingsInCell.HousePeople);
             wasPositions.Add((0, 0));
             GetBonusPositions((0, 0));
+            (int, int) firstroad = canBePositions.First();
+            wasPositions.Add(firstroad);
+            canBePositions.Remove(firstroad);
+            Roads.Add(firstroad, new List<(int, int)>());
+            GetBonusPositionsForRoad(firstroad);
             cntHousePeople++;
         }
 
@@ -258,6 +215,13 @@ public class Generator : MonoBehaviour
             if (!Roads.ContainsKey(position) && Map[position] is CellWithRoad)
             {
                 Roads.Add(position, (Map[position] as CellWithRoad).GetNearRoadsWays());
+            }
+            else if (Roads.ContainsKey(position) && Map[position] is CellWithRoad)
+            {
+                foreach((int,int) b in (Map[position] as CellWithRoad).GetNearRoadsWays())
+                {
+                    if (!Roads[position].Contains(b)) Roads[position].Add(b);
+                }
             }
         }
 
@@ -288,7 +252,7 @@ public class Generator : MonoBehaviour
                 wasPositions.Add(Position);
                 Stopwatch createtime = new Stopwatch();
                 createtime.Start();
-                bool ok = CreateRoadsBetweenHouses(Position, (0, 0));
+                bool ok = CreateRoadsBetweenHouses(Position);
                 createtime.Stop();
                 totalct += createtime.ElapsedMilliseconds;
                 if (ok)
