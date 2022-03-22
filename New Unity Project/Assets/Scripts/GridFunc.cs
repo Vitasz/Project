@@ -293,9 +293,9 @@ public class GridFunc : MonoBehaviour
             }
         }
     }
-    public void Optimize(int deep, float K, int hods, bool canrHouses, bool canrRoads)
+    public void Optimize(int deep, float K, int hods, int maxVarCount, bool canrHouses, bool canrRoads)
     {
-        a.Optimization(this, deep, K, hods, canrHouses, canrRoads);
+        a.Optimization(this, deep, K, hods, maxVarCount, canrHouses, canrRoads);
     }
     public void RemoveHouseAt((int,int) position)
     {
